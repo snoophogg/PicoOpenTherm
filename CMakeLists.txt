@@ -45,6 +45,7 @@ pico_add_extra_outputs(blink_pio)
 # Add OpenTherm test executable
 add_executable(opentherm_test
     src/opentherm_test.cpp
+    src/opentherm.cpp
 )
 
 # Generate the PIO header files for OpenTherm

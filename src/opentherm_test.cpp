@@ -2,7 +2,7 @@
 #include <cstdint>
 #include "pico/stdlib.h"
 #include "hardware/pio.h"
-#include "opentherm.h"
+#include "opentherm.hpp"
 #include "opentherm_write.pio.h"
 #include "opentherm_read.pio.h"
 
