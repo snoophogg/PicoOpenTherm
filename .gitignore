@@ -30,3 +30,16 @@
 *.exe
 *.out
 *.app
+
+# Build artifacts
+build/
+.vscode/
+*.elf
+*.bin
+*.hex
+*.uf2
+*.map
+*.dis
+*.cmake
+CMakeCache.txt
+CMakeFiles/

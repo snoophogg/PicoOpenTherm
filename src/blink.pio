@@ -1,0 +1,48 @@
+;
+; PIO blink program
+; Blinks an LED connected to a GPIO pin
+;
+
+.program blink
+    pull block          ; Pull from FIFO to OSR (blocking)
+    out y, 32           ; Copy OSR to Y register (delay count)
+loop:
+    set pins, 1         ; Set pin high
+    mov x, y            ; Copy Y to X for delay
+delay_high:
+    jmp x-- delay_high  ; Delay while high
+    set pins, 0         ; Set pin low
+    mov x, y            ; Copy Y to X for delay
+delay_low:
+    jmp x-- delay_low   ; Delay while low
+    jmp loop            ; Loop forever
+
+% c-sdk {
+#include "hardware/clocks.h"
+
+static inline void blink_program_init(PIO pio, uint sm, uint offset, uint pin, float freq, float blink_freq) {
+    // Configure the pin as a PIO output
+    pio_gpio_init(pio, pin);
+    pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
+
+    // Get default config
+    pio_sm_config c = blink_program_get_default_config(offset);
+
+    // Set the 'set' pins
+    sm_config_set_set_pins(&c, pin, 1);
+
+    // Set the clock divider
+    float div = clock_get_hz(clk_sys) / freq;
+    sm_config_set_clkdiv(&c, div);
+
+    // Initialize and enable the state machine
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, true);
+
+    // Calculate delay cycles for desired blink frequency
+    uint32_t cycles = (freq / blink_freq) / 2;
+    
+    // Send the delay value to the FIFO
+    pio_sm_put_blocking(pio, sm, cycles);
+}
+%}

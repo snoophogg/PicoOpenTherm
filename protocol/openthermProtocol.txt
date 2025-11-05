@@ -1,0 +1,1545 @@
+OpenThermÔ Protocol Specification v2.2    7 Februari 2003 
+Ó1996,’98,’99,’00 The OpenTherm Association    Page 1 
+  
+®
+ 
+ 
+The OpenThermÔ 
+Communications Protocol 
+ 
+A Point-to-Point Communications System 
+for HVAC Controls 
+ 
+Protocol Specification 
+     The 
+OpenTherm 
+Association 
+is 
+an 
+independent 
+European 
+organisation, 
+constituted 
+under 
+Dutch 
+law, 
+whose 
+object 
+is 
+to 
+promote the introduction and adoption of the OpenTherm technical standard for HVAC system control communication,  
+laid  down  in  this Protocol Specification. The OpenTherm Association  controls  the application by, and  the granting of 
+licences for use of, the OpenTherm trademark and logo. 
+ 
+OpenTherm, OpenTherm/Plus, OpenTherm/Lite and the OpenTherm logo are registered trademarks of The OpenTherm 
+Association. 
+ 
+OpenThermÔ Protocol Specification v2.2    7 Februari 2003 
+Ó1996,’98,’99,’00 The OpenTherm Association    Page 2 
+ 
+Change Control History 
+ 
+Version  Date  Description of Changes 
+1.0    First official release 
+1.1  1 Feb 1998  2.3 OT/+ & OT/- configuration section expanded. 
+4.2 Bit-order specified in frame format. 
+5.1 Definition of data format expanded and clarified. 
+5.3 Message directions changed to indicate read/write instead. 
+5.3.1 Special status exchange message mechanism defined. 
+6.1 Clarified duty cycle period definition for OT/- signalling. 
+1.2A  DRAFT 
+13 Mar 98 
+This change control history added. 
+Page numbering corrected. 
+References to Oem/Customer ID Codes changed to Member ID Code 
+3.2,High-voltage idle-line state is allowed subject to certain restrictions. 
+3.2.1.1,3.2.2.1 Current, voltage signal level conditions stated. 
+3.2.1.2,3.2.2.2 Inductance and capacitance test conditions defined. 
+3.3 New section added on device impedance characteristics. 
+3.5 New section added on short-circuit feature. 
+5.1 Definition of data format further clarified. 
+5.2 Correction to message type references. 
+1.2B  DRAFT 
+15 June 98 
+2.3 State diagram added for OT/+ & OT/- detection. 
+3.2 Corrected reference to section 3.6 
+      Idle line-high removed - not acceptable to all members. 
+3.2.1.1 Allowed spec to be different for OT/- and OT/+ 
+3.2.1.2 Changed “across” to “in series with” (twice) 
+3.2.2.1 corrected reference to section 3.6 
+3.3 Changed “capacitance across” to “serial inductance at” 
+3.6 State machine for short-circuit feature 
+      Idle line-high removed - not acceptable to all members. 
+4.4.1 removed references to 0x00 to allow more general case. 
+4.4.2 removed references to 0x00 to allow for slave changing data-value. 
+4.4.3 removed references to 0x00 to allow more general case. 
+4.5 Added that master & slave should notify comms error. 
+5.2 changed references to invalid-data-id to Unknown_DataID 
+1.2C  DRAFT 
+19 June 98 
+2.3 Automatic OT plus-lite configuration made mandatory for masters. 
+3.2 Clarified allowable line signal states. 
+3.6 Short-circuit detection defined between 5 .. 15 secs. 
+4.3.1 Inter-message communications period defined as 1.15 sec max. 
+4.5 Error notification text removed as irrelevant and not always practical. 
+5.1 Added u16 and s16 data formats for completeness. 
+5.3 Unused bits/bytes defined as “reserved” (don’t care values) instead of 00. 
+1.2D  DRAFT 
+25 June 98 
+5.1 Reserved/unused bits/bytes should be set to zero, but not checked by receiver. 
+1.2  RELEASE 
+25 June 1998 
+Approved by members of the OpenTherm Association. 
+1.3A  DRAFT 
+5 May 1999 
+3.4.2.4 Galvanic isolation specified according to EN60730-1 
+5.2 CH-enable and DHW-enable are now declared mandatory for the master. 
+5.1 & 5.4 “Member” or “OEM” data id area (128..255) redefined as “Test & Diagnostics” area. 
+1.3B  DRAFT 
+17 August 1999 
+3.2.1.2 Signal dynamic characteristics further clarified in line with test requirements 
+3.2.2.2 Signal dynamic characteristics further clarified in line with test requirements 
+3.3 Device Impedance Characteristics removed 
+4.3.1 Message latency time increased to 100ms 
+New Data ID’s added according to 
+  NDI 110399-1 : Product Version Number 
+  NDI 110399-2 : Capacity Control for Sequencer Applications 
+  NDI 110599-3 : Day & Time 
+  NDI 110399-4 : Date & Year 
+  NDI 110599-5 : Cooling Control 
+  NDI 200599-1 ; Solar System Applications 
+  NDI 140599-1 : CH Water Filling 
+5.3.1 Status bits added for cooling control 
+5.3.2 Configuration bits added for cooling control 
+5.3.2 Product version number and type added to Configuration Data class 
+OpenThermÔ Protocol Specification v2.2    7 Februari 2003 
+Ó1996,’98,’99,’00 The OpenTherm Association    Page 3 
+5.3.3 CH Water Fill command added to Remote Command class 
+5.3.4 Day, Time, Date, Year , Solar storage & collector temp.s added to Information Data class 
+5.3.8 New class added for new applications 
+5.3.8.1 Cooling control signal added 
+5.3.8.2 Boiler sequence control signal added 
+1.3C  DRAFT 
+24 October 1999 
+5.3.1 Correction made to error in definition of “Remote Reset enable” bit. 
+1.3  RELEASE 
+31 Oct. 1999 
+Approved by members of the OpenTherm Association. 
+1.4A  DRAFT 
+30 May 2000 
+Document renamed “Protocol Specification” in place of “Technical Specification” 
+4.3.1 Correction made in text concerning wait time of messages (diagram was correct) 
+5.3.1 Added status bit (bit3 id0-master status) for OTC systems NDI-071299 
+5.3.2 Added configuration bit (bit3 id3-slave configuration) for DHW storage systems NDI-
+1303000 
+5.3.2 Added configuration bit (bit4 id3-slave configuration ) for off-low/pump control systems 
+NDI-210400 
+5.2 !!! New list of mandatory items specified. 
+5.3.4 Added new data ids for DHW2 and exhaust temperatures NDI-220500-1 
+5.3.4 Added new data id for Flow temp 2 NDI-220500-2 
+5.3.1 Added new data id for Tset2 NDI-220500-2 
+5.3.1 Added new master status bit (bit 4, id0) and slave status bit (bit5, id0) for second loop 
+NDI-220500-2 
+5.3.3 Added new slave configuration bit (bit5, id3) for second loop NDI-220500-2 
+2.0A  DRAFT 
+22 June 2000 
+1.3 Added comment to help explain important change in version2.0 for mandatory Ids. 
+4.2 remove MSB-LSB note in the centre of the data-value definition. 
+5.1 correct description of message classes (six to seven). 
+5.2 insert table to define all mandatory data-ids and their use. 
+5.3.2 redefine “low-off&pump control” flag as “Master low-off&pump control function” with states 
+“allowed” and “not-allowed”. 
+5.3.2 redefine “DHWconfig” flag default state as “not specified” instead of “instantaneous” 
+5.3.2 remove statement referring to configuration data as non-mandatory 
+5.3.8.2 redefine “Capacity-level setting” as “Maximum relative modulation level setting” 
+5.4 Add new data ids 31,32,33 and engineering units to overview table and updated some 
+terminology. 
+2.0B  DRAFT 
+21 September 2000 
+5.3.1 Description id 8 corrected 
+5.4 Overview table completed with id8, message and data type. 
+2.0  RELEASE 
+15 Dec. 2000 
+Approved by members of the OpenTherm Association. 
+2.1A  DRAFT 
+12 Februari 2002 
+1.3 Note mandatory id’s and backward compatibility updated. 
+2.3 Mandatory OT/- for OpenTherm logo marked masters deleted.  
+3.2.1.2. Slope of current signal edge deleted. 
+3.2.2.2. Slope of voltage signal edge deleted. 
+5.3.2. Opentherm version master and slave added (ID 124, 125). 
+5.3.2. Explanation ID3 bit 4 corrected. 
+5.3.4. Operation hours boilers, CH pump and DHW pump/valve added (ID120, 121, 122). 
+5.3.5. OTC not, flags and ID’s removed 
+5.3.8.3. Remote override room setpoint added 
+5.4. Operation hours boilers, CH pump and DHW pump/valve added (ID120, 121, 122).. 
+5.4. Opentherm version master and slave added (ID 124, 125). 
+6 Remark that OT/- is mandatory for masters deleted. 
+ 
+2.1B  DRAFT 
+27 March 2002 
+5.3.4. Room Setpoint CH2 (ID23) added. 
+5.4. Room Setpoint CH2 (ID23) added. 
+2.1  RELEASE 
+9 April 2002 
+Approved by members of the OpenTherm Association. 
+2.2A  11 October  3.2.1.1. Max. open-circuit voltage slave added. 
+3.2.2.3. Receive threshold voltage range extended. 
+5.3.1. Diagnostic flag (ID0:LB6) and code (ID115) added. 
+5.3.4. ID’s related to operation hours and number of starts added.  
+5.3.8.3. Remote override function (ID100) added 
+5.4. Data-Id overview map updated. 
+2.2  RELEASE 
+7 Februari 2003 
+Approved by members of the OpenTherm Association. 
+  
+OpenThermÔ Protocol Specification v2.2    Table of Contents 
+Ó1996,’98,’99 The OpenTherm Association    Page 4 
+Table of Contents 
+ 
+Description of Changes  2 
+1.  INTRODUCTION  6 
+1.1  Background  6 
+1.2  Key OpenTherm Characteristics  6 
+1.3  Document Overview  7 
+1.4  Nomenclature & Abbreviations  7 
+2.  SYSTEM OVERVIEW  8 
+2.1  System Architecture and Application Overview  8 
+2.2  Provision for Future Architectures/Expansion  8 
+2.3  Product Compliance and Marking  9 
+2.4  Protocol Reference Model  10 
+3.  PHYSICAL LAYER  12 
+3.1  Medium Definition- Characteristics of the Transmission Line  12 
+3.2  Signal Transmission Definition  12 
+3.2.1  Transmitted Signal - Boiler Unit to Room Unit  13 
+3.2.2  Transmitted Signal - Room Unit to Boiler Unit  14 
+3.3  Power Feeding  15 
+3.3.1  Options  15 
+3.3.2  Power-Feed Characteristics  15 
+3.4  OpenTherm/plus Bit-Level Signalling  15 
+3.4.1  Bit Encoding Method  15 
+3.4.2  Bit Rate and Timing  16 
+3.4.3  Bit-level Error Checking  17 
+3.5  Special Installation Short-Circuit Feature  17 
+4.  OPENTHERM/PLUS DATALINK LAYER PROTOCOL  18 
+4.1  Overview  18 
+4.2  Frame Format  18 
+4.2.1  Parity Bit - P  18 
+4.2.2  Message Type - MSG-TYPE  18 
+4.2.3  Spare Data - SPARE  19 
+4.2.4  Data Item Identifier - DATA-ID  19 
+4.2.5  Data Item Value - DATA-VALUE  19 
+4.3  Conversation Format  19 
+4.3.1  Overview  19 
+OpenThermÔ Protocol Specification v2.2    Table of Contents 
+Ó1996,’98,’99 The OpenTherm Association    Page 5 
+4.3.2  Message Notation  20 
+4.3.3  Default Data-Values  20 
+4.4  Conversation Details  20 
+4.4.1  Read-Data Request  20 
+4.4.2  Write-Data Request  21 
+4.4.3  Writing Invalid Data  21 
+4.5  Frame Error Handling  21 
+5.  OPENTHERM/PLUS APPLICATION LAYER PROTOCOL  22 
+5.1  Overview  22 
+5.2  Mandatory OT/+ Application-Layer Support  23 
+5.3  Data Classes  24 
+5.3.1  Class 1 : Control and Status Information  24 
+5.3.2  Class 2 : Configuration Information  25 
+5.3.3  Class 3 : Remote Commands  25 
+5.3.4  Class 4 : Sensor and Informational Data  26 
+5.3.5  Class 5 : Pre-Defined Remote Boiler Parameters  27 
+5.3.6  Class 6 : Transparent Slave Parameters  28 
+5.3.7  Class 7 : Fault History Data  29 
+5.3.8  Class 8 : Control of Special Applications  30 
+5.4  Data-Id Overview Map  32 
+6.  OPENTHERM/LITE DATA ENCODING AND APPLICATION SUPPORT  34 
+6.1  Room Unit to Boiler Signalling  34 
+6.2  Boiler to Room Unit Signalling  34 
+6.3  OT/- Application Data Equivalence to OT/+  35 
+ 
+OpenThermÔ Protocol Specification v2.2    Introduction 
+Ó1996,’98,’,’00 The OpenTherm Association    Page 6 
+1.  Introduction 
+1.1  Background 
+The trend in boiler technologies towards high-efficiency appliances with gas/air modulation and increased 
+sophistication in control electronics has created a requirement for system communication between boilers 
+and room controllers. At the higher end, home-systems buses provide extensive communications capability 
+and several such systems are available, although no single standard has emerged. Generally, they all require 
+hardware/software solutions whose cost is significant at the lower-end of the market, especially for point-topoint
+ systems. Several proprietary solutions at this low-end have been developed, but offer no crosscompatibility
+ with products from different manufacturers. 
+ 
+There is an increasing demand for a new standard to be established to connect room controllers and boilers 
+in a simple point-to-point fashion with very low entry-level costs. OpenTherm was developed to meet this 
+requirement. 
+1.2  Key OpenTherm Characteristics 
+· Compatibility with so-called “dumb” or non-intelligent boiler systems. 
+· Compatibility with low-cost entry-level room thermostats. 
+· Compatible with electrical supplies typically normally available within boilers. 
+· Two-wire, polarity-free connection for concurrent power supply and data transmission. 
+· Provides a suitable power supply for a room controller so that it can operate without the need for an 
+additional power source such as batteries. 
+· Implementable in low-cost microcontrollers with small ROM / RAM / CPU-speed requirements. 
+· Installer friendly feature for boiler testing. Shorting the wires at the boiler provides a simulated maximum 
+heat demand (similar to current on/off systems). 
+· Allows for the transfer of sensor, fault and configuration data between the devices. 
+· Provides a mandatory minimum set of data objects, which allows for transmission of a modulating control 
+signal from the room controller to the boiler. 
+ 
+One of the key characteristics of the OpenTherm standard is the two-level approach which allows analoguetype
+ solutions at the low-end. 
+ 
+OT/+  The OpenTherm/plus protocol provides a digital communications system for data-exchange between 
+two microprocessor-based devices. 
+OT/-  The OpenTherm/Lite protocol uses a PWM signal and simple signalling capabilities to allow 
+implementation on analogue-only products. 
+ 
+Both protocols use the same physical layer for data transmission and power-feeding ensuring that the two 
+levels of communications are physically compatible. 
+OpenThermÔ Protocol Specification v2.2    Introduction 
+Ó1996,’98,’,’00 The OpenTherm Association    Page 7 
+1.3  Document Overview 
+This document specifies a communication system for use with boilers and room controls, which can also be 
+applied to similar devices in the same or related applications. The characteristics and communications  
+features of the both the infrastructure and the attached devices are specified in detail. This document does 
+not provide a prescriptive solution for OpenTherm-compatible controllers, but rather specifies the 
+requirements for such a solution.  
+ 
+This document is divided into the following sections : 
+ 
+1. Introduction  provides an overview of the background and key features of the 
+OpenTherm communications system and defines some terms used in 
+the document. 
+2. System Overview  gives a top-level architectural view of the target application system and 
+explains OpenTherm in relation to the OSI reference model and outlines 
+the process for ensuring product compliance. 
+3. Physical Layer  describes the characteristics of the physical medium and the method for 
+bit-level signalling. 
+4. OT/+ DataLink Layer  describes the composition of OpenTherm/plus frames and allowable 
+conversation formats. 
+5. OT/+ Application Layer  defines data objects and the mechanisms for transfer of application data 
+between the boiler and room controllers. 
+6. OT/- Encoding/Application data  describes the special mechanisms for transferring data in the 
+OpenTherm/Lite system. 
+Note regarding v2.1 of this specification: The new version of this spec defines more mandatory data-ids than 
+the versions 1.x. and 2.0 This important difference means that devices which are compatible with v1.x or 2.0, 
+may not be compatible with v2.1. However backward compatibility at a functional level should not be affected. 
+1.4  Nomenclature & Abbreviations 
+OT/+  OpenTherm/plus 
+OT/-  OpenTherm/Lite 
+OSI/RM  The OSI 7-layer protocol reference model. 
+PWM  Pulse-width modulation 
+Room Unit  The device which calculates the “demand” in the system, which is communicated to the 
+Boiler Unit. The use of the term room is not intended to be literally restrictive but is used for 
+convenience. 
+Boiler Unit  The device which receives the “demand” from the room unit and typically is responsible for 
+providing energy to satisfy that demand. The use of the term boiler is not intended to be 
+literally restrictive but is used for convenience. 
+AL  Application Layer 
+DLL  Data-Link Layer 
+PL  Physical Layer 
+TSP  Transparent Slave Parameter 
+RBP  Remote Boiler Parameter 
+CH  Central Heating 
+DHW  Domestic Hot Water 
+OEM  Original Equipment Manufacturer 
+OTC  Outside Temperature Compensation 
+FHB  Fault History Buffer 
+ 
+OpenThermÔ Protocol Specification v2.2    System Overview 
+Ó1996,98,,’00 The OpenTherm Association    Page 8 
+2.  System Overview 
+2.1  System Architecture and Application Overview 
+OpenTherm is a point-to-point communication system and connects boilers with room controllers, therefore it 
+is not possible to connect several boilers or room controllers in the manner of bus-based systems. 
+OpenTherm assumes that the room controller is calculating a heating demand signal in the form of a water 
+temperature Control Setpoint based on room temperature error (or other control form, e.g. OTC) which it 
+needs to transmit to the boiler so that the it can control the output of the boiler. The boiler in turn can transmit 
+fault and system information to the room controller for display or diagnostics. A large number of data items 
+are defined in the OT/+ Application Layer Protocol, covering these and many other pieces of system data. 
+ 
+OpenTherm
+Boiler Room Controller
+ 
+2.2  Provision for Future Architectures/Expansion 
+The OpenTherm communication system is designed to allow for future expansion at the application layer by 
+provision of reserved data-ids and at the data-link layer by the use of reserved (spare) bits within the frame. 
+  In 
+order 
+to 
+address 
+applications 
+which 
+would 
+normally 
+require 
+a
+ 
+bus-based 
+communications 
+system, 
+it 
+is 
+conceived that intermediate gateways / interface devices would manage multiple OpenTherm 
+communications lines. In the example below, the interface device acts as a “virtual boiler” to the room 
+controller and acts as a “virtual room unit” to the boiler. In this way, other devices can be addressed while 
+maintaining the basic point-to-point approach.  
+ 
+OpenTherm
+Boiler Room Controller
+OpenTherm
+Interface Device
+Other interfaces
+ 
+  
+OpenThermÔ Protocol Specification v2.2    System Overview 
+Ó1996,98,,’00 The OpenTherm Association    Page 9 
+All future revisions of the OpenTherm Protocol Specification must be approved by the Members of The 
+OpenTherm Association. 
+2.3  Product Compliance and Marking 
+All products marked with the OpenTherm logo must comply with the requirements of this document. The 
+OpenTherm logo, trademark and the protocol can only be used with the permission of The OpenTherm 
+Association. The OpenTherm Association is responsible for compliance testing procedures and licensing. 
+ 
+· A boiler or room controller can be marked with the OpenTherm logo if it conforms to the specification 
+contained herein for OT/+. 
+· A boiler or room controller can not be marked with the OpenTherm logo if it only conforms to the 
+specification contained herein for OT/-. 
+ 
+When a room unit which can operate both in OT/+ and OT/- modes is connected to a boiler controller, some 
+configuration needs to take place to determine which protocol to use. This configuration should be achieved 
+automatically as follows : 
+ 
+On power-up or after the physical connection is made, the room unit tries to communicate using OT/+ 
+messages. If the boiler controller does not respond to one of these messages after 20 seconds, then the 
+room unit switches to using OT/- signalling. 
+ 
+An OT/+ boiler controller must start communications within this 20 second period or future OT/+ 
+communications will not be possible unless the room unit is reset or re-connected. 
+ 
+The state diagram below illustrates the OT/+ to OT/- detection in the master. 
+ 
+Room stat
+OT+/OTOT-
+Room stat
+OTOT+/
+OTOT+
+Room stat
+OT+
+Not OT-marked Not OT-marked
+OpenThermÔ Protocol Specification v2.2    System Overview 
+Ó1996,98,,’00 The OpenTherm Association    Page 10 
+1.
+TRYING OT/+
+COMMUNICATION
+4. COMMUNICATIONS
+FAULT
+3.
+OT/+
+MODE
+2.
+OT/-
+MODE
+Valid response
+received.
+No valid response
+for 1 min.
+Valid response
+received.
+No valid response
+for 20 sec.
+ 
+2.4  Protocol Reference Model 
+In order to describe the OpenTherm system, it is split up into an layered architecture based on the OSI 
+Reference Model. The OSI/RM is an abstract description  of inter-process data communication. It provides a 
+standard architecture model that constitutes the framework for the development of standard protocols.  The 
+OSI/RM defines the functions of each of 7 defined layers and the services each layer provides to the layers 
+above and below it. OpenTherm is only described in terms of the functions of the layers. Inter-layer 
+communication is considered an implementation issue. The diagram below shows the  OpenTherm 
+Reference Model. 
+Physical Layer
+OT/+
+Data-Link Layer
+OT/+
+Application Layer
+OT/+ Encoding OT/- Encoding
+OT/-
+Application Data
+Support
+ 
+ 
+OpenThermÔ Protocol Specification v2.2    System Overview 
+Ó1996,98,,’00 The OpenTherm Association    Page 11 
+The Application Layer is responsible for transfer of application data between the application software in the 
+boiler and room controllers. It defines data-classes, data-id numbers and format of data-values for 
+transmission. It also specifies the minimum AL support for all OpenTherm-compatible devices. 
+ 
+The Data-Link Layer is responsible for building the complete frame incorporating the AL data-id and value 
+and calculating the error-check code. It defines message types and conversation formats and performs errorchecking
+ on a received frame. It regulates the flow of information on the line. 
+ 
+The Physical Layer defines the electrical  and mechanical characteristics of the medium and the mechanism 
+for transmission of a bit, including bit-level encoding. It also performs bit-level error checking on an incoming 
+frame(OT/+) 
+OpenThermÔ Protocol Specification v2.2    Physical Layer 
+Ó1996,’98,’99,’00 The OpenTherm Association    Page 12 
+3.  Physical Layer 
+3.1  Medium Definition- Characteristics of the Transmission Line 
+Number of Wires    :  2 
+Wiring type    :  untwisted pair * 
+Maximum line length    :  50 metres 
+Maximum cable resistance    :  2 * 5 Ohms 
+Polarity of connections    :  Polarity-free, i.e. interchangeable. 
+ 
+* In electrically noisy environments it may be necessary to use twisted pair or screened cable. 
+3.2  Signal Transmission Definition 
+The system operates by sending current signals from the boiler unit to the room unit and voltage signals in 
+the reverse direction.  
+ 
+The physical idle state of the line is a low-power consumption state i.e. low current and low voltage. Note that 
+all specifications should be fulfilled within the complete temperature range in which the device is in use. 
+ 
+Summary of allowable line signal conditions : 
+OpenTherm Plus System
+5
+7 15 18
+9
+17
+23
+Line Voltage
+Line
+Current
+OpenTherm Lite System
+5
+7 15 18
+9
+17
+23
+Line Voltage
+Line
+Current
+ 
+OpenThermÔ Protocol Specification v2.2    Physical Layer 
+Ó1996,’98,’99,’00 The OpenTherm Association    Page 13 
+3.2.1  Transmitted Signal - Boiler Unit to Room Unit 
+3.2.1.1  Static Characteristics - Amplitude 
+Ilow
+Ihigh
+Time
+Current
+ 
+Current signal High level   Ihigh  :  17 .. 23 mA 
+Current signal Low level  Ilow  :  5 .. 9 mA   (idle state) 
+Maximum open-circuit voltage    :  42 Vdc 
+ 
+Current signal specifications to be maintained when voltage = Vlow for OT/+ devices. 
+Current signal specifications to be maintained when voltage = Vlow or Vhigh for OT/- devices. This ensures that 
+an OT/- slave can signal a lock-out signal independent of the master signalling.) 
+3.2.1.2  Dynamic Characteristics 
+90%
+10%
+Time
+Current
+tr tf
+ 
+Requirement for Room Unit / Master 
+Current signal rise time  tr  :  50μs max,  (typical 20μs) 
+Current signal fall time  tf  :  50μs max,  (typical 20μs) 
+3.2.1.3  Receiver Thresholds 
+In order to set satisfactory signal-to-noise ratios, the receiver (room unit) should recognise a level change as 
+significant at a threshold point within the following limits : 
+ 
+Current receive threshold  Ircv  :  11.5 .. 14.5 mA, nominal 13 mA 
+OpenThermÔ Protocol Specification v2.2    Physical Layer 
+Ó1996,’98,’99,’00 The OpenTherm Association    Page 14 
+3.2.2  Transmitted Signal - Room Unit to Boiler Unit 
+3.2.2.1  Static Characteristics - Amplitude 
+Vhigh
+Vlow
+Time
+Voltage
+ 
+Voltage signal High level   Vhigh  :  15 .. 18 V. 
+Voltage signal Low level  Vlow  :  7 V. max.  (idle state) 
+Voltage signal specifications to be maintained when current = Ilow. 
+3.2.2.2  Dynamic Characteristics 
+90%
+10%
+Time
+Voltage
+tr tf
+ 
+Requirement for Boiler Unit / Slave 
+Voltage signal rise time  tr  :  50μs max,  (typical 20μs) 
+Voltage signal fall time  tf  :  50μs max,  (typical 20μs) 
+3.2.2.3  Receiver Thresholds 
+In order to set satisfactory signal-to-noise ratios, the receiver (boiler unit) should recognise a level change as 
+significant at a threshold point within the following limits : 
+ 
+Voltage receive threshold  Vrcv  :  9.5 .. 12.5 V.  nominal 11 V. 
+OpenThermÔ Protocol Specification v2.2    Physical Layer 
+Ó1996,’98,’99,’00 The OpenTherm Association    Page 15 
+3.3  Power Feeding 
+It is the intention that OpenTherm provides suitable power from the boiler unit to the room unit such that no 
+additional power connection or use of batteries is required for the room unit. 
+3.3.1  Options 
+The options for supplying power to an OpenTherm room unit are : 
+  i)   line 
+(
+OpenTherm-supplied) 
+power 
+ii)  local supply (mains, batteries or other independent power source) 
+ 
+Any OpenTherm room unit is permitted to use line-power (provided that its requirements are met by the 
+available current and voltage), or are free to exercise option (ii) above. 
+3.3.2  Power-Feed Characteristics 
+3.3.2.1  Room Unit Current 
+Guaranteed current available from the line is the minimum allowable idle signalling current (5 mA). This 
+includes the current necessary to operate the regulator which develops the supply voltage in the room unit. 
+ 
+Room unit current consumption :  5 mA max. 
+3.3.2.2  Room Unit Voltage 
+The minimum voltage available to supply the room unit circuitry is a function of the implementation of the 
+room unit communications interface. It is directly related to the Idle Line voltage and to the voltage drops 
+associated with the polarity management circuitry and the voltage signalling circuit in idle state. 
+As a guide, a nominal voltage of 3.3V is achievable with a low cost implementation of the interface. 
+3.3.2.3  Connection polarity 
+The room unit shall provide the functionality to operate regardless of polarity of the line signal. 
+3.3.2.4  Galvanic isolation 
+The boiler interface shall provide safety isolation from the mains power line (ref. EN60730-1). 
+3.4  OpenTherm/plus Bit-Level Signalling 
+3.4.1  Bit Encoding Method 
+Bit encoding method    :  Manchester / Bi-phase-L 
+Bit value ‘1’    :  active-to-idle transition 
+Bit value ‘0’    :  idle-to-active transition 
+ 
+OpenThermÔ Protocol Specification v2.2    Physical Layer 
+Ó1996,’98,’99,’00 The OpenTherm Association    Page 16 
+Active
+Idle
+Bit value = ‘’ Bit value = ‘’
+ 
+ 
+Manchester encoding is a self-clocking code giving the advantage of bit-synchronisation since there is always 
+at least one transition in the middle of the bit-interval. It also has a fixed average d.c. component over the 
+frame of half the idle and active levels which allows greater predictability of power supply requirements, and 
+additionally the absence of an expected transition can be used to detect errors. 
+  
+Example 
+    1        0        0         1        1         1         0        1
+ 
+3.4.2  Bit Rate and Timing 
+Bit rate    :  1000 bits/sec nominal 
+Period between mid-bit transitions  :  900μs .. 1150μs  (nominal 1ms) 
+ 
+Timing should be reset on each transition so that any timing errors do not accumulate 
+ 
+Previous Bit Data Bit Next Bit
+1ms -10%+15%
+next
+bit transition
+previous bit transition
+bit transition
+acceptable window for transition
+μs μs
+Bit period = 1ms nominal
+μs nominal
+ 
+OpenThermÔ Protocol Specification v2.2    Physical Layer 
+Ó1996,’98,’99,’00 The OpenTherm Association    Page 17 
+3.4.3  Bit-level Error Checking 
+The primary error-checking method in OpenTherm is provided through the Manchester encoding. 
+Manchester validity should be checked by the receiver and the data frame rejected if an error is detected. 
+3.5  Special Installation Short-Circuit Feature 
+The boiler unit must support an important installation feature which allows the terminals at the boiler to be 
+short-circuited to simulate a heat demand such as can be done with existing on/off boilers. The boiler unit 
+should interpret the short-circuit as a heat demand within15 secs of the short-circuit being applied. This must 
+be supported by both OT/+ and OT/- boilers.  
+  It 
+is 
+allowable 
+that 
+this 
+can 
+implemented 
+by 
+a
+ 
+software-detection 
+method. 
+The 
+software 
+short-circuit 
+condition 
+is defined as a low-voltage state (Vlow) with no valid communications frame for at least 5 seconds. 
+ 
+The state diagram below illustrates this. 
+ 
+2.
+SHORT-CIRCUIT
+STATE
+1.
+COMMUNICATIONS
+ACTIVE
+No valid frame
+received for 5..15
+secs.
+Valid communications
+re-started.
+ 
+  
+OpenThermÔ Protocol Specification v2.2    OT/+ DataLink Layer 
+Ó1996,98,’99 The OpenTherm Association    Page 18 
+4.  OpenTherm/plus DataLink Layer Protocol 
+4.1  Overview 
+The data-link layer is responsible for the following functions : 
+ 
+· builds the complete frame from the information passed to it from the application layer. 
+· performs error-checking on an incoming frame. 
+· defines message types and allowable conversation exchanges. 
+4.2  Frame Format 
+Data is transmitted in 32 bit frames, with an added start bit (‘1’) at the beginning and stop bit (‘1’) at the end. 
+ 
+The frame format is identical for both directions, being laid out as follows: 
+ 
+  Start bit (1)        Stop bit (1) 
+  |   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<           32-BIT FRAME           >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  | 
+  |   <------------BYTE 1 --------------->  <------------BYTE 2 ---------------> <------------BYTE 3 ---------------> <------------BYTE 4 --------------->  | 
+  |  Parity bit (1)        | 
+  |  |  Message Type (3)      | 
+  |  |  |        | 
+             
+1  P  MSG-TYPE  SPARE(4)  DATA-ID(8)  DATA-VALUE(16)  1 
+     MSB             LSB  MSB                       LSB  MSB                                                              LSB   MSB                                                                                                                                            LSB   
+ 
+Elements of the frame structure are described  in the following sections. 
+4.2.1  Parity Bit - P 
+The parity bit should be set or cleared such the total number of ‘1’ bits in the entire 32 bits of the message is 
+even. 
+4.2.2  Message Type - MSG-TYPE 
+The message type determines the contents and meaning of the frame. Seven of the eight possible values for 
+the message type are defined. 
+ 
+OpenThermÔ Protocol Specification v2.2    OT/+ DataLink Layer 
+Ó1996,98,’99 The OpenTherm Association    Page 19 
+Master-to-Slave Messages    Slave-to-Master Messages 
+Value  Message type    Value  Message type 
+000  READ-DATA    100  READ-ACK 
+001  WRITE-DATA    101  WRITE-ACK 
+010  INVALID-DATA    110  DATA-INVALID 
+011  -reserved-    111  UNKNOWN-DATAID 
+4.2.3  Spare Data - SPARE 
+These bits are unused in this release of the protocol. They should always be ‘0’. 
+4.2.4  Data Item Identifier - DATA-ID 
+The DATA-ID is an 8 bit value which uniquely identifies the data item or items being transmitted. A full list of 
+data ID’s and corresponding data items are listed in the OT/+ Application Layer section. 
+4.2.5  Data Item Value - DATA-VALUE 
+This contains the 16 bit value of the data item corresponding to the frame’s data identifier. In some 
+messages, the data-value is composed of two separate items, each of 8-bits in length. These will be denoted 
+as DATA-BYTE1 and DATA-BYTE2. 
+4.3  Conversation Format 
+4.3.1  Overview 
+OpenTherm data transfer consists of a series of ‘conversations’ between the devices controlled by a strict 
+master/slave relationship. OpenTherm requires that the control device, e.g. a room unit, is always the master 
+and the control plant, e.g. a boiler, is always the slave. 
+  In 
+all 
+cases 
+the 
+master 
+initiates 
+a
+ 
+conversation 
+by 
+sending 
+a
+ 
+single 
+frame. 
+The 
+slave 
+is 
+expected 
+to 
+respond 
+with a single frame reply within a defined period of 20ms to 800ms from the end of the master transmission. 
+The master unit must wait 100ms from the end of a previous conversation before initiating a new 
+conversation. The master must communicate at least every 1 sec (+15% tolerance). 
+ 
+This timing is shown below 
+slave
+master
+min: 20ms
+max: 800ms
+min: 100ms
+Maximum : 1.15 sec
+ 
+OpenThermÔ Protocol Specification v2.2    OT/+ DataLink Layer 
+Ó1996,98,’99 The OpenTherm Association    Page 20 
+A conversation is limited to a single exchange of frames. Three types of conversation are possible, listed in 
+the next section. 
+4.3.2  Message Notation 
+In the rest of this section and in the OT/+ Application Layer Protocol section, a function-style notation is used 
+to describe the various messages in order to aide explanation. 
+ 
+<msg-type> ( id=<data-id>, <data-value>) 
+represents a message with msg-type=<msg-type>, data-id =<data-id> and data-value = <data-value>. 
+ 
+<msg-type> ( id=<data-id>, <data-byte1>, <data-byte2>) 
+represents a message with msg-type=<msg-type>, data-id =<data-id> and data-value = <databyte1>&<
+data-byte2>. 
+ 
+e.g.  READ-DATA (id=1, ControlSetpoint-value) 
+READ-DATA (id=11, TSP-index, 00) 
+ 
+4.3.3  Default Data-Values 
+For some messages, no “real” data is being sent. e.g. in a normal Read-Data request. The data-value will be 
+set to a default value of zero. i.e. two bytes of 0x00 and 0x00. 
+4.4  Conversation Details 
+4.4.1  Read-Data Request 
+READ-DATA (DATA-ID, DATA-VALUE) 
+ 
+The master is requesting a data value, specified by the data identifier, from the slave. The message type sent 
+by the master is ‘Read-Data’, as shown above. Typically no data-value is sent and a value of 0x0000 will be 
+used, but in some circumstances the master may, although it is requesting a value from the slave, also send 
+a value to the slave with this message e.g. for data-verification. This is defined by the OT/+ Application Layer 
+protocol. 
+ 
+The slave should make one of the three possible responses listed below:  
+ 
+· READ-ACK (DATA-ID, DATA-VALUE,) 
+If the data ID is recognised by the slave and the data requested is available and valid. The value of the data 
+item is returned.
+· DATA-INVALID (DATA-ID, DATA-VALUE) 
+If the data ID is recognised by the slave but the data requested is not available or invalid. DATA-VALUE can be 
+0x0000 in this case.
+· UNKNOWN-DATAID (DATA-ID, DATA-VALUE) 
+If the slave does not recognise the data identifier. DATA-VALUE can be 0x0000 in this case.
+OpenThermÔ Protocol Specification v2.2    OT/+ DataLink Layer 
+Ó1996,98,’99 The OpenTherm Association    Page 21 
+4.4.2  Write-Data Request 
+WRITE-DATA (DATA-ID, DATA-VALUE) 
+ 
+The master is writing a data value, specified by the data identifier, to the slave. The message type sent by the 
+master is ‘Write-Data’, as shown above. 
+ 
+The slave should make one of the three possible responses listed below: (Note that DATA-VALUE may be 
+modified by the slave in some circumstances.) 
+ 
+· WRITE-ACK (DATA-ID, DATA-VALUE)
+If the data ID is recognised by the slave and the data sent is valid.
+· DATA-INVALID (DATA-ID, DATA-VALUE)
+If the data ID is recognised by the slave but the data sent is invalid.
+· UNKNOWN-DATAID (DATA-ID, DATA-VALUE)
+If the slave does not recognise or does not support the data identifier.
+4.4.3  Writing Invalid Data 
+  INVALID-DATA 
+(
+DATA-ID, 
+DATA-VALUE) 
+ 
+A data item to be sent by the master may be invalid in a particular application, but may still require to be sent. 
+In this case the master may use the message type ‘data invalid’. 
+ 
+The slave should make one of the two possible responses listed below: (Note that DATA-VALUE may be 
+modified by the slave in some circumstances.) 
+ 
+· DATA-INVALID (DATA-ID, DATA-VALUE)
+If the data ID is recognised by the slave.
+ 
+· UNKNOWN-DATAID (DATA-ID, DATA-VALUE)
+If the slave does not recognise or does not support the data identifier.
+4.5  Frame Error Handling 
+In all cases of errors being detected in the incoming frame, the partial frame is rejected and the conversation 
+should be terminated. No errors are treated as recoverable. 
+  If 
+the 
+slave 
+does 
+not 
+respond, 
+then 
+the 
+master 
+should 
+note 
+that 
+the 
+conversation 
+is 
+incomplete. 
+  If 
+a
+ 
+conversation 
+is 
+terminated 
+the 
+master 
+should 
+re-attempt 
+the 
+same 
+conversation 
+at 
+the 
+next 
+appropriate 
+scheduled time for communications. 
+ 
+OpenThermÔ Protocol Specification v2.2    OT/+ Application Layer 
+Ó1996,’98,’99 The OpenTherm Association    Page 22 
+5.  OpenTherm/plus Application Layer Protocol 
+5.1  Overview 
+The Application Layer of the OpenTherm protocol is divided into an Open-Area of data-item id’s and a Test & 
+Diagnostic area for Member use. Id’s 0 .. 127 are reserved for OpenTherm pre-defined information, while id’s 
+from 128 .. 255 can be used by manufacturers (members of the association) for test & diagnostic purposes 
+only. The MemberID codes of the master and slave can be used to handshake between two compatible 
+devices and enable the use of the Test & Diagnostic-Area data-items. MemberID codes are assigned and 
+managed by The OpenTherm Association. 
+ 
+There are seven classes of information defined in the Application Layer : 
+ 
+Class 1.  Control and Status Information 
+This class contains basic control information from the master and status information exchange 
+(including fault status) and incorporates all the mandatory OpenTherm data. 
+Class 2.  Configuration Information 
+Information relating to the configuration of the master and slave and Member identification. 
+Class 3.  Remote Commands 
+This class allows for commands to be passed from the master to the slave. 
+Class 4.  Sensor and Informational Data 
+This class covers typically sensor temperatures, pressures etc. 
+Class 5.  Remote Boiler Parameters 
+These are parameters of the slave device which may be read or set by the master and are specific 
+to boiler applications. 
+Class 6.  Transparent Slave Parameters 
+This class allows slave parameters to be read or set by the master without knowledge of their 
+physical or application-specific meaning. 
+Class 7.  Fault History Information 
+This data allows historical fault information to be passed from the slave to the master. 
+Class 8.  Control of Special Applications 
+This class defines data id’s to be exchanged between the master and a application specific slave. 
+  
+Special abbreviations and data-types are used in the Application Layer Protocol section and are defined 
+below : 
+LB  low-byte of the 16-bit data field. 
+HB  high-byte of the 16-bit data field. 
+S>M  information flow from slave to master 
+M>S  information flow from master to slave 
+flag8  byte composed of 8 single-bit flags 
+u8  unsigned 8-bit integer 0 .. 255 
+s8  signed 8-bit integer -128 .. 127 (two’s compliment) 
+f8.8  signed fixed point value : 1 sign bit, 7 integer bit, 8 fractional bits (two’s compliment ie. the 
+LSB of the 16bit binary number represents 1/256th of a unit). 
+u16  unsigned 16-bit integer 0..65535 
+s16  signed 16-bit integer -32768..32767 
+Example :  A temperature of 21.5°C in f8.8 format is represented by the 2-byte value 1580 hex 
+(1580hex = 5504dec, dividing by 256 gives 21.5) 
+A temperature of -5.25°C in f8.8 format is represented by the 2-byte value FAC0 hex 
+(FAC0hex = - (10000hex-FACOhex) = - 0540hex = - 1344dec, dividing by 256 gives -5.25) 
+ 
+OpenThermÔ Protocol Specification v2.2    OT/+ Application Layer 
+Ó1996,’98,’99 The OpenTherm Association    Page 23 
+· All data-item ID’s are in decimal unless denoted otherwise. 
+· “00” is used to represent the dummy data byte as defined in the Data-Link Layer and is transmitted when 
+valid data-values are not available or appropriate. 
+· For future compatibility, a bit or byte is marked as unused or reserved, should be set to 0 (zero) by the 
+transmitter; however the receiver should ignore these bits/bytes, since they may be set in future versions 
+of the  protocol. 
+· ‘R’ and ‘W’ under the column labelled ‘Msg’, indicate whether the data object is supported with a Read or 
+a Write command. 
+5.2  Mandatory OT/+ Application-Layer Support 
+It is required that OpenTherm-compliant devices support the following data items.  
+ I
+D  Description  Master  Slave 
+0  Master and slave status flags  · Must sent message with 
+READ_DATA  
+· Must support all bits in master status 
+· Must respond with READ_ACK 
+· Must support all bits in slave status 
+1  Control setpoint  
+ie CH water temp. setpoint 
+· Must sent message with 
+WRITE_DATA or INVALID_DATA 
+(not recommended) 
+· Must respond with WRITE_ACK 
+3  Slave configuration flags  · Must sent message with 
+READ_DATA (at least at start up) 
+· Must respond with READ_ACK 
+· Must support all slave configuration 
+flags 
+14  Maximum relative modulation 
+level setting 
+· Not mandatory 
+· Recommended for use in on-off 
+control mode. 
+· Must respond with WRITE_ACK 
+17  Relative modulation level  · Not mandatory  · Must respond with READ_ACK or 
+DATA_INVALID 
+25  Boiler temperature  · Not mandatory  · Must respond with READ_ACK or 
+DATA_INVALID (for example if 
+sensor fault) 
+ 
+The slave can respond to all other read/write requests, if not supported, with an UNKNOWN-DATAID reply. 
+Master units (typically room controllers) should be designed to act in a manner consistent with this rule.  
+OpenThermÔ Protocol Specification v2.2    OT/+ Application Layer 
+Ó1996,’98,’99 The OpenTherm Association    Page 24 
+ 
+5.3  Data Classes 
+5.3.1  Class 1 : Control and Status Information 
+This group of data-items contains important control and status information relating to the slave and master. 
+The slave status contains a mandatory fault-indication flag and there is an optional application-specific set of 
+fault flags which relate to specific faults in boiler-related applications, and an OEM fault code whose meaning 
+is unknown to the master but can be used for display purposes. 
+ 
+ID  Msg  Name  Type  Range  Description 
+0  R   -  HB: Master status  flag8    bit: description  [ clear/0, set/1] 
+0:  CH enable  [ CH is disabled, CH is enabled] 
+1:  DHW enable  [ DHW is disabled, DHW is enabled] 
+2:  Cooling enable  [ Cooling is disabled, Cooling is  
+enabled] 
+3:  OTC active  [OTC not active, OTC is active] 
+4:  CH2 enable  [CH2 is disabled, CH2 is enabled] 
+5:  reserved 
+6:  reserved 
+7:  reserved 
+    LB: Slave status  flag8    bit: description  [ clear/0, set/1] 
+0:  fault indication  [ no fault, fault ] 
+1:  CH mode  [CH not active, CH active] 
+2:  DHW mode  [ DHW not active, DHW active] 
+3:  Flame status  [ flame off, flame on ] 
+4:  Cooling status  [ cooling mode not active, cooling 
+mode active ] 
+5:  CH2 mode  [CH2 not active, CH2 active] 
+6:  diagnostic indication [no diagnostics, diagnostic event] 
+7:  reserved 
+1   -  W  Control setpoint  f8.8  0..100  degrees C 
+(see notes below) 
+5  R   -  HB: Application-specific 
+fault flags 
+flag8    bit: description  [ clear/0, set/1] 
+0:  Service request  [service not req’d, service required] 
+1:  Lockout-reset  [ remote reset disabled, rr enabled] 
+2:  Low water press [no WP fault, water pressure fault] 
+3:  Gas/flame fault  [ no G/F fault, gas/flame fault ] 
+4:  Air press fault  [ no AP fault, air pressure fault ] 
+5:  Water over-temp [ no OvT fault, over-temperat. Fault] 
+6:  reserved 
+7:  reserved 
+    LB: OEM fault code  u8  0..255  An OEM-specific fault/error code 
+8   -  W  Control setpoint 2 
+(TsetCH2) 
+f8.8  0..100  degrees C 
+ 
+115  R -  OEM diagnostic code   u16  0..65535  An OEM-specific diagnostic/service code 
+ 
+Note :  The master decides the actual range over which the control setpoint is defined. The default range is 
+assumed to be 0 to 100. 
+ 
+There is only one control value defined - data-id=01, the control setpoint. The control setpoint ranges 
+between a minimum of 0 and maximum of 100. It represents directly a temperature setpoint for the supply 
+from the boiler. The slave does not need to know how the master has calculated the control setpoint, e.g. 
+whether it used room control or OTC, it only needs to control to the value. Likewise, the master does not 
+need to know how the slave is controlling the supply. 
+ 
+The CHenable bit has priority over the Control Setpoint. The master can indicate that no CH demand is 
+required by putting the CHenable bit  = 0 (ie CH is disabled), even if the Control Setpoint is non-zero. 
+OpenThermÔ Protocol Specification v2.2    OT/+ Application Layer 
+Ó1996,’98,’99 The OpenTherm Association    Page 25 
+ 
+The status exchange is a special form of conversation which should be initiated by the master by sending a 
+READ-DATA(id=0,MasterStatus,00) message. The slave must respond with READ-ACK(id=0,MasterStatus, 
+SlaveStatus) to send back the Slave Status information in the same single conversation. Since it is 
+mandatory to support this data object, the slave cannot respond with DATA-INVALID or UNKNOWN-DATAID. A 
+WRITE-DATA(id=0,…) from the master should not be used. 
+5.3.2  Class 2 : Configuration Information  
+This group of data-items defines configuration information on both the slave and master sides. Each has a 
+group of configuration flags (8 bits) and an MemberID code (1 byte). A valid Read Slave Configuration and 
+Write Master Configuration message exchange is recommended before control and status information is 
+transmitted.  
+ 
+ID  Msg  Name  Type  Range  Description 
+2  -  W  HB: Master configuration  flag8    bit: description  [ clear/0, set/1] 
+0:  reserved 
+1:  reserved 
+2:  reserved 
+3:  reserved 
+4:  reserved 
+5:  reserved 
+6:  reserved 
+7:  reserved 
+    LB: Master MemberID code  u8  0..255  MemberID code of the master 
+3  R   -  HB: Slave configuration  flag8    bit: description  [ clear/0, set/1] 
+0:  DHW present  [ dhw not present, dhw is present ] 
+1:  Control type  [ modulating, on/off ] 
+2:  Cooling config  [ cooling not supported,  
+    cooling supported] 
+3:  DHW config  [instantaneous or not-specified, 
+    storage tank] 
+4:  Master low-off&pump control function [allowed, 
+    not allowed] 
+5:  CH2 present  [CH2 not present, CH2 present] 
+6:  reserved 
+7:  reserved 
+    LB: Slave MemberID code  u8  0..255  MemberID code of the slave 
+124  -  W  OpenTherm version Master  f8.8  0..127  The implemented version of the OpenTherm 
+Protocol Specification in the master. 
+125  R -  OpenTherm version Slave  f8.8  0..127  The implemented version of the OpenTherm 
+Protocol Specification in the slave. 
+126  -  W  Master product version 
+number and type 
+HB : product type 
+LB : product version 
+   u8 
+u8 
+  
+0..255 
+0..255 
+  
+The master device product version number 
+and type as defined by the manufacturer. 
+127  R  -    Slave product version 
+number and type 
+HB : product type 
+LB : product version 
+  
+u8 
+u8 
+  
+0..255 
+0..255 
+  
+The slave device product version number and 
+type as defined by the manufacturer. 
+ 
+Note 1  An MemberID code of zero signifies a customer non-specific device. 
+Note 2  The product version number/type should be used in conjunction with the “Member ID code”, which 
+identifies the manufacturer of the device. 
+5.3.3  Class 3 : Remote Commands 
+This class of data represents commands sent by the master to the slave. There is a single data-id for a 
+command “packet”, with the Command-Code embedded in the high-byte of the data-value field. 
+ 
+OpenThermÔ Protocol Specification v2.2    OT/+ Application Layer 
+Ó1996,’98,’99 The OpenTherm Association    Page 26 
+ID  Msg  Name  Type  Range  Description 
+4   -  W  HB: Command-Code  u8  0..255  Command code 
+0   :- Reserved - 
+1  : “BLOR”= Boiler Lock-out  Reset 
+                  command 
+2  : “CHWF”=CH water filling 
+3..255  : -Reserved - for future use 
+  R   -  LB: Cmd-Response-Code  u8  0..255  Response to the command 
+0..127  : Command failed. 
+128..255  : Command completed. 
+  
+Example 
+ 
+The master will send a WRITE-DATA(id=4,Cmd=BLOR,00) message. 
+The slave response will be either : 
+1. WRITE-ACK (id=4,Cmd=BLOR,Cmd-Resp)  The command was accepted; Cmd-Resp indicates 
+completion status. 
+2. DATA-INVALID (id=4,BLOR,00)  The command was not recognised, Cmd-reponse=00; 
+3. UNKNOWN-DATAID (id=4, BLOR,00)  Remote Commands not supported, Cmd-response=00;. 
+ 
+5.3.4  Class 4 : Sensor and Informational Data 
+This group of data-items contains sensor data (temperatures, pressures etc.) and other informational data 
+from one unit to the other. 
+ 
+ID  Msg  Name  Type  Range  Description 
+16   -  W  Room Setpoint  f8.8  -40..127  Current room temperature setpoint (°C) 
+17  R   -  Relative Modulation Level  f8.8  0..100  Percent modulation between min and max 
+modulation levels. i.e. 
+0%  = Minimum modulation level 
+100%  = Maximum modulation level 
+18  R   -  CH water pressure  f8.8  0..5  Water pressure of the boiler CH circuit (bar) 
+19  R   -  DHW flow rate  f8.8  0..16  Water flow rate through the DHW circuit (l/min) 
+20  R W  Day of Week & Time of Day 
+HB : bits 7,6,5 : day of week 
+        bits 4,3,2,1,0 : hours 
+LB : minutes 
+ 
+special 
+ 
+u8 
+ 
+1..7 
+0..23 
+0..59 
+ 
+1=Monday, etc…. (0=no DoW info available) 
+ 
+21  R W  Date 
+HB : Month 
+LB : Day of Month 
+ 
+u8 
+u8 
+ 
+1..12 
+1..31 
+ 
+1=January, etc 
+22  R W  Year  u16  0..65535  note : 1999-2099 will normally be sufficient 
+23   -  W  Room Setpoint CH2  f8.8  -40..127  Current room setpoint for 2nd CH circuit (°C) 
+24   -  W  Room temperature  f8.8  -40..127  Current sensed room temperature (°C) 
+25  R   -  Boiler water temp.  f8.8  -40..127  Flow water temperature from boiler (°C) 
+26  R   -  DHW temperature  f8.8  -40..127  Domestic hot water temperature (°C) 
+27  R   -  Outside temperature  f8.8  -40..127  Outside air temperature (°C) 
+28  R   -  Return water temperature  f8.8  -40..127  Return water temperature to boiler (°C) 
+29  R   -  Solar storage temperature  f8.8  -40..127  Solar storage temperature (°C) 
+30  R   -  Solar collector temperature  s16  -40..250  Solar collector temperature (°C) 
+31  R   -  Flow temperature CH2  f8.8  -40..127  Flow water temperature of the second central 
+heating circuit. 
+OpenThermÔ Protocol Specification v2.2    OT/+ Application Layer 
+Ó1996,’98,’99 The OpenTherm Association    Page 27 
+heating circuit. 
+ID  Msg  Name  Type  Range  Description 
+32  R   -  DHW2 temperature  f8.8  -40..127  Domestic hot water temperature 2 (°C) 
+33  R   -  Exhaust temperature  s16  -40..500  Exhaust temperature (°C) 
+116  R W  Burner starts  u16  0..65535  Number of starts burner. Reset by writing zero 
+is optional for slave. 
+117  R W  CH pump starts  u16  0..65535  Number of starts CH pump. Reset by writing 
+zero is optional for slave. 
+118  R W  DHW pump/valve starts  u16  0..65535  Number of starts DHW pump/valve. Reset by 
+writing zero is optional for slave. 
+119  R W  DHW burner starts  u16  0..65535  Number of starts burner in DHW mode. Reset 
+by writing zero is optional for slave. 
+120  R W  Burner operation hours  u16  0..65535  Number of hours that burner is in operation (i.e. 
+flame on). Reset by writing zero is optional for 
+slave. 
+121  R W  CH pump operation hours  u16  0..65535  Number of hours that CH pump has been 
+running. Reset by writing zero is optional for 
+slave. 
+122  R W  DHW pump/valve operation 
+hours 
+u16  0..65535  Number of hours that DHW pump has been 
+running or DHW valve has been opened. Reset 
+by writing zero is optional for slave. 
+123   R W  DHW burner operation 
+hours 
+u16  0..65535  Number of hours that burner is in operation 
+during DHW mode. Reset by writing zero is 
+optional for slave. 
+5.3.5  Class 5 : Pre-Defined Remote Boiler Parameters 
+This group of data-items defines specific parameters of the slave device (setpoints, etc.) which may be 
+available to the master device and may, or may not,  be adjusted remotely. These parameters are prespecified
+ in the protocol and are specifically related to boiler/room controller applications. There is a 
+maximum of 8 remote boiler parameters. Each remote-boiler-parameter has a upper- and lower-bound (max 
+and min values) which the master should read from the slave in order to make sure they are not set outside 
+the valid range. If the slave does not support sending the upper- and lower-bounds, the master can apply 
+default bounds as it chooses. 
+ 
+The remote-parameter transfer-enable flags indicate which remote parameters are supported by the slave. 
+The remote-parameter read/write flags indicate whether the master can only read the parameter from the 
+slave, or whether it can also modify the parameter and write it back to the slave. An Unknown Data-Id 
+response to a Read Remote-Parameter-Flags message indicates no support for remote-parameters 
+(equivalent to all transfer-enable flags equal to zero). In these flag bytes bit 0 corresponds to remote-boilerparameter
+ 1 and bit 7 to remote-boiler-parameter 8. 
+ 
+OpenThermÔ Protocol Specification v2.2    OT/+ Application Layer 
+Ó1996,’98,’99 The OpenTherm Association    Page 28 
+ID  Msg  Name  Type  Range  Description 
+6  R   -  HB: Remote-parameter 
+transfer-enable flags 
+flag8  n/a  bit: description  [ clear/0, set/1] 
+0:  DHW setpoint  [ transfer disabled, transfer enabled ] 
+1:  max CHsetpoint  [ transfer disabled, transfer enabled ] 
+2:  reserved 
+3:  reserved  
+4:  reserved 
+5:  reserved 
+6:  reserved 
+7:  reserved 
+  R   -  LB: Remote-parameter 
+read/write flags 
+flag8  n/a  bit: description  [ clear/0, set/1] 
+0:  DHW setpoint  [ read-only, read/write ] 
+1:  max CHsetpoint  [ read-only, read/write ] 
+2:  reserved 
+3:  reserved 
+4:  reserved 
+5:  reserved 
+6:  reserved 
+7:  reserved 
+  
+ID  Msg  Name  Type  Range  Description 
+48  R   -  HB: DHWsetp upp-bound  s8  0..127  Upper bound for adjustment of DHW setp (°C) 
+    LB: DHWsetp low-bound  s8  0..127  Lower bound for adjustment of DHW setp (°C) 
+49  R   -  HB: max CHsetp upp-bnd  s8  0..127  Upper bound for adjustment of maxCHsetp (°C) 
+    LB: max CHsetp low-bnd  s8  0..127  Lower bound for adjustment of maxCHsetp (°C) 
+50  -  reserved  -  -  Reserved for remote parameter 3 - upp/low bnd 
+51  -  reserved  -  -  Reserved for remote parameter 3 - upp/low bnd 
+52  -  reserved  -  -  Reserved for remote-parameter 4 - upp/low bnd 
+53  -  reserved  -  -  Reserved for remote-parameter 5 - upp/low bnd 
+54  -  reserved  -  -  Reserved for remote-parameter 6 - upp/low bnd 
+55  -  reserved  -  -  Reserved for remote-parameter 7 - upp/low bnd 
+56  R  W  DHW setpoint  f8.8  0..127  Domestic hot water temperature setpoint (°C) 
+57  R  W  max CH water setpoint  f8.8  0..127  Maximum allowable CH water setpoint (°C) 
+58  -  reserved  -  -  Reserved for remote parameter 3 
+59  -  reserved  -  -  Reserved for remote parameter 3 
+60  -  reserved  -  -  Reserved for remote-parameter 4 
+61  -  reserved  -  -  Reserved for remote-parameter 5 
+62  -  reserved  -  -  Reserved for remote-parameter 6 
+63  -  reserved  -  -  Reserved for remote-parameter 7 
+  
+5.3.6  Class 6 : Transparent Slave Parameters 
+This group of data-items defines parameters of the slave device which may (or may not) be remotely set by 
+the master device. These parameters are not pre-specified in the protocol and are “transparent” to the master 
+in the sense that it has no knowledge about their application meaning. 
+ 
+OpenThermÔ Protocol Specification v2.2    OT/+ Application Layer 
+Ó1996,’98,’99 The OpenTherm Association    Page 29 
+ID  Msg  Name  Type  Range  Description 
+10  R   -  HB: Number of TSPs  u8  0..255  Number of transparent-slave-parameter 
+supported by the slave device. 
+    LB: Not used  u8    -Reserved-  
+11  R  W  HB: TSP index no.  u8  0..255  Index number of following TSP 
+    LB: TSP value  u8  0..255  Value of above referenced TSP 
+ 
+The first data-item (id=10) allows the master to read the number of transparent-slave-parameters supported 
+by the slave. The second data-item (ID=11) allows the master to read and write individual transparent-slaveparameters
+ from/to the slave. 
+ 
+Example 
+ 
+To read a TSP, the master uses the following command: READ-DATA (id=11,TSP-index,00). 
+The slave response will be either : 
+1. READ-ACK (id=11,TSP-index,TSP-value)  Everything OK, the requested data-value is returned. 
+2. DATA-INVALID (id=11,TSP-index,00)  The TSP-index is out-of-range or undefined, 00 is returned. 
+3. UNKNOWN-DATAID (id=11, TSP-index,00)  The slave does not support transparent-slave-parameters. 
+ 
+To write a TSP, the master uses the following command: WRITE-DATA(id=11,TSP-index, TSP-value) 
+The slave response will be either : 
+1. WRITE-ACK (id=11,TSP-index,TSP-value)  Everything OK, the value is echoed back. Note however, that 
+the TSP-value may be changed by the slave if it is out-ofrange.
+ 
+2. DATA-INVALID (id=11,TSP-index,00)  The TSP-index is out-of-range or undefined, 00 is returned. 
+3. UNKNOWN-DATAID (id=11,TSP-index,00)  The slave does not support transparent-slave-parameters. 
+5.3.7  Class 7 : Fault History Data 
+This group of data-items contains information relating to the past fault condition of the slave device. 
+ 
+ID  Msg  Name  Type  Range  Description 
+12  R   -  HB: Size of Fault Buffer  u8  0..255  The size of the fault history buffer.. 
+    LB: Not used  u8    -Reserved-  
+13  R   -  HB: FHB-entry index no.  u8  0..255  Index number of following Fault Buffer entry 
+    LB: FHB-entry value  u8  0..255  Value of above referenced Fault Buffer entry 
+ 
+The first data-item (id=12) allows the master to read the size of the fault history buffer supported by the slave. 
+The second data-item (ID=13) allows the master to read individual entries from the buffer. 
+ 
+Example 
+ 
+To read an entry from the fault history buffer, the master uses the following command:  
+READ-DATA (id=13,FHB-index,00). 
+The slave response will be either : 
+1. READ-ACK (id=13,FHB-index,FHB-value)  Everything OK, the requested value is returned. 
+2. DATA-INVALID (id=13,FHB-index,00)  The FHB-index is out-of-range or undefined, 00 is returned. 
+3. UNKNOWN-DATAID (id=13, FHB-index,00)  The slave does not support a fault history buffer. 
+OpenThermÔ Protocol Specification v2.2    OT/+ Application Layer 
+Ó1996,’98,’99 The OpenTherm Association    Page 30 
+5.3.8  Class 8 : Control of Special Applications 
+5.3.8.1  Cooling Control 
+ 
+ID  Msg  Name  Type  Range  Description 
+7  -  W  Cooling control signal  f8.8  0..100%  Signal for cooling plant. 
+ 
+The cooling control signal is to be used for cooling applications. First the master should determine if the slave 
+supports cooling by reading the slave configuration. Then the master can use the cooling control signal and 
+the cooling-enable flag (status) to control the cooling plant. The status of the cooling plant can be read from 
+the slave cooling status bit. 
+5.3.8.2  Boiler Sequencer Control 
+ 
+ID  Msg  Name  Type  Range  Description 
+14  -  W  Maximum relative 
+modulation level setting 
+f8.8  0..100%  Maximum relative boiler modulation level 
+setting for sequencer and off-low&pump 
+control applications. 
+15  R  -  Maximum boiler capacity & 
+Minimum modulation level 
+HB : max. boiler capacity 
+LB : min. modulation level 
+  
+u8 
+u8 
+  
+0..255kW 
+0..100% 
+   
+expressed as a percentage of the maximum 
+capacity. 
+  
+The boiler capacity level setting is to be used for boiler sequencer applications. The control setpoint should 
+be set to maximum, and then the capacity level setting throttled back to the required value. The default value 
+in the slave device should be 100% (ie no throttling back of the capacity). The master can read the maximum 
+boiler capacity and minimum modulation levels from the slave if it supports these. 
+5.3.8.3  Remote override room setpoint 
+ 
+ID*  Msg. 
+Type  NAME  Format  Range  DESCRIPTION 
+9  R -  Remote override 
+room setpoint 
+f8.8  0..30  0= No override 
+1..30= Remote override room setpoint 
+LB: Remote 
+override function 
+flag8  0..255  bit: description  [ clear/0, set/1] 
+0:  Manual change priority [disable overruling remote 
+setpoint by manual setpoint change, enable overruling 
+remote setpoint by manual setpoint change ] 
+1:  Program change priority [disable overruling remote 
+setpoint by program setpoint change, enable overruling 
+remote setpoint by program setpoint change ] 
+2:  reserved  
+3:  reserved 
+4:  reserved 
+5:  reserved 
+6:  reserved 
+7:  reserved 
+100  R - 
+HB: reserved  u8  0  reserved 
+ 
+There are applications where it’s necessary to override  the room setpoint of the master (room-unit). 
+For instance in situations where room controls are connected to home or building controls or room controls in 
+holiday houses which are activated/controlled remotely. 
+ 
+The master can read on Data ID 9 the remote override room setpoint. A value unequal to zero is a valid 
+remote override room setpoint. A value of zero means no remote override room setpoint. ID100 defines how 
+OpenThermÔ Protocol Specification v2.2    OT/+ Application Layer 
+Ó1996,’98,’99 The OpenTherm Association    Page 31 
+the master should react while remote room setpoint is active and there is a manual setpoint change and/or a 
+program setpoint change.  
+OpenThermÔ Protocol Specification v2.2    OT/+ Application Layer 
+Ó1996,’98,’99 The OpenTherm Association    Page 32 
+ 
+5.4  Data-Id Overview Map 
+Nr.  Msg  Data Object  Type    Description 
+0  R -  Status  flag8 / flag8  Master and Slave Status flags. 
+1  - W  TSet  f8.8  Control setpoint  ie CH  water temperature setpoint (°C) 
+2  - W  M-Config / M-MemberIDcode  flag8 / u8  Master Configuration Flags /  Master MemberID Code 
+3  R -  S-Config / S-MemberIDcode  flag8 / u8  Slave Configuration Flags /  Slave MemberID Code 
+4  - W  Command  u8 / u8  Remote Command 
+5  R -  ASF-flags / OEM-fault-code  flag8 / u8  Application-specific fault flags and OEM fault code 
+6  R -  RBP-flags  flag8 / flag8  Remote boiler parameter transfer-enable & read/write flags 
+7  - W  Cooling-control  f8.8  Cooling control signal (%) 
+8  - W   TsetCH2  f8.8  Control setpoint for 2e CH circuit (°C) 
+9  R -  TrOverride  f8.8  Remote override room setpoint 
+10  R -  TSP  u8 / u8  Number of Transparent-Slave-Parameters supported by slave 
+11  R W  TSP-index / TSP-value  u8 / u8  Index number / Value of referred-to transparent slave parameter. 
+12  R -  FHB-size  u8 / u8  Size of Fault-History-Buffer supported by slave 
+13  R -  FHB-index / FHB-value  u8 / u8  Index number / Value of referred-to fault-history buffer entry. 
+14  - W  Max-rel-mod-level-setting  f8.8  Maximum relative modulation level setting (%) 
+15  R -  Max-Capacity / Min-Mod-Level  u8 / u8  Maximum boiler capacity (kW) / Minimum boiler modulation level(%) 
+16  - W  TrSet  f8.8  Room Setpoint (°C) 
+17  R -  Rel.-mod-level  f8.8  Relative Modulation Level (%) 
+18  R -  CH-pressure  f8.8  Water pressure in CH circuit  (bar) 
+19  R -  DHW-flow-rate  f8.8  Water flow rate in DHW circuit. (litres/minute) 
+20  R W  Day-Time  special / u8  Day of Week and Time of Day 
+21  R W  Date  u8 / u8  Calendar date 
+22  R W  Year  u16  Calendar year 
+23  - W  TrSetCH2  f8.8  Room Setpoint for 2nd CH circuit (°C) 
+24  - W  Tr  f8.8  Room temperature (°C) 
+25  R -  Tboiler  f8.8  Boiler flow water temperature (°C) 
+26  R -  Tdhw  f8.8  DHW temperature (°C) 
+27  R -  Toutside  f8.8  Outside temperature (°C) 
+28  R -  Tret  f8.8  Return water temperature (°C) 
+29  R -  Tstorage  f8.8  Solar storage temperature (°C) 
+30  R -  Tcollector  f8.8  Solar collector temperature (°C)  
+31  R -  TflowCH2  f8.8  Flow water temperature CH2 circuit (°C) 
+32  R -  Tdhw2  f8.8  Domestic hot water temperature 2 (°C) 
+33  R -  Texhaust  s16  Boiler exhaust temperature (°C) 
+48  R -  TdhwSet-UB / TdhwSet-LB  s8 / s8  DHW setpoint upper & lower bounds for adjustment  (°C) 
+49  R -  MaxTSet-UB / MaxTSet-LB  s8 / s8  Max CH water setpoint upper & lower bounds for adjustment  (°C) 
+50  R -  Hcratio-UB / Hcratio-LB  s8 / s8  OTC heat curve ratio upper & lower bounds for adjustment  
+56  R W  TdhwSet  f8.8  DHW setpoint (°C)    (Remote parameter 1) 
+57  R W  MaxTSet  f8.8  Max CH water setpoint (°C)  (Remote parameters 2) 
+58  R W  Hcratio  f8.8  OTC heat curve ratio (°C)  (Remote parameter 3) 
+  
+OpenThermÔ Protocol Specification v2.2    OT/+ Application Layer 
+Ó1996,’98,’99 The OpenTherm Association    Page 33 
+   
+Nr.  Msg  Data Object  Type    Description 
+100  R -  Remote override function  flag8 / -  Function of manual and program changes in master and remote 
+room setpoint. 
+115  R -  OEM diagnostic code  u16  OEM-specific diagnostic/service code 
+116  R W  Burner starts  u16  Number of starts burner 
+117  R W  CH pump starts  u16  Number of starts CH pump 
+118  R W  DHW pump/valve starts  u16  Number of starts DHW pump/valve 
+119  R W  DHW burner starts  u16  Number of starts burner during DHW mode 
+120  R W  Burner operation hours  u16  Number of hours that burner is in operation (i.e. flame on) 
+121  R W  CH pump operation hours  u16  Number of hours that CH pump has been running 
+122  R W  DHW pump/valve operation hours  u16  Number of hours that DHW pump has been running or DHW valve 
+has been opened 
+123  R W  DHW burner operation hours  u16  Number of hours that burner is in operation during DHW mode 
+124  -  W  OpenTherm version Master  f8.8  The implemented version of the OpenTherm Protocol Specification 
+in the master. 
+125  R -  OpenTherm version Slave  f8.8  The implemented version of the OpenTherm Protocol Specification 
+in the slave. 
+126  - W  Master-version  u8 / u8  Master product version number and type 
+127  R -  Slave-version  u8 / u8  Slave product version number and type 
+All data id’s not defined above are reserved for future use.
+OpenThermÔ Protocol Specification v2.2    OT/- Encoding & Application Support 
+Ó1996,’98,’99 The OpenTherm Association    Page 34 
+6.  OpenTherm/Lite Data Encoding and Application Support 
+OpenTherm / Lite uses the same medium and physical signalling levels as OpenTherm/plus as described in 
+section 3. It can be implemented using the same hardware as for OT/+. 
+6.1  Room Unit to Boiler Signalling 
+The room unit transmits a PWM signal to the boiler. 
+ 
+Vlow
+Vhigh
+Time
+Voltage
+tperiod
+thigh tlow
+ 
+Duty Cycle (%) = tlow / tperiod  ie. the % time over the period that the line is low. 
+ 
+The Duty Cycle Period (tperiod) does not require to be constant. The frequency of the PWM signal must lie 
+between 100Hz and 500Hz (2ms < tperiod < 10ms). The duty cycle can vary between 0% and 100%. 
+6.2  Boiler to Room Unit Signalling 
+The boiler signals only by changing the current between the Ilow and Ihigh states. The high current state 
+represents the presence of a boiler lock-out fault. Different from OpenTherm/plus, it can permanently keep 
+the line in the high current state. It is mandatory for the room and boiler controller to support the transmission 
+and detection of this feature. 
+Ihigh
+Ilow
+Time
+Current
+Boiler Lock-Out Fault Indication
+No Fault (normal condition)
+ 
+OpenThermÔ Protocol Specification v2.2    OT/- Encoding & Application Support 
+Ó1996,’98,’99 The OpenTherm Association    Page 35 
+6.3  OT/- Application Data Equivalence to OT/+ 
+The PWM voltage signal sent from the room unit to the boiler unit, principally represents the water 
+temperature Control Setpoint It is mandatory for both the room and boiler units to support the transmission 
+and detection of this signal. 
+ 
+OpenTherm/Lite supports the following application data items, which are shown with their equivalent OT/+ 
+Application Data-IDs. 
+ 
+OpenTherm/Lite Data Item  Equivalent OT/+ Data Item and Data-ID 
+Tset Control SetPoint (mandatory)  id=1    Tset Control Setpoint (mandatory) 
+CH-Enable (mandatory)  id=0, bit 0.0  Master Status : CH-Enable flag (mandatory) 
+Boiler Lock-Out Fault (mandatory)  id=0, bit 1.0  Slave Status : Fault Indication (mandatory) 
+ 
+CH is disabled
+CH is enabled
+CH-Enable Tset
+°
+°
+Duty-Cycle
+90%
+5%
+10%
+0% 100%
+ 
+ 
+The tolerance of both generation and measurement of the Duty-Cycle signal should be less than ±2%. 
+ 
+A Duty-Cycle less than 5% is used to indicate a CH-disabled state (ie “positive-off” or no CH-demand 
+condition). It is not mandatory for the boiler controller to support this feature, or for the room unit to use it. 
+ 
