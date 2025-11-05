@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.13)
 
+# Set board type explicitly
+set(PICO_BOARD pico_w CACHE STRING "Board type")
+
+# Set the path to the Pico SDK and Picotool (using submodules)
+set(PICO_SDK_PATH ${CMAKE_CURRENT_LIST_DIR}/pico-sdk)
+set(PICOTOOL_FETCH_FROM_GIT_PATH ${CMAKE_CURRENT_LIST_DIR}/picotool)
+
 # Include the Pico SDK
 include(pico_sdk_import.cmake)
 

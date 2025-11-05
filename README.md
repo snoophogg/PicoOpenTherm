@@ -11,22 +11,23 @@ A PIO-based blink routine for Raspberry Pi Pico W, built with CMake using the Pi
 
 ## Prerequisites
 
-1. **Pico SDK**: Download and install the [Raspberry Pi Pico SDK](https://github.com/raspberrypi/pico-sdk)
-2. **ARM GCC Toolchain**: Install `gcc-arm-none-eabi`
-3. **CMake**: Version 3.13 or higher
-4. **Build Tools**: Make or Ninja
+1. **ARM GCC Toolchain**: Install `gcc-arm-none-eabi`
+2. **CMake**: Version 3.13 or higher
+3. **Build Tools**: Make or Ninja
+4. **Git**: For cloning submodules
+
+Note: The Pico SDK and Picotool are included as git submodules and will be automatically initialized.
 
 ## Setup
 
-1. Set the `PICO_SDK_PATH` environment variable:
+1. Clone the repository with submodules:
    ```bash
-   export PICO_SDK_PATH=/path/to/pico-sdk
+   git clone --recursive https://github.com/yourusername/PicoOpenTherm.git
    ```
-
-2. Make sure to initialize the Pico SDK submodules:
+   
+   Or if already cloned, initialize submodules:
    ```bash
-   cd $PICO_SDK_PATH
-   git submodule update --init
+   git submodule update --init --recursive
    ```
 
 ## Building
@@ -58,6 +59,8 @@ make -j4
 ├── CMakeLists.txt           # Main CMake configuration
 ├── pico_sdk_import.cmake    # Pico SDK import helper
 ├── build.sh                 # Build automation script
+├── pico-sdk/                # Pico SDK submodule
+├── picotool/                # Picotool submodule
 ├── src/
 │   ├── blink.c             # Main application code
 │   └── blink.pio           # PIO assembly program for LED blinking

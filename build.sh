@@ -1,13 +1,12 @@
 #!/bin/bash
 
 # Build script for PicoOpenTherm
+# Uses pico-sdk submodule
 
-# Check if PICO_SDK_PATH is set
-if [ -z "$PICO_SDK_PATH" ]; then
-    echo "Error: PICO_SDK_PATH environment variable is not set"
-    echo "Please set it to your Pico SDK installation path"
-    echo "Example: export PICO_SDK_PATH=/path/to/pico-sdk"
-    exit 1
+# Ensure submodules are initialized
+if [ ! -f "pico-sdk/CMakeLists.txt" ]; then
+    echo "Initializing pico-sdk submodule..."
+    git submodule update --init --recursive
 fi
 
 # Create build directory if it doesn't exist
