@@ -36,13 +36,20 @@ int main() {
     
     printf("PIO blink running on GPIO %d\n", BLINK_PIN);
     printf("Onboard LED (CYW43) will also blink\n");
+    printf("Starting blink loop...\n\n");
+    
+    // Blink counter
+    uint32_t blink_count = 0;
     
     // Also blink the onboard LED (CYW43) in the main loop
     while (true) {
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+        printf("Blink #%lu: LED ON\n", blink_count);
         sleep_ms(250);
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
+        printf("Blink #%lu: LED OFF\n", blink_count);
         sleep_ms(250);
+        blink_count++;
     }
 
     // Cleanup (never reached in this example)
