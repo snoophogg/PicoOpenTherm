@@ -2,6 +2,7 @@
 #define OPENTHERM_HPP
 
 #include <cstdint>
+#include "hardware/pio.h"
 
 // OpenTherm message types
 enum class MessageType : uint8_t {
@@ -87,5 +88,33 @@ uint16_t opentherm_f8_8_from_float(float temp);
 
 // Convert f8.8 format to float temperature
 float opentherm_f8_8_to_float(uint16_t value);
+
+// C++ OpenTherm Interface
+namespace OpenTherm {
+
+class Interface {
+private:
+    PIO pio_tx_;
+    PIO pio_rx_;
+    unsigned int sm_tx_;
+    unsigned int sm_rx_;
+    unsigned int tx_pin_;
+    unsigned int rx_pin_;
+
+public:
+    // Constructor
+    Interface(unsigned int tx_pin, unsigned int rx_pin, PIO pio_tx = pio0, PIO pio_rx = pio1);
+    
+    // Send an OpenTherm frame
+    void send(uint32_t frame);
+    
+    // Receive an OpenTherm frame (non-blocking)
+    bool receive(uint32_t& frame);
+    
+    // Print frame details
+    static void printFrame(uint32_t frame_data);
+};
+
+} // namespace OpenTherm
 
 #endif // OPENTHERM_HPP
