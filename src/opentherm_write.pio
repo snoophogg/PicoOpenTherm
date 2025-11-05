@@ -1,0 +1,85 @@
+;
+; OpenTherm TX PIO Program
+; Transmits OpenTherm frames using Manchester encoding
+; Bit rate: 1000 bits/sec (1ms per bit, 500us per half-bit)
+; Manchester: '1' = active-to-idle, '0' = idle-to-active
+;
+
+.program opentherm_tx
+
+.define public IDLE 0
+.define public ACTIVE 1
+
+public start:
+    pull block              ; Wait for 32-bit frame from FIFO
+    set x, 31               ; Set bit counter (32 bits)
+    
+send_start_bit:             ; Start bit is always '1'
+    set pins, 1 [31]        ; Active state (first half of '1')
+    set pins, 0 [31]        ; Idle state (second half of '1')
+    
+bit_loop:
+    out y, 1                ; Shift out one bit to Y register
+    jmp !y, send_zero       ; If bit is 0, send '0' encoding
+    
+send_one:                   ; Send '1': active-to-idle
+    set pins, 1 [31]        ; Active (first half)
+    set pins, 0 [31]        ; Idle (second half)
+    jmp next_bit
+    
+send_zero:                  ; Send '0': idle-to-active
+    set pins, 0 [31]        ; Idle (first half)
+    set pins, 1 [31]        ; Active (second half)
+    
+next_bit:
+    jmp x--, bit_loop       ; Decrement and loop if more bits
+    
+send_stop_bit:              ; Stop bit is always '1'
+    set pins, 1 [31]        ; Active state
+    set pins, 0 [31]        ; Idle state
+    jmp start               ; Return to start for next frame
+
+% c-sdk {
+#include "hardware/clocks.h"
+#include "hardware/gpio.h"
+
+static inline void opentherm_tx_program_init(PIO pio, uint sm, uint offset, uint pin) {
+    // Configure the pin as a PIO output
+    pio_gpio_init(pio, pin);
+    pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
+    
+    // Get default config
+    pio_sm_config c = opentherm_tx_program_get_default_config(offset);
+    
+    // Map the SET pin group to our GPIO
+    sm_config_set_set_pins(&c, pin, 1);
+    
+    // Set the pin to idle state initially (low)
+    pio_sm_set_pins_with_mask(pio, sm, 0, (1u << pin));
+    
+    // Configure clock divider for proper timing
+    // We need each instruction with [31] delay to take 500us
+    // 32 cycles at the PIO clock should equal 500us
+    // PIO clock = 125MHz / divider
+    // We want: 32 / (125MHz / divider) = 500us
+    // So: divider = 32 / (500us * 125MHz) = 32 / 62.5 = 0.512
+    // But we need to account for the instruction itself (1 cycle)
+    // So 32 delay cycles + 1 instruction = 33 cycles for 500us
+    // divider = 33 / 62.5 = 0.528, let's use a bit higher for safety
+    float div = clock_get_hz(clk_sys) / (66000.0f);  // ~66kHz PIO clock for 500us per 33 cycles
+    sm_config_set_clkdiv(&c, div);
+    
+    // Shift out bits MSB first
+    sm_config_set_out_shift(&c, false, false, 32);
+    
+    // Initialize and enable the state machine
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, true);
+}
+
+// Helper function to send an OpenTherm frame
+static inline void opentherm_tx_send_frame(PIO pio, uint sm, uint32_t frame) {
+    pio_sm_put_blocking(pio, sm, frame);
+}
+
+%}

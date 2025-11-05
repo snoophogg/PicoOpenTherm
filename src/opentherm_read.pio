@@ -1,0 +1,116 @@
+;
+; OpenTherm RX PIO Program
+; Receives OpenTherm frames using Manchester encoding
+; Bit rate: 1000 bits/sec (1ms per bit, 500us per half-bit)
+; Manchester: '1' = active-to-idle, '0' = idle-to-active
+;
+
+.program opentherm_rx
+
+.wrap_target
+public wait_for_start:
+    wait 1 pin 0            ; Wait for line to go active (start of start bit)
+    set x, 31               ; Set bit counter for 32 bits
+    nop [15]                ; Delay to center of first half-bit
+    
+    ; Start bit should be '1' (active-to-idle)
+    ; We're now in the middle of the first half, should be active
+    in pins, 1              ; Sample first half (should be 1)
+    nop [31]                ; Wait for second half
+    in pins, 1              ; Sample second half (should be 0)
+    
+    ; Verify start bit Manchester encoding
+    ; For now, just continue (error checking done in software)
+    
+bit_loop:
+    nop [15]                ; Position to middle of first half-bit
+    in pins, 1              ; Sample first half of bit
+    nop [31]                ; Wait for second half
+    in pins, 1              ; Sample second half of bit
+    jmp x--, bit_loop       ; Continue for all 32 bits
+    
+    ; Read stop bit
+    nop [15]                ; Position to middle of first half
+    in pins, 1              ; Sample first half (should be 1)
+    nop [31]                ; Wait for second half
+    in pins, 1              ; Sample second half (should be 0)
+    
+    push block              ; Push the 64-bit sample data to FIFO
+    ; (software will decode Manchester and verify)
+    
+.wrap
+
+% c-sdk {
+#include "hardware/clocks.h"
+#include "hardware/gpio.h"
+
+static inline void opentherm_rx_program_init(PIO pio, uint sm, uint offset, uint pin) {
+    // Configure the pin as a PIO input
+    pio_gpio_init(pio, pin);
+    pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, false);
+    
+    // Get default config
+    pio_sm_config c = opentherm_rx_program_get_default_config(offset);
+    
+    // Map the IN pin group to our GPIO
+    sm_config_set_in_pins(&c, pin);
+    
+    // Configure clock divider for 1kHz bit rate with Manchester encoding
+    // Same timing as TX
+    float div = clock_get_hz(clk_sys) / (2000000.0f);
+    sm_config_set_clkdiv(&c, div);
+    
+    // Shift in bits MSB first, autopush after 32 bits
+    sm_config_set_in_shift(&c, false, true, 32);
+    
+    // Initialize and enable the state machine
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, true);
+}
+
+// Helper function to check if data is available
+static inline bool opentherm_rx_available(PIO pio, uint sm) {
+    return !pio_sm_is_rx_fifo_empty(pio, sm);
+}
+
+// Helper function to receive raw Manchester-encoded data
+static inline uint64_t opentherm_rx_get_raw(PIO pio, uint sm) {
+    uint32_t first_word = pio_sm_get_blocking(pio, sm);
+    uint32_t second_word = pio_sm_get_blocking(pio, sm);
+    return ((uint64_t)first_word << 32) | second_word;
+}
+
+// Decode Manchester encoding: each bit is represented by 2 samples
+// '1' = 1,0 (active-to-idle)
+// '0' = 0,1 (idle-to-active)
+static inline bool opentherm_manchester_decode(uint64_t raw_data, uint32_t *decoded_frame) {
+    *decoded_frame = 0;
+    
+    // Process 34 bit pairs (start + 32 data + stop)
+    for (int i = 0; i < 34; i++) {
+        int bit_pos = (33 - i) * 2;  // Start from MSB pairs
+        uint8_t first_half = (raw_data >> (bit_pos + 1)) & 1;
+        uint8_t second_half = (raw_data >> bit_pos) & 1;
+        
+        if (i == 0 || i == 33) {
+            // Start and stop bits should be '1' (1,0 pattern)
+            if (first_half != 1 || second_half != 0) {
+                return false;  // Invalid frame
+            }
+        } else {
+            // Data bits
+            if (first_half == 1 && second_half == 0) {
+                // '1' bit
+                *decoded_frame |= (1u << (32 - i));
+            } else if (first_half == 0 && second_half == 1) {
+                // '0' bit - already 0
+            } else {
+                return false;  // Invalid Manchester encoding
+            }
+        }
+    }
+    
+    return true;
+}
+
+%}

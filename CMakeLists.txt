@@ -23,8 +23,10 @@ add_executable(blink_pio
     src/blink.c
 )
 
-# Generate the PIO header file
+# Generate the PIO header files
 pico_generate_pio_header(blink_pio ${CMAKE_CURRENT_LIST_DIR}/src/blink.pio)
+pico_generate_pio_header(blink_pio ${CMAKE_CURRENT_LIST_DIR}/src/opentherm_write.pio)
+pico_generate_pio_header(blink_pio ${CMAKE_CURRENT_LIST_DIR}/src/opentherm_read.pio)
 
 # Link the necessary libraries
 target_link_libraries(blink_pio
@@ -39,3 +41,25 @@ pico_enable_stdio_uart(blink_pio 0)
 
 # Create map/bin/hex/uf2 files
 pico_add_extra_outputs(blink_pio)
+
+# Add OpenTherm test executable
+add_executable(opentherm_test
+    src/opentherm_test.c
+)
+
+# Generate the PIO header files for OpenTherm
+pico_generate_pio_header(opentherm_test ${CMAKE_CURRENT_LIST_DIR}/src/opentherm_write.pio)
+pico_generate_pio_header(opentherm_test ${CMAKE_CURRENT_LIST_DIR}/src/opentherm_read.pio)
+
+# Link the necessary libraries
+target_link_libraries(opentherm_test
+    pico_stdlib
+    hardware_pio
+)
+
+# Enable USB output, disable UART output
+pico_enable_stdio_usb(opentherm_test 1)
+pico_enable_stdio_uart(opentherm_test 0)
+
+# Create map/bin/hex/uf2 files
+pico_add_extra_outputs(opentherm_test)
