@@ -80,37 +80,4 @@ static inline uint64_t opentherm_rx_get_raw(PIO pio, uint sm) {
     return ((uint64_t)first_word << 32) | second_word;
 }
 
-// Decode Manchester encoding: each bit is represented by 2 samples
-// '1' = 1,0 (active-to-idle)
-// '0' = 0,1 (idle-to-active)
-static inline bool opentherm_manchester_decode(uint64_t raw_data, uint32_t *decoded_frame) {
-    *decoded_frame = 0;
-    
-    // Process 34 bit pairs (start + 32 data + stop)
-    for (int i = 0; i < 34; i++) {
-        int bit_pos = (33 - i) * 2;  // Start from MSB pairs
-        uint8_t first_half = (raw_data >> (bit_pos + 1)) & 1;
-        uint8_t second_half = (raw_data >> bit_pos) & 1;
-        
-        if (i == 0 || i == 33) {
-            // Start and stop bits should be '1' (1,0 pattern)
-            if (first_half != 1 || second_half != 0) {
-                return false;  // Invalid frame
-            }
-        } else {
-            // Data bits
-            if (first_half == 1 && second_half == 0) {
-                // '1' bit
-                *decoded_frame |= (1u << (32 - i));
-            } else if (first_half == 0 && second_half == 1) {
-                // '0' bit - already 0
-            } else {
-                return false;  // Invalid Manchester encoding
-            }
-        }
-    }
-    
-    return true;
-}
-
 %}

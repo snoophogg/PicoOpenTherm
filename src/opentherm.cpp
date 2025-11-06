@@ -83,6 +83,204 @@ float opentherm_f8_8_to_float(uint16_t value) {
     return static_cast<float>(signed_value) / 256.0f;
 }
 
+// Encode two bytes into a 16-bit data value (HB:LB)
+uint16_t opentherm_encode_u8_u8(uint8_t hb, uint8_t lb) {
+    return (static_cast<uint16_t>(hb) << 8) | lb;
+}
+
+// Decode 16-bit data value into two bytes (HB:LB)
+void opentherm_decode_u8_u8(uint16_t value, uint8_t *hb, uint8_t *lb) {
+    *hb = (value >> 8) & 0xFF;
+    *lb = value & 0xFF;
+}
+
+// Encode signed 16-bit integer
+uint16_t opentherm_encode_s16(int16_t value) {
+    return static_cast<uint16_t>(value);
+}
+
+// Decode signed 16-bit integer
+int16_t opentherm_decode_s16(uint16_t value) {
+    return static_cast<int16_t>(value);
+}
+
+// Decode status flags (Data ID 0)
+void opentherm_decode_status(uint16_t value, opentherm_status_t *status) {
+    uint8_t master_flags = (value >> 8) & 0xFF;
+    uint8_t slave_flags = value & 0xFF;
+    
+    // Master status flags (HB)
+    status->ch_enable = (master_flags & 0x01) != 0;
+    status->dhw_enable = (master_flags & 0x02) != 0;
+    status->cooling_enable = (master_flags & 0x04) != 0;
+    status->otc_active = (master_flags & 0x08) != 0;
+    status->ch2_enable = (master_flags & 0x10) != 0;
+    
+    // Slave status flags (LB)
+    status->fault = (slave_flags & 0x01) != 0;
+    status->ch_mode = (slave_flags & 0x02) != 0;
+    status->dhw_mode = (slave_flags & 0x04) != 0;
+    status->flame = (slave_flags & 0x08) != 0;
+    status->cooling = (slave_flags & 0x10) != 0;
+    status->ch2_mode = (slave_flags & 0x20) != 0;
+    status->diagnostic = (slave_flags & 0x40) != 0;
+}
+
+uint16_t opentherm_encode_status(const opentherm_status_t *status) {
+    uint8_t master_flags = 0;
+    uint8_t slave_flags = 0;
+    
+    // Master status flags (HB)
+    if (status->ch_enable) master_flags |= 0x01;
+    if (status->dhw_enable) master_flags |= 0x02;
+    if (status->cooling_enable) master_flags |= 0x04;
+    if (status->otc_active) master_flags |= 0x08;
+    if (status->ch2_enable) master_flags |= 0x10;
+    
+    // Slave status flags (LB)
+    if (status->fault) slave_flags |= 0x01;
+    if (status->ch_mode) slave_flags |= 0x02;
+    if (status->dhw_mode) slave_flags |= 0x04;
+    if (status->flame) slave_flags |= 0x08;
+    if (status->cooling) slave_flags |= 0x10;
+    if (status->ch2_mode) slave_flags |= 0x20;
+    if (status->diagnostic) slave_flags |= 0x40;
+    
+    return opentherm_encode_u8_u8(master_flags, slave_flags);
+}
+
+// Decode configuration flags
+void opentherm_decode_master_config(uint16_t value, opentherm_config_t *config) {
+    uint8_t flags = value & 0xFF;
+    
+    config->dhw_present = (flags & 0x01) != 0;
+    config->control_type = (flags & 0x02) != 0;
+    config->cooling_config = (flags & 0x04) != 0;
+    config->dhw_config = (flags & 0x08) != 0;
+    config->master_pump_control = (flags & 0x10) != 0;
+    config->ch2_present = (flags & 0x20) != 0;
+}
+
+uint16_t opentherm_encode_master_config(const opentherm_config_t *config) {
+    uint8_t flags = 0;
+    
+    if (config->dhw_present) flags |= 0x01;
+    if (config->control_type) flags |= 0x02;
+    if (config->cooling_config) flags |= 0x04;
+    if (config->dhw_config) flags |= 0x08;
+    if (config->master_pump_control) flags |= 0x10;
+    if (config->ch2_present) flags |= 0x20;
+    
+    return flags;
+}
+
+void opentherm_decode_slave_config(uint16_t value, opentherm_config_t *config) {
+    uint8_t flags = value & 0xFF;
+    
+    config->dhw_present = (flags & 0x01) != 0;
+    config->control_type = (flags & 0x02) != 0;
+    config->cooling_config = (flags & 0x04) != 0;
+    config->dhw_config = (flags & 0x08) != 0;
+    config->master_pump_control = (flags & 0x10) != 0;
+    config->ch2_present = (flags & 0x20) != 0;
+}
+
+uint16_t opentherm_encode_slave_config(const opentherm_config_t *config) {
+    uint8_t flags = 0;
+    
+    if (config->dhw_present) flags |= 0x01;
+    if (config->control_type) flags |= 0x02;
+    if (config->cooling_config) flags |= 0x04;
+    if (config->dhw_config) flags |= 0x08;
+    if (config->master_pump_control) flags |= 0x10;
+    if (config->ch2_present) flags |= 0x20;
+    
+    return flags;
+}
+
+// Decode fault flags (Data ID 5)
+void opentherm_decode_fault(uint16_t value, opentherm_fault_t *fault) {
+    fault->code = (value >> 8) & 0xFF;
+    uint8_t flags = value & 0xFF;
+    
+    fault->service_request = (flags & 0x01) != 0;
+    fault->lockout_reset = (flags & 0x02) != 0;
+    fault->low_water_pressure = (flags & 0x04) != 0;
+    fault->gas_flame_fault = (flags & 0x08) != 0;
+    fault->air_pressure_fault = (flags & 0x10) != 0;
+    fault->water_overtemp = (flags & 0x20) != 0;
+}
+
+// Decode remote parameter flags (Data ID 6)
+void opentherm_decode_remote_params(uint16_t value, opentherm_remote_params_t *params) {
+    uint8_t transfer_enable = (value >> 8) & 0xFF;
+    uint8_t rw_flags = value & 0xFF;
+    
+    params->dhw_setpoint_enable = (transfer_enable & 0x01) != 0;
+    params->max_ch_setpoint_enable = (transfer_enable & 0x02) != 0;
+    params->dhw_setpoint_rw = (rw_flags & 0x01) != 0;
+    params->max_ch_setpoint_rw = (rw_flags & 0x02) != 0;
+}
+
+// Encode/decode day of week and time (Data ID 20)
+uint16_t opentherm_encode_time(const opentherm_time_t *time) {
+    uint8_t hb = ((time->day_of_week & 0x07) << 5) | (time->hours & 0x1F);
+    uint8_t lb = time->minutes & 0x3F;
+    return opentherm_encode_u8_u8(hb, lb);
+}
+
+void opentherm_decode_time(uint16_t value, opentherm_time_t *time) {
+    uint8_t hb, lb;
+    opentherm_decode_u8_u8(value, &hb, &lb);
+    
+    time->day_of_week = (hb >> 5) & 0x07;
+    time->hours = hb & 0x1F;
+    time->minutes = lb & 0x3F;
+}
+
+// Encode/decode date (Data ID 21)
+uint16_t opentherm_encode_date(const opentherm_date_t *date) {
+    return opentherm_encode_u8_u8(date->month, date->day);
+}
+
+void opentherm_decode_date(uint16_t value, opentherm_date_t *date) {
+    opentherm_decode_u8_u8(value, &date->month, &date->day);
+}
+
+// Manchester encoding/decoding
+// Decode Manchester encoding: each bit is represented by 2 samples
+// '1' = 1,0 (active-to-idle)
+// '0' = 0,1 (idle-to-active)
+bool opentherm_manchester_decode(uint64_t raw_data, uint32_t *decoded_frame) {
+    *decoded_frame = 0;
+    
+    // Process 34 bit pairs (start + 32 data + stop)
+    for (int i = 0; i < 34; i++) {
+        int bit_pos = (33 - i) * 2;  // Start from MSB pairs
+        uint8_t first_half = (raw_data >> (bit_pos + 1)) & 1;
+        uint8_t second_half = (raw_data >> bit_pos) & 1;
+        
+        if (i == 0 || i == 33) {
+            // Start and stop bits should be '1' (1,0 pattern)
+            if (first_half != 1 || second_half != 0) {
+                return false;  // Invalid frame
+            }
+        } else {
+            // Data bits
+            if (first_half == 1 && second_half == 0) {
+                // '1' bit
+                *decoded_frame |= (1u << (32 - i));
+            } else if (first_half == 0 && second_half == 1) {
+                // '0' bit - already 0
+            } else {
+                return false;  // Invalid Manchester encoding
+            }
+        }
+    }
+    
+    return true;
+}
+
 // OpenTherm Interface Implementation
 namespace OpenTherm {
 
