@@ -324,10 +324,15 @@ private:
     unsigned int sm_rx_;
     unsigned int tx_pin_;
     unsigned int rx_pin_;
+    uint32_t timeout_ms_;
 
 public:
     // Constructor
     Interface(unsigned int tx_pin, unsigned int rx_pin, PIO pio_tx = pio0, PIO pio_rx = pio1);
+    
+    // Set/get timeout for read/write operations (default 1000ms)
+    void setTimeout(uint32_t timeout_ms) { timeout_ms_ = timeout_ms; }
+    uint32_t getTimeout() const { return timeout_ms_; }
     
     // Send an OpenTherm frame
     void send(uint32_t frame);
@@ -342,51 +347,51 @@ public:
     // Returns true if successful, false if timeout or error
     
     // Status and configuration reads
-    bool readStatus(opentherm_status_t* status, uint32_t timeout_ms = 1000);
-    bool readSlaveConfig(opentherm_config_t* config, uint32_t timeout_ms = 1000);
-    bool readFaultFlags(opentherm_fault_t* fault, uint32_t timeout_ms = 1000);
+    bool readStatus(opentherm_status_t* status);
+    bool readSlaveConfig(opentherm_config_t* config);
+    bool readFaultFlags(opentherm_fault_t* fault);
     
     // Temperature sensor reads (returns temperature in °C)
-    bool readBoilerTemperature(float* temp, uint32_t timeout_ms = 1000);
-    bool readDHWTemperature(float* temp, uint32_t timeout_ms = 1000);
-    bool readOutsideTemperature(float* temp, uint32_t timeout_ms = 1000);
-    bool readReturnWaterTemperature(float* temp, uint32_t timeout_ms = 1000);
-    bool readRoomTemperature(float* temp, uint32_t timeout_ms = 1000);
-    bool readExhaustTemperature(int16_t* temp, uint32_t timeout_ms = 1000);
+    bool readBoilerTemperature(float* temp);
+    bool readDHWTemperature(float* temp);
+    bool readOutsideTemperature(float* temp);
+    bool readReturnWaterTemperature(float* temp);
+    bool readRoomTemperature(float* temp);
+    bool readExhaustTemperature(int16_t* temp);
     
     // Pressure and flow reads
-    bool readCHWaterPressure(float* pressure, uint32_t timeout_ms = 1000);  // bar
-    bool readDHWFlowRate(float* flow_rate, uint32_t timeout_ms = 1000);     // l/min
+    bool readCHWaterPressure(float* pressure);  // bar
+    bool readDHWFlowRate(float* flow_rate);     // l/min
     
     // Modulation level read (percentage)
-    bool readModulationLevel(float* level, uint32_t timeout_ms = 1000);
+    bool readModulationLevel(float* level);
     
     // Setpoint reads
-    bool readControlSetpoint(float* setpoint, uint32_t timeout_ms = 1000);
-    bool readDHWSetpoint(float* setpoint, uint32_t timeout_ms = 1000);
-    bool readMaxCHSetpoint(float* setpoint, uint32_t timeout_ms = 1000);
+    bool readControlSetpoint(float* setpoint);
+    bool readDHWSetpoint(float* setpoint);
+    bool readMaxCHSetpoint(float* setpoint);
     
     // Counter/statistics reads
-    bool readBurnerStarts(uint16_t* count, uint32_t timeout_ms = 1000);
-    bool readCHPumpStarts(uint16_t* count, uint32_t timeout_ms = 1000);
-    bool readDHWPumpStarts(uint16_t* count, uint32_t timeout_ms = 1000);
-    bool readBurnerHours(uint16_t* hours, uint32_t timeout_ms = 1000);
-    bool readCHPumpHours(uint16_t* hours, uint32_t timeout_ms = 1000);
-    bool readDHWPumpHours(uint16_t* hours, uint32_t timeout_ms = 1000);
+    bool readBurnerStarts(uint16_t* count);
+    bool readCHPumpStarts(uint16_t* count);
+    bool readDHWPumpStarts(uint16_t* count);
+    bool readBurnerHours(uint16_t* hours);
+    bool readCHPumpHours(uint16_t* hours);
+    bool readDHWPumpHours(uint16_t* hours);
     
     // Version information reads
-    bool readOpenThermVersion(float* version, uint32_t timeout_ms = 1000);
-    bool readSlaveVersion(uint8_t* type, uint8_t* version, uint32_t timeout_ms = 1000);
+    bool readOpenThermVersion(float* version);
+    bool readSlaveVersion(uint8_t* type, uint8_t* version);
     
     // Write functions
-    bool writeControlSetpoint(float temperature, uint32_t timeout_ms = 1000);
-    bool writeRoomSetpoint(float temperature, uint32_t timeout_ms = 1000);
-    bool writeDHWSetpoint(float temperature, uint32_t timeout_ms = 1000);
-    bool writeMaxCHSetpoint(float temperature, uint32_t timeout_ms = 1000);
+    bool writeControlSetpoint(float temperature);
+    bool writeRoomSetpoint(float temperature);
+    bool writeDHWSetpoint(float temperature);
+    bool writeMaxCHSetpoint(float temperature);
     
 private:
     // Helper function to send request and wait for response
-    bool sendAndReceive(uint32_t request, uint32_t* response, uint32_t timeout_ms);
+    bool sendAndReceive(uint32_t request, uint32_t* response);
 };
 
 } // namespace OpenTherm

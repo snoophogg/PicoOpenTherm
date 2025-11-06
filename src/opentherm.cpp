@@ -523,7 +523,8 @@ Interface::Interface(unsigned int tx_pin, unsigned int rx_pin, PIO pio_tx, PIO p
     : pio_tx_(pio_tx ? pio_tx : pio0), 
       pio_rx_(pio_rx ? pio_rx : pio1),
       tx_pin_(tx_pin), 
-      rx_pin_(rx_pin) {
+      rx_pin_(rx_pin),
+      timeout_ms_(1000) {  // Default 1 second timeout
     
     // Load and initialize TX PIO program
     uint offset_tx = pio_add_program(pio_tx_, &opentherm_tx_program);
@@ -595,11 +596,11 @@ void Interface::printFrame(uint32_t frame_data) {
 }
 
 // Helper function to send request and wait for response
-bool Interface::sendAndReceive(uint32_t request, uint32_t* response, uint32_t timeout_ms) {
+bool Interface::sendAndReceive(uint32_t request, uint32_t* response) {
     send(request);
     
     absolute_time_t start = get_absolute_time();
-    while (absolute_time_diff_us(start, get_absolute_time()) < (timeout_ms * 1000)) {
+    while (absolute_time_diff_us(start, get_absolute_time()) < (timeout_ms_ * 1000)) {
         if (receive(*response)) {
             return true;
         }
@@ -609,10 +610,10 @@ bool Interface::sendAndReceive(uint32_t request, uint32_t* response, uint32_t ti
 }
 
 // Status and configuration reads
-bool Interface::readStatus(opentherm_status_t* status, uint32_t timeout_ms) {
+bool Interface::readStatus(opentherm_status_t* status) {
     uint32_t request = opentherm_read_status();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     uint16_t value = opentherm_get_u16(response);
@@ -620,10 +621,10 @@ bool Interface::readStatus(opentherm_status_t* status, uint32_t timeout_ms) {
     return true;
 }
 
-bool Interface::readSlaveConfig(opentherm_config_t* config, uint32_t timeout_ms) {
+bool Interface::readSlaveConfig(opentherm_config_t* config) {
     uint32_t request = opentherm_read_slave_config();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     uint16_t value = opentherm_get_u16(response);
@@ -631,10 +632,10 @@ bool Interface::readSlaveConfig(opentherm_config_t* config, uint32_t timeout_ms)
     return true;
 }
 
-bool Interface::readFaultFlags(opentherm_fault_t* fault, uint32_t timeout_ms) {
+bool Interface::readFaultFlags(opentherm_fault_t* fault) {
     uint32_t request = opentherm_read_fault_flags();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     uint16_t value = opentherm_get_u16(response);
@@ -643,60 +644,60 @@ bool Interface::readFaultFlags(opentherm_fault_t* fault, uint32_t timeout_ms) {
 }
 
 // Temperature sensor reads
-bool Interface::readBoilerTemperature(float* temp, uint32_t timeout_ms) {
+bool Interface::readBoilerTemperature(float* temp) {
     uint32_t request = opentherm_read_boiler_water_temp();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *temp = opentherm_get_f8_8(response);
     return true;
 }
 
-bool Interface::readDHWTemperature(float* temp, uint32_t timeout_ms) {
+bool Interface::readDHWTemperature(float* temp) {
     uint32_t request = opentherm_read_dhw_temp();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *temp = opentherm_get_f8_8(response);
     return true;
 }
 
-bool Interface::readOutsideTemperature(float* temp, uint32_t timeout_ms) {
+bool Interface::readOutsideTemperature(float* temp) {
     uint32_t request = opentherm_read_outside_temp();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *temp = opentherm_get_f8_8(response);
     return true;
 }
 
-bool Interface::readReturnWaterTemperature(float* temp, uint32_t timeout_ms) {
+bool Interface::readReturnWaterTemperature(float* temp) {
     uint32_t request = opentherm_read_return_water_temp();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *temp = opentherm_get_f8_8(response);
     return true;
 }
 
-bool Interface::readRoomTemperature(float* temp, uint32_t timeout_ms) {
+bool Interface::readRoomTemperature(float* temp) {
     uint32_t request = opentherm_read_room_temp();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *temp = opentherm_get_f8_8(response);
     return true;
 }
 
-bool Interface::readExhaustTemperature(int16_t* temp, uint32_t timeout_ms) {
+bool Interface::readExhaustTemperature(int16_t* temp) {
     uint32_t request = opentherm_read_exhaust_temp();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *temp = opentherm_get_s16(response);
@@ -704,20 +705,20 @@ bool Interface::readExhaustTemperature(int16_t* temp, uint32_t timeout_ms) {
 }
 
 // Pressure and flow reads
-bool Interface::readCHWaterPressure(float* pressure, uint32_t timeout_ms) {
+bool Interface::readCHWaterPressure(float* pressure) {
     uint32_t request = opentherm_read_ch_water_pressure();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *pressure = opentherm_get_f8_8(response);
     return true;
 }
 
-bool Interface::readDHWFlowRate(float* flow_rate, uint32_t timeout_ms) {
+bool Interface::readDHWFlowRate(float* flow_rate) {
     uint32_t request = opentherm_read_dhw_flow_rate();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *flow_rate = opentherm_get_f8_8(response);
@@ -725,10 +726,10 @@ bool Interface::readDHWFlowRate(float* flow_rate, uint32_t timeout_ms) {
 }
 
 // Modulation level read
-bool Interface::readModulationLevel(float* level, uint32_t timeout_ms) {
+bool Interface::readModulationLevel(float* level) {
     uint32_t request = opentherm_read_rel_mod_level();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *level = opentherm_get_f8_8(response);
@@ -736,30 +737,30 @@ bool Interface::readModulationLevel(float* level, uint32_t timeout_ms) {
 }
 
 // Setpoint reads
-bool Interface::readControlSetpoint(float* setpoint, uint32_t timeout_ms) {
+bool Interface::readControlSetpoint(float* setpoint) {
     uint32_t request = opentherm_read_control_setpoint();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *setpoint = opentherm_get_f8_8(response);
     return true;
 }
 
-bool Interface::readDHWSetpoint(float* setpoint, uint32_t timeout_ms) {
+bool Interface::readDHWSetpoint(float* setpoint) {
     uint32_t request = opentherm_read_dhw_setpoint();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *setpoint = opentherm_get_f8_8(response);
     return true;
 }
 
-bool Interface::readMaxCHSetpoint(float* setpoint, uint32_t timeout_ms) {
+bool Interface::readMaxCHSetpoint(float* setpoint) {
     uint32_t request = opentherm_read_max_ch_setpoint();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *setpoint = opentherm_get_f8_8(response);
@@ -767,60 +768,60 @@ bool Interface::readMaxCHSetpoint(float* setpoint, uint32_t timeout_ms) {
 }
 
 // Counter/statistics reads
-bool Interface::readBurnerStarts(uint16_t* count, uint32_t timeout_ms) {
+bool Interface::readBurnerStarts(uint16_t* count) {
     uint32_t request = opentherm_read_burner_starts();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *count = opentherm_get_u16(response);
     return true;
 }
 
-bool Interface::readCHPumpStarts(uint16_t* count, uint32_t timeout_ms) {
+bool Interface::readCHPumpStarts(uint16_t* count) {
     uint32_t request = opentherm_read_ch_pump_starts();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *count = opentherm_get_u16(response);
     return true;
 }
 
-bool Interface::readDHWPumpStarts(uint16_t* count, uint32_t timeout_ms) {
+bool Interface::readDHWPumpStarts(uint16_t* count) {
     uint32_t request = opentherm_read_dhw_pump_starts();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *count = opentherm_get_u16(response);
     return true;
 }
 
-bool Interface::readBurnerHours(uint16_t* hours, uint32_t timeout_ms) {
+bool Interface::readBurnerHours(uint16_t* hours) {
     uint32_t request = opentherm_read_burner_hours();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *hours = opentherm_get_u16(response);
     return true;
 }
 
-bool Interface::readCHPumpHours(uint16_t* hours, uint32_t timeout_ms) {
+bool Interface::readCHPumpHours(uint16_t* hours) {
     uint32_t request = opentherm_read_ch_pump_hours();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *hours = opentherm_get_u16(response);
     return true;
 }
 
-bool Interface::readDHWPumpHours(uint16_t* hours, uint32_t timeout_ms) {
+bool Interface::readDHWPumpHours(uint16_t* hours) {
     uint32_t request = opentherm_read_dhw_pump_hours();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *hours = opentherm_get_u16(response);
@@ -828,20 +829,20 @@ bool Interface::readDHWPumpHours(uint16_t* hours, uint32_t timeout_ms) {
 }
 
 // Version information reads
-bool Interface::readOpenThermVersion(float* version, uint32_t timeout_ms) {
+bool Interface::readOpenThermVersion(float* version) {
     uint32_t request = opentherm_read_opentherm_version();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     *version = opentherm_get_f8_8(response);
     return true;
 }
 
-bool Interface::readSlaveVersion(uint8_t* type, uint8_t* version, uint32_t timeout_ms) {
+bool Interface::readSlaveVersion(uint8_t* type, uint8_t* version) {
     uint32_t request = opentherm_read_slave_version();
     uint32_t response;
-    if (!sendAndReceive(request, &response, timeout_ms)) {
+    if (!sendAndReceive(request, &response)) {
         return false;
     }
     opentherm_get_u8_u8(response, type, version);
@@ -849,28 +850,28 @@ bool Interface::readSlaveVersion(uint8_t* type, uint8_t* version, uint32_t timeo
 }
 
 // Write functions
-bool Interface::writeControlSetpoint(float temperature, uint32_t timeout_ms) {
+bool Interface::writeControlSetpoint(float temperature) {
     uint32_t request = opentherm_write_control_setpoint(temperature);
     uint32_t response;
-    return sendAndReceive(request, &response, timeout_ms);
+    return sendAndReceive(request, &response);
 }
 
-bool Interface::writeRoomSetpoint(float temperature, uint32_t timeout_ms) {
+bool Interface::writeRoomSetpoint(float temperature) {
     uint32_t request = opentherm_write_room_setpoint(temperature);
     uint32_t response;
-    return sendAndReceive(request, &response, timeout_ms);
+    return sendAndReceive(request, &response);
 }
 
-bool Interface::writeDHWSetpoint(float temperature, uint32_t timeout_ms) {
+bool Interface::writeDHWSetpoint(float temperature) {
     uint32_t request = opentherm_write_dhw_setpoint(temperature);
     uint32_t response;
-    return sendAndReceive(request, &response, timeout_ms);
+    return sendAndReceive(request, &response);
 }
 
-bool Interface::writeMaxCHSetpoint(float temperature, uint32_t timeout_ms) {
+bool Interface::writeMaxCHSetpoint(float temperature) {
     uint32_t request = opentherm_write_max_ch_setpoint(temperature);
     uint32_t response;
-    return sendAndReceive(request, &response, timeout_ms);
+    return sendAndReceive(request, &response);
 }
 
 } // namespace OpenTherm
