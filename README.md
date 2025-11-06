@@ -1,18 +1,35 @@
 # PicoOpenTherm
 
-A complete OpenTherm v2.2 protocol implementation for Raspberry Pi Pico W using PIO (Programmable I/O) state machines for hardware-accelerated Manchester encoding/decoding.
+A complete OpenTherm v2.2 protocol implementation for Raspberry Pi Pico W with Home Assistant MQTT integration. Uses PIO (Programmable I/O) state machines for hardware-accelerated Manchester encoding/decoding.
 
 ## Features
 
+### OpenTherm Protocol
 - **Hardware Manchester Encoding**: PIO-based TX for 1000 bps Manchester encoding
 - **Hardware Manchester Decoding**: PIO-based RX with automatic sampling
 - **Complete OpenTherm Protocol**: Full implementation of OpenTherm v2.2 specification
 - **High-Level API**: Easy-to-use C++ interface for reading sensors and controlling setpoints
-- **Comprehensive Data IDs**: Support for all standard OpenTherm data IDs
+- **Comprehensive Data IDs**: Support for 60+ standard OpenTherm data IDs with human-readable decoding
 - **Type-Safe Conversions**: Automatic f8.8 to float, s16, and flag decoding
 - **Configurable Timeout**: Adjustable timeout for all read/write operations
-- **Built with CMake**: Uses official Pico SDK
-- **Optimized for Pico W**: Takes advantage of dual PIO blocks
+
+### Home Assistant Integration
+- **MQTT Auto-Discovery**: Automatic entity registration with Home Assistant
+- **60+ Entities**: Complete coverage of OpenTherm data as sensors, binary sensors, switches, and numbers
+- **Two-Way Control**: Read sensor data and control boiler settings from Home Assistant
+- **WiFi Connectivity**: Built-in WiFi support with automatic reconnection
+- **Robust Connection Handling**: Infinite retry logic with LED error indication
+- **Ready-to-Use Dashboards**: Included YAML examples for HA dashboards, cards, and automations
+
+### System Reliability
+- **Automatic Reconnection**: Intelligent WiFi and MQTT connection monitoring
+- **LED Status Indication**: Visual feedback for connection state and errors
+  - 1 blink: Normal operation
+  - 2 blinks: WiFi connection error
+  - 3 blinks: MQTT connection error
+- **Configurable Timeouts**: Adjustable retry delays and connection check intervals
+- **Built with CMake**: Uses official Pico SDK with lwIP network stack
+- **Optimized for Pico W**: Takes advantage of dual PIO blocks and CYW43 WiFi
 
 ## OpenTherm Overview
 
@@ -34,6 +51,8 @@ Note: The Pico SDK and Picotool are included as git submodules and will be autom
 
 ## Hardware Setup
 
+### OpenTherm Connection
+
 Connect your OpenTherm device to the Pico W:
 
 - **TX Pin** (default GPIO 16): Connect to OpenTherm device RX
@@ -41,6 +60,27 @@ Connect your OpenTherm device to the Pico W:
 - **Ground**: Common ground connection
 
 **Important**: OpenTherm uses a voltage signaling standard. You may need appropriate level shifting or isolation circuitry depending on your specific hardware.
+
+### WiFi & MQTT Configuration
+
+Before building, update `src/main.cpp` with your credentials:
+
+```cpp
+// WiFi credentials
+#define WIFI_SSID "your_wifi_ssid"
+#define WIFI_PASSWORD "your_wifi_password"
+
+// MQTT broker settings
+#define MQTT_SERVER_IP "192.168.1.100"  // Your Home Assistant IP
+#define MQTT_SERVER_PORT 1883
+```
+
+### LED Status Indicator
+
+The onboard LED provides visual feedback:
+- **1 blink** every ~1.4 seconds: Normal operation (connected and publishing)
+- **2 blinks** repeating: WiFi connection error (retrying)
+- **3 blinks** repeating: MQTT connection error (retrying)
 
 ## Setup
 
@@ -70,9 +110,8 @@ cmake -DPICO_BOARD=pico_w ..
 make -j4
 ```
 
-This will generate two firmware files:
-- `blink_pio.uf2` - Simple PIO blink example
-- `opentherm_test.uf2` - OpenTherm protocol test program
+This will generate the firmware file:
+- `picoopentherm.uf2` - Complete OpenTherm gateway with Home Assistant MQTT integration
 
 ## Flashing
 
@@ -80,7 +119,78 @@ This will generate two firmware files:
 2. Copy the generated `.uf2` file to the Pico W drive
 3. The Pico will automatically reboot and start running the program
 
-## Quick Start Example
+## Home Assistant Setup
+
+After flashing the firmware and powering on your Pico W, Home Assistant will automatically discover the OpenTherm Gateway via MQTT.
+
+### Quick Setup
+
+1. **Flash the firmware** to your Pico W
+2. **Configure WiFi/MQTT** credentials in `src/main.cpp` before building
+3. **Power on** - the device will automatically connect and register with Home Assistant
+4. **Check LED status**:
+   - Single blinks = Connected and working
+   - Double blinks = WiFi issue
+   - Triple blinks = MQTT issue
+5. **Open Home Assistant** - All OpenTherm entities will appear automatically
+
+### Available Entities
+
+The gateway exposes 60+ entities organized by type:
+
+#### Sensors
+- Temperatures: Boiler, DHW, Return, Outside, Room, Exhaust
+- Modulation: Current level, Max level
+- Pressure & Flow: CH water pressure, DHW flow rate
+- Counters: Burner starts/hours, CH pump starts/hours, DHW pump starts/hours
+- Status: Fault code, OpenTherm version
+
+#### Binary Sensors
+- Status Flags: Fault, CH mode, DHW mode, Flame status, Cooling, Diagnostic
+- Configuration: DHW present, Cooling supported, CH2 present
+
+#### Switches
+- Central Heating Enable
+- Hot Water Enable
+
+#### Numbers (Setpoints)
+- Control Setpoint (0-100°C)
+- Room Setpoint (5-30°C)
+- DHW Setpoint (30-90°C)
+- Max CH Setpoint (30-90°C)
+
+### Dashboard Examples
+
+The `home_assistant/` folder includes ready-to-use dashboard examples:
+
+- **`dashboard_overview.yaml`** - Complete system overview with all key metrics
+- **`dashboard_graphs.yaml`** - Historical data visualization with temperature trends
+- **`dashboard_control.yaml`** - Control panel for setpoints and modes
+- **`dashboard_mobile.yaml`** - Mobile-optimized compact view
+- **`entity_cards.yaml`** - Individual entity card examples with multiple styles
+- **`automations.yaml`** - 15+ automation examples (schedules, safety, weather-based)
+- **`README.md`** - Detailed setup instructions for dashboards and automations
+
+### Example Dashboard Configuration
+
+```yaml
+# Add this to your Home Assistant configuration.yaml or dashboards
+# See home_assistant/dashboard_overview.yaml for complete example
+
+type: vertical-stack
+cards:
+  - type: entities
+    title: Boiler Status
+    entities:
+      - entity: sensor.opentherm_gw_boiler_temp
+      - entity: sensor.opentherm_gw_modulation
+      - entity: binary_sensor.opentherm_gw_flame
+      - entity: binary_sensor.opentherm_gw_fault
+```
+
+## Library Usage Example
+
+For standalone library usage without Home Assistant:
 
 ```cpp
 #include "opentherm.hpp"
@@ -289,13 +399,22 @@ Interface(unsigned int tx_pin, unsigned int rx_pin,
 ├── pico-sdk/                   # Pico SDK submodule
 ├── picotool/                   # Picotool submodule
 ├── src/
-│   ├── blink.c                 # Simple PIO blink example
-│   ├── blink.pio               # PIO blink program
+│   ├── main.cpp                # Main gateway application with WiFi/MQTT
 │   ├── opentherm.hpp           # OpenTherm library header
 │   ├── opentherm.cpp           # OpenTherm library implementation
-│   ├── opentherm_test.cpp      # OpenTherm test program
+│   ├── opentherm_ha.hpp        # Home Assistant MQTT integration header
+│   ├── opentherm_ha.cpp        # Home Assistant MQTT implementation
+│   ├── lwipopts.h              # lwIP network stack configuration
 │   ├── opentherm_write.pio     # PIO TX Manchester encoder
 │   └── opentherm_read.pio      # PIO RX Manchester decoder
+├── home_assistant/             # Home Assistant configuration examples
+│   ├── README.md               # Setup instructions
+│   ├── dashboard_overview.yaml # Complete overview dashboard
+│   ├── dashboard_graphs.yaml   # Historical data visualization
+│   ├── dashboard_control.yaml  # Control panel dashboard
+│   ├── dashboard_mobile.yaml   # Mobile-optimized dashboard
+│   ├── entity_cards.yaml       # Individual entity card examples
+│   └── automations.yaml        # Automation examples
 └── protocol/
     └── openthermProtocol.txt   # OpenTherm v2.2 specification
 ```
@@ -332,6 +451,34 @@ The library automatically handles different data formats:
 - **u8/u8**: Two 8-bit values (flags, versions)
 - **flags**: Bitfield structures for status and configuration
 
+## Connection Behavior
+
+The gateway implements robust connection handling:
+
+### Startup Sequence
+1. Initialize WiFi and attempt connection (30-second timeout per attempt)
+2. If WiFi fails, blink LED 2 times and retry after 5 seconds
+3. Once WiFi connected, attempt MQTT connection
+4. If MQTT fails, blink LED 3 times and retry after 3 seconds
+5. Once both connected, proceed to normal operation
+
+### Connection Monitoring
+- Checks WiFi and MQTT status every 5 seconds
+- Automatically reconnects if either connection is lost
+- Shows appropriate LED error pattern while reconnecting
+- Re-publishes Home Assistant discovery after successful reconnection
+
+### Configurable Timeouts
+
+All timeouts can be adjusted in `src/main.cpp`:
+
+```cpp
+#define WIFI_CONNECT_TIMEOUT_MS 30000      // WiFi connection attempt timeout
+#define WIFI_RETRY_DELAY_MS 5000           // Delay between WiFi retries
+#define MQTT_RETRY_DELAY_MS 3000           // Delay between MQTT retries
+#define CONNECTION_CHECK_DELAY_MS 5000     // Connection health check interval
+```
+
 ## Debugging
 
 Enable USB serial output to see debug messages:
@@ -341,7 +488,11 @@ sleep_ms(2000);  // Wait for USB connection
 printf("Debug message\n");
 ```
 
-Connect via serial terminal at 115200 baud.
+Connect via serial terminal at 115200 baud to see:
+- Connection attempt logs
+- MQTT publish/subscribe events
+- OpenTherm frame data
+- Sensor readings and updates
 
 ## License
 
