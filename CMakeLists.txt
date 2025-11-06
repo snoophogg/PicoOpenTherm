@@ -18,30 +18,6 @@ set(CMAKE_CXX_STANDARD 17)
 # Initialize the Pico SDK
 pico_sdk_init()
 
-# Add the main executable
-add_executable(blink_pio
-    src/blink.c
-)
-
-# Generate the PIO header files
-pico_generate_pio_header(blink_pio ${CMAKE_CURRENT_LIST_DIR}/src/blink.pio)
-pico_generate_pio_header(blink_pio ${CMAKE_CURRENT_LIST_DIR}/src/opentherm_write.pio)
-pico_generate_pio_header(blink_pio ${CMAKE_CURRENT_LIST_DIR}/src/opentherm_read.pio)
-
-# Link the necessary libraries
-target_link_libraries(blink_pio
-    pico_stdlib
-    pico_cyw43_arch_none
-    hardware_pio
-)
-
-# Enable USB output, disable UART output
-pico_enable_stdio_usb(blink_pio 1)
-pico_enable_stdio_uart(blink_pio 0)
-
-# Create map/bin/hex/uf2 files
-pico_add_extra_outputs(blink_pio)
-
 # Add OpenTherm test executable
 add_executable(opentherm_test
     src/opentherm_test.cpp
