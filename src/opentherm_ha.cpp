@@ -411,6 +411,7 @@ namespace OpenTherm
 
         void HAInterface::update()
         {
+            // TODO : Add failsafe mode
             uint32_t now = to_ms_since_boot(get_absolute_time());
 
             if (now - last_update_ >= config_.update_interval_ms)
