@@ -1,0 +1,112 @@
+# OpenTherm Gateway - Overview Dashboard
+# Complete overview of all OpenTherm entities
+
+type: vertical-stack
+cards:
+  # Status Card
+  - type: entities
+    title: System Status
+    show_header_toggle: false
+    entities:
+      - entity: binary_sensor.opentherm_gw_fault
+        name: Fault Status
+      - entity: binary_sensor.opentherm_gw_flame
+        name: Flame Active
+      - entity: binary_sensor.opentherm_gw_ch_mode
+        name: Central Heating Active
+      - entity: binary_sensor.opentherm_gw_dhw_mode
+        name: Hot Water Active
+      - entity: binary_sensor.opentherm_gw_cooling
+        name: Cooling Active
+      - entity: binary_sensor.opentherm_gw_diagnostic
+        name: Diagnostic Mode
+      - entity: sensor.opentherm_gw_fault_code
+        name: Fault Code
+
+  # Control Card
+  - type: entities
+    title: System Control
+    show_header_toggle: false
+    entities:
+      - entity: switch.opentherm_gw_ch_enable
+        name: Enable Central Heating
+      - entity: switch.opentherm_gw_dhw_enable
+        name: Enable Hot Water
+      - entity: number.opentherm_gw_control_setpoint
+        name: Control Setpoint
+      - entity: number.opentherm_gw_room_setpoint
+        name: Room Setpoint
+      - entity: number.opentherm_gw_dhw_setpoint
+        name: Hot Water Setpoint
+      - entity: number.opentherm_gw_max_ch_setpoint
+        name: Max CH Setpoint
+
+  # Temperatures Card
+  - type: entities
+    title: Temperatures
+    show_header_toggle: false
+    entities:
+      - entity: sensor.opentherm_gw_boiler_temp
+        name: Boiler Water
+        icon: mdi:thermometer
+      - entity: sensor.opentherm_gw_dhw_temp
+        name: Hot Water
+        icon: mdi:water-thermometer
+      - entity: sensor.opentherm_gw_return_temp
+        name: Return Water
+        icon: mdi:thermometer-chevron-down
+      - entity: sensor.opentherm_gw_room_temp
+        name: Room Temperature
+        icon: mdi:home-thermometer
+      - entity: sensor.opentherm_gw_outside_temp
+        name: Outside Temperature
+        icon: mdi:thermometer
+      - entity: sensor.opentherm_gw_exhaust_temp
+        name: Exhaust Temperature
+        icon: mdi:smoke
+
+  # Performance Card
+  - type: entities
+    title: Performance
+    show_header_toggle: false
+    entities:
+      - entity: sensor.opentherm_gw_modulation
+        name: Current Modulation
+      - entity: sensor.opentherm_gw_max_modulation
+        name: Maximum Modulation
+      - entity: sensor.opentherm_gw_pressure
+        name: Water Pressure
+      - entity: sensor.opentherm_gw_dhw_flow
+        name: Hot Water Flow Rate
+
+  # Statistics Card
+  - type: entities
+    title: Statistics
+    show_header_toggle: false
+    entities:
+      - entity: sensor.opentherm_gw_burner_starts
+        name: Burner Starts
+      - entity: sensor.opentherm_gw_ch_pump_starts
+        name: CH Pump Starts
+      - entity: sensor.opentherm_gw_dhw_pump_starts
+        name: DHW Pump Starts
+      - entity: sensor.opentherm_gw_burner_hours
+        name: Burner Hours
+      - entity: sensor.opentherm_gw_ch_pump_hours
+        name: CH Pump Hours
+      - entity: sensor.opentherm_gw_dhw_pump_hours
+        name: DHW Pump Hours
+
+  # Configuration Card
+  - type: entities
+    title: Configuration
+    show_header_toggle: false
+    entities:
+      - entity: binary_sensor.opentherm_gw_dhw_present
+        name: DHW Capability
+      - entity: binary_sensor.opentherm_gw_cooling_supported
+        name: Cooling Capability
+      - entity: binary_sensor.opentherm_gw_ch2_present
+        name: CH2 Present
+      - entity: sensor.opentherm_gw_opentherm_version
+        name: OpenTherm Version

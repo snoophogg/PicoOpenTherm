@@ -1,0 +1,216 @@
+# OpenTherm Gateway - Complete Mobile Dashboard
+# Optimized for mobile viewing with tabbed interface
+
+title: OpenTherm Gateway
+theme: default
+path: opentherm
+icon: mdi:water-boiler
+badges: []
+
+views:
+  # Overview Tab
+  - title: Overview
+    path: overview
+    icon: mdi:view-dashboard
+    badges:
+      - entity: binary_sensor.opentherm_gw_fault
+      - entity: binary_sensor.opentherm_gw_flame
+      - entity: binary_sensor.opentherm_gw_ch_mode
+    cards:
+      # Quick Controls
+      - type: horizontal-stack
+        cards:
+          - type: button
+            entity: switch.opentherm_gw_ch_enable
+            name: CH
+            icon: mdi:radiator
+            tap_action:
+              action: toggle
+          - type: button
+            entity: switch.opentherm_gw_dhw_enable
+            name: DHW
+            icon: mdi:water-boiler
+            tap_action:
+              action: toggle
+
+      # Key Temperatures
+      - type: glance
+        title: Temperatures
+        columns: 3
+        entities:
+          - entity: sensor.opentherm_gw_boiler_temp
+            name: Boiler
+          - entity: sensor.opentherm_gw_dhw_temp
+            name: DHW
+          - entity: sensor.opentherm_gw_room_temp
+            name: Room
+
+      # Modulation and Pressure
+      - type: horizontal-stack
+        cards:
+          - type: gauge
+            entity: sensor.opentherm_gw_modulation
+            name: Modulation
+            min: 0
+            max: 100
+          - type: gauge
+            entity: sensor.opentherm_gw_pressure
+            name: Pressure
+            min: 0
+            max: 3
+            needle: true
+            severity:
+              green: 1
+              yellow: 0.5
+              red: 0
+
+      # Setpoints
+      - type: entities
+        title: Setpoints
+        entities:
+          - entity: number.opentherm_gw_control_setpoint
+          - entity: number.opentherm_gw_room_setpoint
+          - entity: number.opentherm_gw_dhw_setpoint
+
+  # Control Tab
+  - title: Control
+    path: control
+    icon: mdi:tune
+    cards:
+      - type: entities
+        title: System Control
+        entities:
+          - entity: switch.opentherm_gw_ch_enable
+            name: Central Heating
+          - entity: switch.opentherm_gw_dhw_enable
+            name: Hot Water
+
+      - type: entities
+        title: Temperature Setpoints
+        entities:
+          - entity: number.opentherm_gw_control_setpoint
+            name: CH Water Setpoint
+          - entity: number.opentherm_gw_room_setpoint
+            name: Room Setpoint
+          - entity: number.opentherm_gw_dhw_setpoint
+            name: DHW Setpoint
+          - entity: number.opentherm_gw_max_ch_setpoint
+            name: Max CH Setpoint
+
+      - type: glance
+        title: Status
+        columns: 3
+        entities:
+          - entity: binary_sensor.opentherm_gw_flame
+          - entity: binary_sensor.opentherm_gw_ch_mode
+          - entity: binary_sensor.opentherm_gw_dhw_mode
+
+  # Temperatures Tab
+  - title: Temperatures
+    path: temperatures
+    icon: mdi:thermometer
+    cards:
+      - type: entities
+        title: All Temperatures
+        entities:
+          - entity: sensor.opentherm_gw_boiler_temp
+            name: Boiler Water
+          - entity: sensor.opentherm_gw_return_temp
+            name: Return Water
+          - entity: sensor.opentherm_gw_dhw_temp
+            name: Hot Water
+          - entity: sensor.opentherm_gw_room_temp
+            name: Room
+          - entity: sensor.opentherm_gw_outside_temp
+            name: Outside
+          - entity: sensor.opentherm_gw_exhaust_temp
+            name: Exhaust
+
+      - type: history-graph
+        title: Temperature History
+        hours_to_show: 12
+        entities:
+          - entity: sensor.opentherm_gw_boiler_temp
+          - entity: sensor.opentherm_gw_return_temp
+          - entity: sensor.opentherm_gw_dhw_temp
+
+  # Performance Tab
+  - title: Performance
+    path: performance
+    icon: mdi:chart-line
+    cards:
+      - type: gauge
+        entity: sensor.opentherm_gw_modulation
+        name: Current Modulation
+        min: 0
+        max: 100
+
+      - type: entities
+        title: Performance Metrics
+        entities:
+          - entity: sensor.opentherm_gw_modulation
+            name: Current Modulation
+          - entity: sensor.opentherm_gw_max_modulation
+            name: Max Modulation
+          - entity: sensor.opentherm_gw_pressure
+            name: Water Pressure
+          - entity: sensor.opentherm_gw_dhw_flow
+            name: DHW Flow Rate
+
+      - type: history-graph
+        title: Modulation History
+        hours_to_show: 24
+        entities:
+          - entity: sensor.opentherm_gw_modulation
+
+  # Statistics Tab
+  - title: Statistics
+    path: statistics
+    icon: mdi:chart-bar
+    cards:
+      - type: entities
+        title: Start Counters
+        entities:
+          - entity: sensor.opentherm_gw_burner_starts
+          - entity: sensor.opentherm_gw_ch_pump_starts
+          - entity: sensor.opentherm_gw_dhw_pump_starts
+
+      - type: entities
+        title: Operating Hours
+        entities:
+          - entity: sensor.opentherm_gw_burner_hours
+          - entity: sensor.opentherm_gw_ch_pump_hours
+          - entity: sensor.opentherm_gw_dhw_pump_hours
+
+  # Diagnostics Tab
+  - title: Diagnostics
+    path: diagnostics
+    icon: mdi:wrench
+    cards:
+      - type: entities
+        title: System Status
+        entities:
+          - entity: binary_sensor.opentherm_gw_fault
+            name: Fault Status
+          - entity: sensor.opentherm_gw_fault_code
+            name: Fault Code
+          - entity: binary_sensor.opentherm_gw_diagnostic
+            name: Diagnostic Mode
+
+      - type: entities
+        title: Configuration
+        entities:
+          - entity: binary_sensor.opentherm_gw_dhw_present
+          - entity: binary_sensor.opentherm_gw_cooling_supported
+          - entity: binary_sensor.opentherm_gw_ch2_present
+          - entity: sensor.opentherm_gw_opentherm_version
+
+      - type: entities
+        title: All Status Flags
+        entities:
+          - entity: binary_sensor.opentherm_gw_fault
+          - entity: binary_sensor.opentherm_gw_ch_mode
+          - entity: binary_sensor.opentherm_gw_dhw_mode
+          - entity: binary_sensor.opentherm_gw_flame
+          - entity: binary_sensor.opentherm_gw_cooling
+          - entity: binary_sensor.opentherm_gw_diagnostic

@@ -1,0 +1,79 @@
+# OpenTherm Gateway - Control Dashboard
+# Quick access control interface
+
+type: vertical-stack
+cards:
+  # Quick Controls
+  - type: horizontal-stack
+    cards:
+      - type: button
+        entity: switch.opentherm_gw_ch_enable
+        name: Central Heating
+        icon: mdi:radiator
+        tap_action:
+          action: toggle
+        show_state: true
+      - type: button
+        entity: switch.opentherm_gw_dhw_enable
+        name: Hot Water
+        icon: mdi:water-boiler
+        tap_action:
+          action: toggle
+        show_state: true
+
+  # Temperature Controls
+  - type: entities
+    title: Temperature Setpoints
+    entities:
+      - type: custom:slider-entity-row
+        entity: number.opentherm_gw_control_setpoint
+        name: CH Water Setpoint
+        icon: mdi:thermometer-lines
+        min: 0
+        max: 100
+        step: 0.5
+      - type: custom:slider-entity-row
+        entity: number.opentherm_gw_room_setpoint
+        name: Room Setpoint
+        icon: mdi:home-thermometer-outline
+        min: 5
+        max: 30
+        step: 0.5
+      - type: custom:slider-entity-row
+        entity: number.opentherm_gw_dhw_setpoint
+        name: DHW Setpoint
+        icon: mdi:water-thermometer-outline
+        min: 30
+        max: 90
+        step: 1
+      - type: custom:slider-entity-row
+        entity: number.opentherm_gw_max_ch_setpoint
+        name: Max CH Setpoint
+        icon: mdi:thermometer-high
+        min: 30
+        max: 90
+        step: 1
+
+  # Status Indicators
+  - type: glance
+    title: Current Status
+    columns: 3
+    entities:
+      - entity: binary_sensor.opentherm_gw_flame
+        name: Flame
+      - entity: binary_sensor.opentherm_gw_ch_mode
+        name: CH Active
+      - entity: binary_sensor.opentherm_gw_dhw_mode
+        name: DHW Active
+
+  # Current Readings
+  - type: glance
+    title: Current Temperatures
+    columns: 3
+    entities:
+      - entity: sensor.opentherm_gw_boiler_temp
+        name: Boiler
+      - entity: sensor.opentherm_gw_dhw_temp
+        name: DHW
+      - entity: sensor.opentherm_gw_room_temp
+        name: Room

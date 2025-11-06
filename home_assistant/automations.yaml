@@ -1,0 +1,294 @@
+# OpenTherm Gateway - Example Automations
+# Common automation examples for OpenTherm control
+
+# === HEATING SCHEDULES ===
+
+# Morning heating schedule
+- id: opentherm_morning_heating
+  alias: "OpenTherm: Morning Heating"
+  description: "Turn on heating and set temperature in the morning"
+  trigger:
+    - platform: time
+      at: "06:00:00"
+  condition:
+    - condition: time
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+  action:
+    - service: switch.turn_on
+      target:
+        entity_id: switch.opentherm_gw_ch_enable
+    - service: number.set_value
+      target:
+        entity_id: number.opentherm_gw_control_setpoint
+      data:
+        value: 65
+    - service: number.set_value
+      target:
+        entity_id: number.opentherm_gw_room_setpoint
+      data:
+        value: 21
+
+---
+
+# Evening heating reduction
+- id: opentherm_evening_reduction
+  alias: "OpenTherm: Evening Reduction"
+  description: "Lower heating temperature in the evening"
+  trigger:
+    - platform: time
+      at: "22:00:00"
+  action:
+    - service: number.set_value
+      target:
+        entity_id: number.opentherm_gw_control_setpoint
+      data:
+        value: 55
+    - service: number.set_value
+      target:
+        entity_id: number.opentherm_gw_room_setpoint
+      data:
+        value: 18
+
+---
+
+# Night heating off
+- id: opentherm_night_off
+  alias: "OpenTherm: Night Off"
+  description: "Turn off heating at night"
+  trigger:
+    - platform: time
+      at: "23:30:00"
+  action:
+    - service: switch.turn_off
+      target:
+        entity_id: switch.opentherm_gw_ch_enable
+
+---
+
+# === HOT WATER CONTROL ===
+
+# DHW temperature boost when low
+- id: opentherm_dhw_boost
+  alias: "OpenTherm: DHW Temperature Boost"
+  description: "Boost DHW temperature when it drops below threshold"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.opentherm_gw_dhw_temp
+      below: 45
+  condition:
+    - condition: state
+      entity_id: switch.opentherm_gw_dhw_enable
+      state: "on"
+  action:
+    - service: number.set_value
+      target:
+        entity_id: number.opentherm_gw_dhw_setpoint
+      data:
+        value: 60
+    - service: notify.notify
+      data:
+        message: "DHW temperature low, boosting to 60°C"
+
+---
+
+# DHW economy mode at night
+- id: opentherm_dhw_economy
+  alias: "OpenTherm: DHW Economy Mode"
+  description: "Lower DHW temperature at night to save energy"
+  trigger:
+    - platform: time
+      at: "23:00:00"
+  action:
+    - service: number.set_value
+      target:
+        entity_id: number.opentherm_gw_dhw_setpoint
+      data:
+        value: 45
+
+---
+
+# === SAFETY AUTOMATIONS ===
+
+# High temperature alert
+- id: opentherm_high_temp_alert
+  alias: "OpenTherm: High Temperature Alert"
+  description: "Alert when boiler temperature is too high"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.opentherm_gw_boiler_temp
+      above: 85
+  action:
+    - service: notify.notify
+      data:
+        title: "⚠️ High Boiler Temperature"
+        message: "Boiler temperature is {{ states('sensor.opentherm_gw_boiler_temp') }}°C"
+    - service: persistent_notification.create
+      data:
+        title: "High Boiler Temperature"
+        message: "Boiler temperature is {{ states('sensor.opentherm_gw_boiler_temp') }}°C"
+
+---
+
+# Low pressure alert
+- id: opentherm_low_pressure_alert
+  alias: "OpenTherm: Low Pressure Alert"
+  description: "Alert when system pressure is too low"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.opentherm_gw_pressure
+      below: 0.8
+  action:
+    - service: notify.notify
+      data:
+        title: "⚠️ Low System Pressure"
+        message: "CH pressure is {{ states('sensor.opentherm_gw_pressure') }} bar - please top up"
+
+---
+
+# Fault detection
+- id: opentherm_fault_alert
+  alias: "OpenTherm: Fault Alert"
+  description: "Alert when system fault is detected"
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.opentherm_gw_fault
+      to: "on"
+  action:
+    - service: notify.notify
+      data:
+        title: "🚨 OpenTherm Fault Detected"
+        message: "Fault code: {{ states('sensor.opentherm_gw_fault_code') }}"
+    - service: persistent_notification.create
+      data:
+        title: "OpenTherm System Fault"
+        message: |
+          Fault detected at {{ now().strftime('%H:%M:%S') }}
+          Fault code: {{ states('sensor.opentherm_gw_fault_code') }}
+          Please check your boiler display.
+
+---
+
+# === WEATHER-BASED CONTROL ===
+
+# Weather compensation
+- id: opentherm_weather_compensation
+  alias: "OpenTherm: Weather Compensation"
+  description: "Adjust heating based on outside temperature"
+  trigger:
+    - platform: state
+      entity_id: sensor.opentherm_gw_outside_temp
+  condition:
+    - condition: state
+      entity_id: switch.opentherm_gw_ch_enable
+      state: "on"
+  action:
+    - service: number.set_value
+      target:
+        entity_id: number.opentherm_gw_control_setpoint
+      data:
+        value: >
+          {% set outside = states('sensor.opentherm_gw_outside_temp') | float %}
+          {% if outside < -5 %}
+            75
+          {% elif outside < 0 %}
+            70
+          {% elif outside < 5 %}
+            65
+          {% elif outside < 10 %}
+            60
+          {% elif outside < 15 %}
+            55
+          {% else %}
+            50
+          {% endif %}
+
+---
+
+# === PRESENCE-BASED CONTROL ===
+
+# Away mode
+- id: opentherm_away_mode
+  alias: "OpenTherm: Away Mode"
+  description: "Lower heating when nobody is home"
+  trigger:
+    - platform: state
+      entity_id: group.all_persons
+      to: "not_home"
+      for:
+        minutes: 30
+  action:
+    - service: number.set_value
+      target:
+        entity_id: number.opentherm_gw_control_setpoint
+      data:
+        value: 50
+    - service: number.set_value
+      target:
+        entity_id: number.opentherm_gw_room_setpoint
+      data:
+        value: 16
+
+---
+
+# Home mode
+- id: opentherm_home_mode
+  alias: "OpenTherm: Home Mode"
+  description: "Resume normal heating when someone arrives home"
+  trigger:
+    - platform: state
+      entity_id: group.all_persons
+      to: "home"
+  action:
+    - service: number.set_value
+      target:
+        entity_id: number.opentherm_gw_control_setpoint
+      data:
+        value: 65
+    - service: number.set_value
+      target:
+        entity_id: number.opentherm_gw_room_setpoint
+      data:
+        value: 21
+
+---
+
+# === EFFICIENCY MONITORING ===
+
+# High modulation alert (inefficient operation)
+- id: opentherm_high_modulation_alert
+  alias: "OpenTherm: High Modulation Alert"
+  description: "Alert when modulation is consistently high"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.opentherm_gw_modulation
+      above: 90
+      for:
+        minutes: 15
+  action:
+    - service: notify.notify
+      data:
+        message: "Boiler running at high modulation ({{ states('sensor.opentherm_gw_modulation') }}%) for 15 minutes"
+
+---
+
+# Daily statistics report
+- id: opentherm_daily_report
+  alias: "OpenTherm: Daily Statistics Report"
+  description: "Send daily heating statistics"
+  trigger:
+    - platform: time
+      at: "20:00:00"
+  action:
+    - service: notify.notify
+      data:
+        title: "Daily Heating Report"
+        message: |
+          Burner Hours: {{ states('sensor.opentherm_gw_burner_hours') }}h
+          CH Pump Hours: {{ states('sensor.opentherm_gw_ch_pump_hours') }}h
+          Average Boiler Temp: {{ states('sensor.opentherm_gw_boiler_temp') }}°C
+          Current Pressure: {{ states('sensor.opentherm_gw_pressure') }} bar

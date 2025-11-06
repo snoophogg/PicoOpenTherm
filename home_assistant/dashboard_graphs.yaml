@@ -1,0 +1,71 @@
+# OpenTherm Gateway - Temperature Graphs Dashboard
+# Historical temperature data visualization
+
+type: vertical-stack
+cards:
+  # Boiler Temperatures Graph
+  - type: history-graph
+    title: Boiler Circuit Temperatures
+    hours_to_show: 24
+    refresh_interval: 60
+    entities:
+      - entity: sensor.opentherm_gw_boiler_temp
+        name: Boiler Water
+      - entity: sensor.opentherm_gw_return_temp
+        name: Return Water
+      - entity: number.opentherm_gw_control_setpoint
+        name: Control Setpoint
+
+  # Hot Water Temperature Graph
+  - type: history-graph
+    title: Hot Water Temperature
+    hours_to_show: 24
+    refresh_interval: 60
+    entities:
+      - entity: sensor.opentherm_gw_dhw_temp
+        name: DHW Temperature
+      - entity: number.opentherm_gw_dhw_setpoint
+        name: DHW Setpoint
+
+  # Room Temperature Graph
+  - type: history-graph
+    title: Room Temperature
+    hours_to_show: 24
+    refresh_interval: 60
+    entities:
+      - entity: sensor.opentherm_gw_room_temp
+        name: Room Temperature
+      - entity: number.opentherm_gw_room_setpoint
+        name: Room Setpoint
+      - entity: sensor.opentherm_gw_outside_temp
+        name: Outside Temperature
+
+  # Modulation Graph
+  - type: history-graph
+    title: Modulation Level
+    hours_to_show: 24
+    refresh_interval: 60
+    entities:
+      - entity: sensor.opentherm_gw_modulation
+        name: Current Modulation
+
+  # Apex Charts Alternative (requires apex-charts card from HACS)
+  - type: custom:apexcharts-card
+    header:
+      show: true
+      title: Boiler Temperature Analysis
+    graph_span: 24h
+    series:
+      - entity: sensor.opentherm_gw_boiler_temp
+        name: Boiler Water
+        stroke_width: 2
+        color: '#e74c3c'
+      - entity: sensor.opentherm_gw_return_temp
+        name: Return Water
+        stroke_width: 2
+        color: '#3498db'
+      - entity: number.opentherm_gw_control_setpoint
+        name: Control Setpoint
+        stroke_width: 1
+        curve: stepline
+        color: '#95a5a6'

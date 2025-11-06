@@ -1,0 +1,278 @@
+# OpenTherm Gateway - Individual Entity Cards
+# Standalone cards for each entity type
+
+# === STATUS CARDS ===
+
+# Flame Status Card
+type: entity
+entity: binary_sensor.opentherm_gw_flame
+name: Burner Flame
+icon: mdi:fire
+
+---
+
+# Fault Status Card with Alert
+type: conditional
+conditions:
+  - entity: binary_sensor.opentherm_gw_fault
+    state: "on"
+card:
+  type: markdown
+  content: |
+    ## ⚠️ System Fault Detected
+    **Fault Code:** {{ states('sensor.opentherm_gw_fault_code') }}
+    
+    Please check your boiler display for more information.
+  card_mod:
+    style: |
+      ha-card {
+        background: rgba(255, 0, 0, 0.1);
+        border: 2px solid red;
+      }
+
+---
+
+# === CONTROL CARDS ===
+
+# Central Heating Switch Card
+type: button
+entity: switch.opentherm_gw_ch_enable
+name: Central Heating
+icon: mdi:radiator
+show_state: true
+tap_action:
+  action: toggle
+hold_action:
+  action: more-info
+
+---
+
+# Control Setpoint Card
+type: gauge
+entity: sensor.opentherm_gw_boiler_temp
+name: Boiler Temperature
+min: 0
+max: 100
+needle: true
+segments:
+  - from: 0
+    color: '#3498db'
+  - from: 40
+    color: '#2ecc71'
+  - from: 70
+    color: '#f39c12'
+  - from: 85
+    color: '#e74c3c'
+
+---
+
+# === TEMPERATURE CARDS ===
+
+# Multi-Temperature Card
+type: entities
+title: Temperature Overview
+show_header_toggle: false
+entities:
+  - type: custom:multiple-entity-row
+    entity: sensor.opentherm_gw_boiler_temp
+    name: Boiler Circuit
+    icon: mdi:thermometer
+    secondary_info: last-changed
+    entities:
+      - entity: sensor.opentherm_gw_return_temp
+        name: Return
+  - type: custom:multiple-entity-row
+    entity: sensor.opentherm_gw_dhw_temp
+    name: Hot Water
+    icon: mdi:water-thermometer
+    secondary_info: last-changed
+    entities:
+      - entity: number.opentherm_gw_dhw_setpoint
+        name: Target
+  - type: custom:multiple-entity-row
+    entity: sensor.opentherm_gw_room_temp
+    name: Room
+    icon: mdi:home-thermometer
+    secondary_info: last-changed
+    entities:
+      - entity: sensor.opentherm_gw_outside_temp
+        name: Outside
+
+---
+
+# Boiler Temperature Card with Setpoint
+type: thermostat
+entity: number.opentherm_gw_control_setpoint
+name: CH Water Setpoint
+
+---
+
+# === PERFORMANCE CARDS ===
+
+# Modulation Gauge
+type: gauge
+entity: sensor.opentherm_gw_modulation
+name: Modulation Level
+unit: "%"
+min: 0
+max: 100
+severity:
+  green: 0
+  yellow: 50
+  red: 80
+
+---
+
+# Modulation Bar Card (requires bar-card from HACS)
+type: custom:bar-card
+entity: sensor.opentherm_gw_modulation
+name: Modulation Level
+icon: mdi:percent
+unit_of_measurement: "%"
+min: 0
+max: 100
+color: rgb(114, 119, 255)
+positions:
+  icon: outside
+  indicator: inside
+  name: inside
+  value: inside
+
+---
+
+# Water Pressure Card
+type: sensor
+entity: sensor.opentherm_gw_pressure
+name: CH Water Pressure
+graph: line
+detail: 2
+hours_to_show: 24
+
+---
+
+# === STATISTICS CARDS ===
+
+# Counter Statistics Card
+type: entities
+title: System Statistics
+entities:
+  - type: custom:bar-card
+    entity: sensor.opentherm_gw_burner_hours
+    name: Burner Hours
+    icon: mdi:clock-outline
+    max: 10000
+    positions:
+      icon: outside
+      name: inside
+      value: inside
+  - type: custom:bar-card
+    entity: sensor.opentherm_gw_ch_pump_hours
+    name: CH Pump Hours
+    icon: mdi:clock-outline
+    max: 10000
+    positions:
+      icon: outside
+      name: inside
+      value: inside
+  - type: custom:bar-card
+    entity: sensor.opentherm_gw_dhw_pump_hours
+    name: DHW Pump Hours
+    icon: mdi:clock-outline
+    max: 10000
+    positions:
+      icon: outside
+      name: inside
+      value: inside
+
+---
+
+# Statistics Glance Card
+type: glance
+title: Operating Counters
+columns: 3
+entities:
+  - entity: sensor.opentherm_gw_burner_starts
+    name: Burner Starts
+  - entity: sensor.opentherm_gw_ch_pump_starts
+    name: CH Starts
+  - entity: sensor.opentherm_gw_dhw_pump_starts
+    name: DHW Starts
+
+---
+
+# === DIAGNOSTIC CARDS ===
+
+# System Configuration Card
+type: markdown
+content: |
+  ## System Configuration
+  
+  **DHW Present:** {{ states('binary_sensor.opentherm_gw_dhw_present') }}
+  **Cooling Supported:** {{ states('binary_sensor.opentherm_gw_cooling_supported') }}
+  **CH2 Present:** {{ states('binary_sensor.opentherm_gw_ch2_present') }}
+  **OpenTherm Version:** {{ states('sensor.opentherm_gw_opentherm_version') }}
+  
+  ---
+  
+  **Last Update:** {{ relative_time(states.binary_sensor.opentherm_gw_flame.last_changed) }} ago
+
+---
+
+# === MINI CARDS ===
+
+# Mini Flame Indicator
+type: custom:mushroom-entity-card
+entity: binary_sensor.opentherm_gw_flame
+name: Flame
+icon: mdi:fire
+tap_action:
+  action: more-info
+card_mod:
+  style: |
+    ha-card {
+      {% if is_state('binary_sensor.opentherm_gw_flame', 'on') %}
+        background: rgba(255, 152, 0, 0.1);
+      {% endif %}
+    }
+
+---
+
+# Mini Temperature Card
+type: custom:mushroom-template-card
+primary: "{{ states('sensor.opentherm_gw_boiler_temp') }}°C"
+secondary: Boiler Temperature
+icon: mdi:thermometer
+icon_color: |
+  {% set temp = states('sensor.opentherm_gw_boiler_temp')|float %}
+  {% if temp < 40 %}
+    blue
+  {% elif temp < 70 %}
+    green
+  {% elif temp < 85 %}
+    orange
+  {% else %}
+    red
+  {% endif %}
+tap_action:
+  action: more-info
+  entity: sensor.opentherm_gw_boiler_temp
+
+---
+
+# Mini Modulation Card
+type: custom:mushroom-template-card
+primary: "{{ states('sensor.opentherm_gw_modulation') }}%"
+secondary: Modulation
+icon: mdi:percent
+icon_color: |
+  {% set mod = states('sensor.opentherm_gw_modulation')|float %}
+  {% if mod < 30 %}
+    blue
+  {% elif mod < 70 %}
+    green
+  {% else %}
+    orange
+  {% endif %}
+tap_action:
+  action: more-info
+  entity: sensor.opentherm_gw_modulation
