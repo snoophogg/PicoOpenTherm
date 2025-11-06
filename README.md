@@ -29,6 +29,7 @@ A complete OpenTherm v2.2 protocol implementation for Raspberry Pi Pico W with H
   - 3 blinks: MQTT connection error
   - Rapid blinking: Fatal error (configuration or hardware initialization)
 - **Persistent Configuration**: Flash-based storage for WiFi, MQTT, and device settings
+- **Runtime Configuration**: Change device settings via Home Assistant (auto-restart on change)
 - **Configurable Timeouts**: Adjustable retry delays and connection check intervals
 - **Built with CMake**: Uses official Pico SDK with lwIP network stack
 - **Optimized for Pico W**: Takes advantage of dual PIO blocks and CYW43 WiFi
@@ -86,7 +87,9 @@ constexpr uint8_t DEFAULT_OPENTHERM_TX_PIN = 16;
 constexpr uint8_t DEFAULT_OPENTHERM_RX_PIN = 17;
 ```
 
-Configuration is automatically saved to flash memory and persists across reboots. Future versions will support runtime configuration via MQTT/Home Assistant.
+Configuration is automatically saved to flash memory and persists across reboots. 
+
+**Runtime Configuration**: Device name, device ID, and OpenTherm GPIO pins can be changed via Home Assistant MQTT entities. Changes are saved to flash and the device automatically restarts to apply new settings.
 
 ### LED Status Indicator
 
@@ -175,6 +178,14 @@ The gateway exposes 60+ entities organized by type:
 - Room Setpoint (5-30°C)
 - DHW Setpoint (30-90°C)
 - Max CH Setpoint (30-90°C)
+
+#### Configuration Entities (Runtime Changeable)
+- **Device Name** (text) - Change device display name
+- **Device ID** (text) - Change device identifier  
+- **OpenTherm TX Pin** (number 0-28) - Configure TX GPIO pin
+- **OpenTherm RX Pin** (number 0-28) - Configure RX GPIO pin
+
+**Note**: Configuration changes are saved to flash and trigger an automatic restart after 2 seconds to apply the new settings.
 
 ### Dashboard Examples
 
