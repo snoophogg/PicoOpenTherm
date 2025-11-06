@@ -317,6 +317,9 @@ bool check_and_reconnect()
         return true;
     }
 
+    // TODO : Check wifi connection strength
+    // TODO : Expose wifi signal strength to HA
+
     // Check MQTT connection
     if (!mqtt_connected)
     {
