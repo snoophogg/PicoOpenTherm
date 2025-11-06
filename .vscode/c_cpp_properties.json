@@ -1,0 +1,38 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/pico-sdk/src/common/pico_stdlib/include",
+                "${workspaceFolder}/pico-sdk/src/rp2_common/hardware_gpio/include",
+                "${workspaceFolder}/pico-sdk/src/rp2_common/hardware_pio/include",
+                "${workspaceFolder}/pico-sdk/src/rp2_common/hardware_clocks/include",
+                "${workspaceFolder}/pico-sdk/src/rp2_common/hardware_timer/include",
+                "${workspaceFolder}/pico-sdk/src/rp2_common/pico_platform/include",
+                "${workspaceFolder}/pico-sdk/src/rp2_common/pico_cyw43_arch/include",
+                "${workspaceFolder}/pico-sdk/src/common/pico_base/include",
+                "${workspaceFolder}/pico-sdk/src/common/pico_time/include",
+                "${workspaceFolder}/pico-sdk/src/common/pico_sync/include",
+                "${workspaceFolder}/pico-sdk/src/rp2040/hardware_regs/include",
+                "${workspaceFolder}/pico-sdk/src/rp2040/hardware_structs/include",
+                "${workspaceFolder}/pico-sdk/src/boards/include",
+                "${workspaceFolder}/build/generated/pico_base",
+                "${workspaceFolder}/build"
+            ],
+            "defines": [
+                "PICO_BOARD=pico_w",
+                "PICO_BUILD=1",
+                "PICO_NO_HARDWARE=0",
+                "PICO_ON_DEVICE=1",
+                "PICO_RP2040=1"
+            ],
+            "compilerPath": "/usr/bin/arm-none-eabi-gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-arm",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        }
+    ],
+    "version": 4
+}
