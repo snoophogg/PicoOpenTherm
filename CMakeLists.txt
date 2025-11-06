@@ -45,6 +45,7 @@ target_link_libraries(picoopentherm
     pico_stdlib
     pico_cyw43_arch_lwip_threadsafe_background
     hardware_pio
+    hardware_watchdog
     pico_lwip_mqtt
     kvstore_default
     hardware_flash

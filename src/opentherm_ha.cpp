@@ -4,6 +4,7 @@
 #include <cstring>
 #include <sstream>
 #include "pico/stdlib.h"
+#include "hardware/watchdog.h"
 
 namespace OpenTherm
 {
@@ -619,7 +620,9 @@ namespace OpenTherm
             if (::Config::setDeviceName(name))
             {
                 publishSensor("device_name", name);
-                printf("Device name updated to: %s (requires restart to take effect)\n", name);
+                printf("Device name updated to: %s - restarting in 2 seconds...\n", name);
+                sleep_ms(2000);
+                watchdog_reboot(0, 0, 0);
                 return true;
             }
             return false;
@@ -630,7 +633,9 @@ namespace OpenTherm
             if (::Config::setDeviceID(id))
             {
                 publishSensor("device_id", id);
-                printf("Device ID updated to: %s (requires restart to take effect)\n", id);
+                printf("Device ID updated to: %s - restarting in 2 seconds...\n", id);
+                sleep_ms(2000);
+                watchdog_reboot(0, 0, 0);
                 return true;
             }
             return false;
@@ -641,7 +646,9 @@ namespace OpenTherm
             if (::Config::setOpenThermTxPin(pin))
             {
                 publishSensor("opentherm_tx_pin", (int)pin);
-                printf("OpenTherm TX pin updated to: GPIO%u (requires restart to take effect)\n", pin);
+                printf("OpenTherm TX pin updated to: GPIO%u - restarting in 2 seconds...\n", pin);
+                sleep_ms(2000);
+                watchdog_reboot(0, 0, 0);
                 return true;
             }
             return false;
@@ -652,7 +659,9 @@ namespace OpenTherm
             if (::Config::setOpenThermRxPin(pin))
             {
                 publishSensor("opentherm_rx_pin", (int)pin);
-                printf("OpenTherm RX pin updated to: GPIO%u (requires restart to take effect)\n", pin);
+                printf("OpenTherm RX pin updated to: GPIO%u - restarting in 2 seconds...\n", pin);
+                sleep_ms(2000);
+                watchdog_reboot(0, 0, 0);
                 return true;
             }
             return false;
