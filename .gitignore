@@ -46,3 +46,17 @@ CMakeFiles/
 # Secrets Files
 secrets.cfg
 settings.bin
+
+# Docker volumes and runtime data
+docker/mosquitto/data/
+docker/mosquitto/log/
+docker/homeassistant/*
+!docker/homeassistant/configuration.yaml
+!docker/homeassistant/automations.yaml
+!docker/homeassistant/scripts.yaml
+!docker/homeassistant/scenes.yaml
+!docker/homeassistant/ui-lovelace.yaml
+!docker/homeassistant/secrets.yaml
+!docker/homeassistant/secrets.yaml.example
+!docker/homeassistant/lovelace/
+docker/homeassistant/secrets.yaml

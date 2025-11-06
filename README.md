@@ -237,6 +237,33 @@ cards:
       - entity: binary_sensor.opentherm_gw_fault
 ```
 
+## Testing and Development
+
+### Docker Development Environment
+
+A complete Docker Compose setup is included for easy testing with Home Assistant and MQTT:
+
+```bash
+cd docker
+docker-compose up -d
+```
+
+This provides:
+- **Home Assistant** with pre-configured dashboards and UI
+- **Mosquitto MQTT broker** ready for your PicoOpenTherm device
+- **60+ entities** auto-discovered via MQTT
+- **8 example automations** (pressure alerts, temperature schedules, fault notifications)
+- **6 reusable scripts** (boost heating, system health checks, eco/comfort modes)
+
+**Quick Start**: See [docker/QUICKSTART.md](docker/QUICKSTART.md) for a 5-minute setup guide.
+
+**Full Documentation**:
+- [docker/README.md](docker/README.md) - Complete Docker setup guide
+- [docker/FEATURES.md](docker/FEATURES.md) - Pre-configured features reference
+- [docker/STRUCTURE.md](docker/STRUCTURE.md) - File structure overview
+
+Access the pre-configured environment at **http://localhost:8123** after starting.
+
 ## Library Usage Example
 
 For standalone library usage without Home Assistant:

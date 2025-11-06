@@ -1,0 +1,41 @@
+name: picoopentherm
+
+volumes:
+  mosquitto-data:
+  mosquitto-log:
+
+services:
+  # Mosquitto MQTT Broker
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    restart: unless-stopped
+    ports:
+      - "1883:1883"  # MQTT
+      - "9001:9001"  # WebSocket
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+    networks:
+      - picoopentherm
+
+  # Home Assistant
+  homeassistant:
+    image: homeassistant/home-assistant:latest
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "8123:8123"  # Home Assistant Web UI
+    volumes:
+      - ./homeassistant:/config
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - TZ=Europe/London
+    networks:
+      - picoopentherm
+    depends_on:
+      - mosquitto
+
+networks:
+  picoopentherm:
+    driver: bridge

@@ -1,0 +1,162 @@
+# Example automations for PicoOpenTherm Gateway
+# These are examples that users can enable/modify via the UI
+
+# Low Water Pressure Alert
+- id: opentherm_low_pressure_alert
+  alias: OpenTherm - Low Water Pressure Alert
+  description: Alert when CH water pressure is too low
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.opentherm_gw_ch_water_pressure
+      below: 1.0
+      for:
+        minutes: 5
+  condition: []
+  action:
+    - service: persistent_notification.create
+      data:
+        title: Low Boiler Pressure
+        message: >
+          Central heating water pressure is {{ states('sensor.opentherm_gw_ch_water_pressure') }} bar.
+          Normal pressure should be between 1.0 and 2.0 bar. Please check your heating system.
+        notification_id: opentherm_low_pressure
+  mode: single
+
+# High Temperature Alert
+- id: opentherm_high_temp_alert
+  alias: OpenTherm - High Boiler Temperature Alert
+  description: Alert when boiler water temperature is unusually high
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.opentherm_gw_boiler_water_temperature
+      above: 80
+      for:
+        minutes: 5
+  condition: []
+  action:
+    - service: persistent_notification.create
+      data:
+        title: High Boiler Temperature
+        message: >
+          Boiler water temperature is {{ states('sensor.opentherm_gw_boiler_water_temperature') }}°C.
+          This is unusually high. Please check your heating system.
+        notification_id: opentherm_high_temp
+  mode: single
+
+# Gateway Offline Alert
+- id: opentherm_gateway_offline
+  alias: OpenTherm - Gateway Offline Alert
+  description: Alert when the OpenTherm gateway goes offline
+  trigger:
+    - platform: state
+      entity_id: sensor.opentherm_gw_status
+      to: unavailable
+      for:
+        minutes: 5
+  condition: []
+  action:
+    - service: persistent_notification.create
+      data:
+        title: OpenTherm Gateway Offline
+        message: >
+          The OpenTherm Gateway has been offline for 5 minutes.
+          Please check the device connection and power.
+        notification_id: opentherm_offline
+  mode: single
+
+# Fault Code Notification
+- id: opentherm_fault_code
+  alias: OpenTherm - Fault Code Notification
+  description: Notify when boiler reports a fault code
+  trigger:
+    - platform: state
+      entity_id: sensor.opentherm_gw_oem_fault_code
+  condition:
+    - condition: template
+      value_template: "{{ trigger.to_state.state not in ['0', 'unknown', 'unavailable'] }}"
+  action:
+    - service: persistent_notification.create
+      data:
+        title: Boiler Fault Detected
+        message: >
+          Boiler fault code: {{ states('sensor.opentherm_gw_oem_fault_code') }}
+          Diagnostic code: {{ states('sensor.opentherm_gw_oem_diagnostic_code') }}
+          Please check your boiler manual for details.
+        notification_id: opentherm_fault
+  mode: single
+
+# Energy Efficiency - Reduce Setpoint at Night
+- id: opentherm_night_setback
+  alias: OpenTherm - Night Setback
+  description: Lower room temperature setpoint at night to save energy
+  trigger:
+    - platform: time
+      at: "22:00:00"
+  condition: []
+  action:
+    - service: climate.set_temperature
+      target:
+        entity_id: climate.opentherm_thermostat
+      data:
+        temperature: 18
+  mode: single
+
+# Energy Efficiency - Morning Warmup
+- id: opentherm_morning_warmup
+  alias: OpenTherm - Morning Warmup
+  description: Raise temperature in the morning
+  trigger:
+    - platform: time
+      at: "06:00:00"
+  condition: []
+  action:
+    - service: climate.set_temperature
+      target:
+        entity_id: climate.opentherm_thermostat
+      data:
+        temperature: 20
+  mode: single
+
+# Configuration Change Notification
+- id: opentherm_config_changed
+  alias: OpenTherm - Configuration Change Notification
+  description: Notify when gateway configuration is changed
+  trigger:
+    - platform: state
+      entity_id:
+        - text.opentherm_gw_device_name
+        - text.opentherm_gw_device_id
+        - number.opentherm_gw_tx_pin
+        - number.opentherm_gw_rx_pin
+  condition: []
+  action:
+    - service: persistent_notification.create
+      data:
+        title: Gateway Configuration Changed
+        message: >
+          {{ trigger.to_state.attributes.friendly_name }} changed from 
+          "{{ trigger.from_state.state }}" to "{{ trigger.to_state.state }}".
+          The gateway will restart in a few seconds to apply changes.
+        notification_id: opentherm_config_change
+  mode: queued
+
+# Daily Statistics Summary
+- id: opentherm_daily_summary
+  alias: OpenTherm - Daily Statistics Summary
+  description: Create a daily summary of heating system usage
+  trigger:
+    - platform: time
+      at: "23:59:00"
+  condition: []
+  action:
+    - service: persistent_notification.create
+      data:
+        title: Daily Heating Summary
+        message: >
+          Today's heating statistics:
+          - Burner starts: {{ states('sensor.opentherm_gw_burner_starts') }}
+          - Average room temp: {{ states('sensor.opentherm_gw_room_temperature') }}°C
+          - Max boiler temp: {{ state_attr('sensor.opentherm_gw_boiler_water_temperature', 'max_value') | default('N/A') }}°C
+          - Current pressure: {{ states('sensor.opentherm_gw_ch_water_pressure') }} bar
+        notification_id: opentherm_daily_summary
+  mode: single

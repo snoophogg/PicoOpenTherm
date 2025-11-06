@@ -1,0 +1,159 @@
+# Example scripts for PicoOpenTherm Gateway
+# These are reusable scripts that can be called from automations or the UI
+
+# Set comfort temperature (e.g., for when you're home)
+set_comfort_temp:
+  alias: Set Comfort Temperature
+  description: Set the thermostat to a comfortable temperature
+  fields:
+    temperature:
+      description: Target temperature in °C
+      example: 21
+  sequence:
+    - service: climate.set_temperature
+      target:
+        entity_id: climate.opentherm_thermostat
+      data:
+        temperature: "{{ temperature | default(21) }}"
+    - service: persistent_notification.create
+      data:
+        title: Temperature Adjusted
+        message: "Thermostat set to {{ temperature | default(21) }}°C (Comfort mode)"
+        notification_id: temp_change
+
+# Set eco temperature (e.g., for when you're away)
+set_eco_temp:
+  alias: Set Eco Temperature
+  description: Set the thermostat to an energy-saving temperature
+  fields:
+    temperature:
+      description: Target temperature in °C
+      example: 16
+  sequence:
+    - service: climate.set_temperature
+      target:
+        entity_id: climate.opentherm_thermostat
+      data:
+        temperature: "{{ temperature | default(16) }}"
+    - service: persistent_notification.create
+      data:
+        title: Eco Mode Activated
+        message: "Thermostat set to {{ temperature | default(16) }}°C (Eco mode)"
+        notification_id: temp_change
+
+# Quick temperature boost
+boost_heating:
+  alias: Boost Heating
+  description: Temporarily increase heating for quick warmup
+  fields:
+    duration:
+      description: Boost duration in minutes
+      example: 30
+    temperature:
+      description: Boost temperature in °C
+      example: 23
+  sequence:
+    - service: climate.set_temperature
+      target:
+        entity_id: climate.opentherm_thermostat
+      data:
+        temperature: "{{ temperature | default(23) }}"
+    - service: persistent_notification.create
+      data:
+        title: Heating Boost Active
+        message: "Heating boosted to {{ temperature | default(23) }}°C for {{ duration | default(30) }} minutes"
+        notification_id: heating_boost
+    - delay:
+        minutes: "{{ duration | default(30) }}"
+    - service: climate.set_temperature
+      target:
+        entity_id: climate.opentherm_thermostat
+      data:
+        temperature: 20
+    - service: persistent_notification.create
+      data:
+        title: Heating Boost Ended
+        message: "Boost period ended, returning to normal temperature"
+        notification_id: heating_boost
+
+# Check system health
+check_system_health:
+  alias: Check Heating System Health
+  description: Verify all heating system parameters are within normal ranges
+  sequence:
+    - service: persistent_notification.create
+      data:
+        title: Heating System Status
+        message: |
+          **Current Status:**
+          - Connection: {{ states('sensor.opentherm_gw_status') }}
+          - Room Temp: {{ states('sensor.opentherm_gw_room_temperature') }}°C
+          - Boiler Temp: {{ states('sensor.opentherm_gw_boiler_water_temperature') }}°C
+          - Water Pressure: {{ states('sensor.opentherm_gw_ch_water_pressure') }} bar
+          - Modulation: {{ states('sensor.opentherm_gw_modulation_level') }}%
+          - Fault Code: {{ states('sensor.opentherm_gw_oem_fault_code') }}
+          
+          **Warnings:**
+          {% if states('sensor.opentherm_gw_ch_water_pressure') | float < 1.0 %}
+          ⚠️ Low water pressure
+          {% endif %}
+          {% if states('sensor.opentherm_gw_oem_fault_code') | int > 0 %}
+          ⚠️ Fault code active
+          {% endif %}
+          {% if states('sensor.opentherm_gw_status') == 'unavailable' %}
+          ⚠️ Gateway offline
+          {% endif %}
+        notification_id: system_health
+
+# Weekly maintenance reminder
+schedule_maintenance_check:
+  alias: Schedule Maintenance Check
+  description: Create a reminder to check system parameters
+  sequence:
+    - service: persistent_notification.create
+      data:
+        title: Weekly Maintenance Check
+        message: |
+          Time for your weekly heating system check:
+          
+          1. Check water pressure: {{ states('sensor.opentherm_gw_ch_water_pressure') }} bar (should be 1.0-2.0)
+          2. Check for leaks around radiators
+          3. Verify all radiators heat evenly
+          4. Listen for unusual noises from boiler
+          
+          **System Stats:**
+          - Burner hours: {{ states('sensor.opentherm_gw_burner_hours') }}
+          - Burner starts: {{ states('sensor.opentherm_gw_burner_starts') }}
+          - CH Pump hours: {{ states('sensor.opentherm_gw_ch_pump_hours') }}
+        notification_id: maintenance_reminder
+
+# Reset gateway configuration to defaults
+reset_gateway_config:
+  alias: Reset Gateway Configuration
+  description: Reset OpenTherm Gateway to default configuration
+  sequence:
+    - service: text.set_value
+      target:
+        entity_id: text.opentherm_gw_device_name
+      data:
+        value: "OpenTherm Gateway"
+    - service: text.set_value
+      target:
+        entity_id: text.opentherm_gw_device_id
+      data:
+        value: "opentherm_gw"
+    - service: number.set_value
+      target:
+        entity_id: number.opentherm_gw_tx_pin
+      data:
+        value: 16
+    - service: number.set_value
+      target:
+        entity_id: number.opentherm_gw_rx_pin
+      data:
+        value: 17
+    - service: persistent_notification.create
+      data:
+        title: Gateway Configuration Reset
+        message: "Gateway configuration has been reset to defaults. Device will restart shortly."
+        notification_id: config_reset

@@ -1,0 +1,119 @@
+# Home Assistant Configuration for PicoOpenTherm
+# This is a minimal configuration to get started with MQTT integration
+
+# Configure Home Assistant basics
+# Core Home Assistant configuration
+homeassistant:
+  name: Home
+  latitude: !secret latitude
+  longitude: !secret longitude
+  elevation: !secret elevation
+  unit_system: metric
+  time_zone: Europe/London
+  currency: GBP
+  
+  # Internal URL
+  internal_url: "http://localhost:8123"
+  # Uncomment and set external_url in secrets.yaml for remote access:
+  # external_url: !secret external_url
+
+# Lovelace UI Configuration
+# Mode: yaml - UI is defined in ui-lovelace.yaml
+# This provides a pre-configured dashboard for PicoOpenTherm
+lovelace:
+  mode: yaml
+  # Uncomment to use storage mode (UI-editable):
+  # mode: storage
+  dashboards:
+    opentherm-dashboard:
+      mode: yaml
+      title: OpenTherm Gateway
+      icon: mdi:radiator
+      show_in_sidebar: true
+      filename: lovelace/dashboards.yaml
+
+# Enable the frontend
+frontend:
+
+# Enable configuration via UI
+config:
+
+# Enable system health
+system_health:
+
+# Enable history
+history:
+
+# Enable logbook
+logbook:
+
+# Enable map
+map:
+
+# Enable sun component
+sun:
+
+# HTTP configuration
+http:
+  server_host: 0.0.0.0
+  # Uncomment and set for production:
+  # trusted_proxies:
+  #   - 172.18.0.0/16
+
+# mqtt:
+#   mosquitto:
+#     broker: mosquitto
+#     username: homeassistant
+#     # password: !secret mqtt_password
+#     port: 1883
+#     discovery: true
+#     birth_message:
+#       topic: 'homeassistant/status'
+#       payload: 'online'
+#       retain: true
+#     will_message:
+#       topic: 'homeassistant/status'
+#       payload: 'offline'
+#       retain: true
+# MQTT Configuration
+# Note: In recent Home Assistant versions, MQTT must be configured via UI
+# Go to: Settings → Devices & Services → Add Integration → MQTT
+# Use the following settings:
+#   Broker: mosquitto
+#   Port: 1883
+#   Discovery: enabled
+#   Discovery prefix: homeassistant
+# For authentication, add username/password in the UI
+
+# Recorder - store history in database
+recorder:
+  purge_keep_days: 7
+  commit_interval: 1
+
+# Enable default set of integrations
+default_config:
+
+# Enable automation UI
+automation: !include automations.yaml
+
+# Enable script UI
+script: !include scripts.yaml
+
+# Enable scene UI
+scene: !include scenes.yaml
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+# Example automation to log when PicoOpenTherm connects
+# automation old:
+#   - alias: 'Log PicoOpenTherm Connection'
+#     trigger:
+#       - platform: mqtt
+#         topic: 'opentherm/state/+' 
+#     action:
+#       - service: system_log.write
+#         data:
+#           message: 'PicoOpenTherm device update received'
+#           level: info
