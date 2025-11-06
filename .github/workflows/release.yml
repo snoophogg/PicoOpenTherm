@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install ARM toolchain
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential cmake
+    
+    - name: Build firmware
+      run: |
+        mkdir -p build
+        cd build
+        cmake -DPICO_BOARD=pico_w -DCMAKE_BUILD_TYPE=Release ..
+        make -j$(nproc)
+    
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+    
+    - name: Create release archive
+      run: |
+        mkdir -p release
+        cp build/picoopentherm.uf2 release/picoopentherm-${{ steps.get_version.outputs.VERSION }}.uf2
+        cp build/picoopentherm.elf release/picoopentherm-${{ steps.get_version.outputs.VERSION }}.elf
+        cp build/picoopentherm.bin release/picoopentherm-${{ steps.get_version.outputs.VERSION }}.bin
+        cd release
+        sha256sum * > checksums.txt
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          release/picoopentherm-${{ steps.get_version.outputs.VERSION }}.uf2
+          release/picoopentherm-${{ steps.get_version.outputs.VERSION }}.elf
+          release/picoopentherm-${{ steps.get_version.outputs.VERSION }}.bin
+          release/checksums.txt
+        body: |
+          ## PicoOpenTherm ${{ steps.get_version.outputs.VERSION }}
+          
+          OpenTherm v2.2 Gateway for Raspberry Pi Pico W with Home Assistant MQTT integration.
+          
+          ### Installation
+          
+          1. Download `picoopentherm-${{ steps.get_version.outputs.VERSION }}.uf2`
+          2. Hold BOOTSEL button on your Pico W and connect to USB
+          3. Copy the .uf2 file to the Pico W drive
+          4. The device will automatically reboot and start running
+          
+          ### Configuration
+          
+          Before flashing, update WiFi and MQTT settings in `src/main.cpp`:
+          - WiFi SSID and password
+          - MQTT broker IP and port
+          
+          See [README.md](https://github.com/snoophogg/PicoOpenTherm/blob/main/README.md) for full documentation.
+          
+          ### Files
+          
+          - **picoopentherm.uf2** - Ready to flash firmware (recommended)
+          - **picoopentherm.elf** - Executable with debug symbols
+          - **picoopentherm.bin** - Raw binary image
+          - **checksums.txt** - SHA256 checksums for verification
+        draft: false
+        prerelease: false

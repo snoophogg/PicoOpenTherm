@@ -1,0 +1,52 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install ARM toolchain
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential cmake
+    
+    - name: Build firmware
+      run: |
+        mkdir -p build
+        cd build
+        cmake -DPICO_BOARD=pico_w ..
+        make -j$(nproc)
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: picoopentherm-firmware
+        path: |
+          build/picoopentherm.uf2
+          build/picoopentherm.elf
+          build/picoopentherm.bin
+        retention-days: 30
+    
+    - name: Build summary
+      run: |
+        echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Firmware built successfully" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "- \`picoopentherm.uf2\` - Ready to flash to Pico W" >> $GITHUB_STEP_SUMMARY
+        echo "- \`picoopentherm.elf\` - Executable with debug symbols" >> $GITHUB_STEP_SUMMARY
+        echo "- \`picoopentherm.bin\` - Raw binary image" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        ls -lh build/picoopentherm.* >> $GITHUB_STEP_SUMMARY || true
