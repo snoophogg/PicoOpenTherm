@@ -27,6 +27,8 @@ A complete OpenTherm v2.2 protocol implementation for Raspberry Pi Pico W with H
   - 1 blink: Normal operation
   - 2 blinks: WiFi connection error
   - 3 blinks: MQTT connection error
+  - Rapid blinking: Fatal error (configuration or hardware initialization)
+- **Persistent Configuration**: Flash-based storage for WiFi, MQTT, and device settings
 - **Configurable Timeouts**: Adjustable retry delays and connection check intervals
 - **Built with CMake**: Uses official Pico SDK with lwIP network stack
 - **Optimized for Pico W**: Takes advantage of dual PIO blocks and CYW43 WiFi
@@ -63,17 +65,28 @@ Connect your OpenTherm device to the Pico W:
 
 ### WiFi & MQTT Configuration
 
-Before building, update `src/main.cpp` with your credentials:
+Configuration is stored in flash memory using the pico-kvstore library. On first boot, default values are used. You can modify these defaults before building by editing the constants in `src/config.hpp`:
 
 ```cpp
-// WiFi credentials
-#define WIFI_SSID "your_wifi_ssid"
-#define WIFI_PASSWORD "your_wifi_password"
+// Default WiFi credentials
+constexpr const char *DEFAULT_WIFI_SSID = "your_wifi_ssid";
+constexpr const char *DEFAULT_WIFI_PASSWORD = "your_wifi_password";
 
-// MQTT broker settings
-#define MQTT_SERVER_IP "192.168.1.100"  // Your Home Assistant IP
-#define MQTT_SERVER_PORT 1883
+// Default MQTT broker settings
+constexpr const char *DEFAULT_MQTT_SERVER_IP = "192.168.1.100";
+constexpr uint16_t DEFAULT_MQTT_SERVER_PORT = 1883;
+constexpr const char *DEFAULT_MQTT_CLIENT_ID = "picoopentherm";
+
+// Default device identification
+constexpr const char *DEFAULT_DEVICE_NAME = "OpenTherm Gateway";
+constexpr const char *DEFAULT_DEVICE_ID = "opentherm_gw";
+
+// Default OpenTherm GPIO pins
+constexpr uint8_t DEFAULT_OPENTHERM_TX_PIN = 16;
+constexpr uint8_t DEFAULT_OPENTHERM_RX_PIN = 17;
 ```
+
+Configuration is automatically saved to flash memory and persists across reboots. Future versions will support runtime configuration via MQTT/Home Assistant.
 
 ### LED Status Indicator
 
@@ -81,6 +94,7 @@ The onboard LED provides visual feedback:
 - **1 blink** every ~1.4 seconds: Normal operation (connected and publishing)
 - **2 blinks** repeating: WiFi connection error (retrying)
 - **3 blinks** repeating: MQTT connection error (retrying)
+- **Rapid blinking** (100ms on/off): Fatal error - configuration system or hardware initialization failed
 
 ## Setup
 
@@ -125,14 +139,17 @@ After flashing the firmware and powering on your Pico W, Home Assistant will aut
 
 ### Quick Setup
 
-1. **Flash the firmware** to your Pico W
-2. **Configure WiFi/MQTT** credentials in `src/main.cpp` before building
-3. **Power on** - the device will automatically connect and register with Home Assistant
+1. **Configure defaults** in `src/config.hpp` (WiFi, MQTT broker, device name)
+2. **Flash the firmware** to your Pico W
+3. **Power on** - the device will use the configured defaults on first boot
 4. **Check LED status**:
    - Single blinks = Connected and working
    - Double blinks = WiFi issue
    - Triple blinks = MQTT issue
+   - Rapid blinks = Fatal error (check configuration or hardware)
 5. **Open Home Assistant** - All OpenTherm entities will appear automatically
+
+Configuration is saved to flash memory and persists across reboots.
 
 ### Available Entities
 
@@ -394,9 +411,9 @@ Interface(unsigned int tx_pin, unsigned int rx_pin,
 ```
 .
 ├── CMakeLists.txt              # Main CMake configuration
-├── pico_sdk_import.cmake       # Pico SDK import helper
 ├── build.sh                    # Build automation script
 ├── pico-sdk/                   # Pico SDK submodule
+├── pico-kvstore/               # Key-value storage library submodule
 ├── picotool/                   # Picotool submodule
 ├── src/
 │   ├── main.cpp                # Main gateway application with WiFi/MQTT
@@ -404,6 +421,8 @@ Interface(unsigned int tx_pin, unsigned int rx_pin,
 │   ├── opentherm.cpp           # OpenTherm library implementation
 │   ├── opentherm_ha.hpp        # Home Assistant MQTT integration header
 │   ├── opentherm_ha.cpp        # Home Assistant MQTT implementation
+│   ├── config.hpp              # Configuration system header
+│   ├── config.cpp              # Configuration system implementation
 │   ├── lwipopts.h              # lwIP network stack configuration
 │   ├── opentherm_write.pio     # PIO TX Manchester encoder
 │   └── opentherm_read.pio      # PIO RX Manchester decoder

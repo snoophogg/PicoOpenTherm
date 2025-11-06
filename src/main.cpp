@@ -3,23 +3,10 @@
 #include "pico/cyw43_arch.h"
 #include "opentherm.hpp"
 #include "opentherm_ha.hpp"
+#include "config.hpp"
 #include "lwip/apps/mqtt.h"
 #include <string>
 #include <map>
-
-// TODO : Read these from a secrets file
-// WiFi credentials - update these!
-#define WIFI_SSID "your_wifi_ssid"
-#define WIFI_PASSWORD "your_wifi_password"
-
-// TODO : Read these from a secrets file
-// MQTT broker settings - update these!
-#define MQTT_SERVER_IP "192.168.1.100" // Your MQTT broker IP
-#define MQTT_SERVER_PORT 1883
-
-// OpenTherm pins
-#define OPENTHERM_TX_PIN 16
-#define OPENTHERM_RX_PIN 17
 
 // Connection retry settings
 // TODO : Expose these as HA configuration options
@@ -34,6 +21,17 @@
 #define LED_BLINK_WIFI_ERROR_COUNT 2 // 2 blinks for WiFi error
 #define LED_BLINK_MQTT_ERROR_COUNT 3 // 3 blinks for MQTT error
 #define LED_BLINK_NORMAL_COUNT 1     // 1 blink for normal operation
+
+// Global configuration buffers
+static char wifi_ssid[64];
+static char wifi_password[64];
+static char mqtt_server_ip[64];
+static uint16_t mqtt_server_port;
+static char mqtt_client_id[64];
+static char device_name[64];
+static char device_id[64];
+static uint8_t opentherm_tx_pin;
+static uint8_t opentherm_rx_pin;
 
 // Global MQTT client
 static mqtt_client_t *mqtt_client = nullptr;
@@ -152,7 +150,7 @@ bool connect_wifi()
 {
     printf("Connecting to WiFi...\n");
 
-    if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD,
+    if (cyw43_arch_wifi_connect_timeout_ms(wifi_ssid, wifi_password,
                                            CYW43_AUTH_WPA2_AES_PSK, WIFI_CONNECT_TIMEOUT_MS))
     {
         printf("Failed to connect to WiFi\n");
@@ -177,20 +175,20 @@ bool connect_mqtt()
     }
 
     struct mqtt_connect_client_info_t ci = {0};
-    ci.client_id = "pico_opentherm";
+    ci.client_id = mqtt_client_id;
     ci.keep_alive = 60;
 
     mqtt_set_inpub_callback(mqtt_client, mqtt_incoming_publish_cb,
                             mqtt_incoming_data_cb, nullptr);
 
     ip_addr_t mqtt_server;
-    if (!ipaddr_aton(MQTT_SERVER_IP, &mqtt_server))
+    if (!ipaddr_aton(mqtt_server_ip, &mqtt_server))
     {
         printf("Invalid MQTT server IP\n");
         return false;
     }
 
-    err_t err = mqtt_client_connect(mqtt_client, &mqtt_server, MQTT_SERVER_PORT,
+    err_t err = mqtt_client_connect(mqtt_client, &mqtt_server, mqtt_server_port,
                                     mqtt_connection_cb, nullptr, &ci);
 
     if (err != ERR_OK)
@@ -226,9 +224,34 @@ void blink_led_pattern(uint8_t blink_count)
     sleep_ms(LED_BLINK_PAUSE);
 }
 
+uint32_t blink_check(uint8_t blink_count, uint32_t last_led_toggle)
+{
+    uint32_t now = to_ms_since_boot(get_absolute_time());
+    if (now - last_led_toggle >= LED_BLINK_PAUSE)
+    {
+        blink_led_pattern(blink_count);
+        return now;
+    }
+    return last_led_toggle;
+}
+
+// Blink LED continuously for fatal errors
+[[noreturn]] void blink_error_fatal()
+{
+    printf("Fatal error - blinking continuously\n");
+    while (true)
+    {
+        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+        sleep_ms(100);
+        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
+        sleep_ms(100);
+    }
+}
+
 // Connect to WiFi and MQTT with retry logic and LED indication
 bool connect_with_retry()
 {
+    uint32_t last_led_toggle = 0;
     // First, connect to WiFi
     int wifi_attempt = 1;
     while (true)
@@ -246,11 +269,10 @@ bool connect_with_retry()
         printf("WiFi connection failed, retrying in %d seconds...\n", WIFI_RETRY_DELAY_MS / 1000);
 
         // Blink error pattern for retry delay duration
-        // TODO : Move LED blinking logic to separate function
         uint32_t delay_start = to_ms_since_boot(get_absolute_time());
         while ((to_ms_since_boot(get_absolute_time()) - delay_start) < WIFI_RETRY_DELAY_MS)
         {
-            blink_led_pattern(LED_BLINK_WIFI_ERROR_COUNT);
+            last_led_toggle = blink_check(LED_BLINK_WIFI_ERROR_COUNT, last_led_toggle);
         }
 
         wifi_attempt++;
@@ -283,11 +305,10 @@ bool connect_with_retry()
         printf("MQTT connection failed, retrying in %d seconds...\n", MQTT_RETRY_DELAY_MS / 1000);
 
         // Blink error pattern for retry delay duration
-        // TODO : Move LED blinking logic to separate function
         uint32_t delay_start = to_ms_since_boot(get_absolute_time());
         while ((to_ms_since_boot(get_absolute_time()) - delay_start) < MQTT_RETRY_DELAY_MS)
         {
-            blink_led_pattern(LED_BLINK_MQTT_ERROR_COUNT);
+            last_led_toggle = blink_check(LED_BLINK_MQTT_ERROR_COUNT, last_led_toggle);
         }
 
         mqtt_attempt++;
@@ -384,22 +405,47 @@ int main()
     if (cyw43_arch_init())
     {
         printf("Failed to initialize cyw43\n");
-        return 1;
+        // Can't blink LED without cyw43, just hang
+        while (true)
+        {
+            sleep_ms(1000);
+        }
     }
 
-    cyw43_arch_enable_sta_mode();
+    // Initialize configuration system
+    printf("Initializing configuration...\n");
+    if (!Config::init())
+    {
+        printf("Failed to initialize configuration system\n");
+        blink_error_fatal();
+    }
+
+    // Load configuration from flash
+    Config::getWiFiSSID(wifi_ssid, sizeof(wifi_ssid));
+    Config::getWiFiPassword(wifi_password, sizeof(wifi_password));
+    Config::getMQTTServerIP(mqtt_server_ip, sizeof(mqtt_server_ip));
+    mqtt_server_port = Config::getMQTTServerPort();
+    Config::getMQTTClientID(mqtt_client_id, sizeof(mqtt_client_id));
+    Config::getDeviceName(device_name, sizeof(device_name));
+    Config::getDeviceID(device_id, sizeof(device_id));
+    opentherm_tx_pin = Config::getOpenThermTxPin();
+    opentherm_rx_pin = Config::getOpenThermRxPin();
+
+    // Print current configuration (hide password)
+    Config::printConfig();
 
     // Connect to WiFi and MQTT with retry logic
+    cyw43_arch_enable_sta_mode();
     connect_with_retry(); // Will retry until both are connected
 
-    // Initialize OpenTherm
+    // Initialize OpenTherm with configured pins
     printf("Initializing OpenTherm...\n");
-    OpenTherm::Interface ot(OPENTHERM_TX_PIN, OPENTHERM_RX_PIN);
+    OpenTherm::Interface ot(opentherm_tx_pin, opentherm_rx_pin);
 
-    // Configure Home Assistant interface
+    // Configure Home Assistant interface using loaded configuration
     OpenTherm::HomeAssistant::Config ha_config = {
-        .device_name = "OpenTherm Gateway",
-        .device_id = "opentherm_gw",
+        .device_name = device_name,
+        .device_id = device_id,
         .mqtt_prefix = "homeassistant",
         .state_topic_base = "opentherm/state",
         .command_topic_base = "opentherm/cmd",
@@ -428,6 +474,10 @@ int main()
     {
         // Check connections periodically
         uint32_t now = to_ms_since_boot(get_absolute_time());
+
+        // Blink LED to show normal activity (1 blink pattern with pause)
+        last_led_toggle = blink_check(LED_BLINK_NORMAL_COUNT, last_led_toggle);
+
         if (now - last_connection_check >= CONNECTION_CHECK_DELAY_MS)
         {
             check_and_reconnect(); // Will retry until reconnected
@@ -446,17 +496,6 @@ int main()
 
         // Update Home Assistant (reads sensors and publishes to MQTT)
         ha.update();
-
-        // TODO : Move LED blinking logic to separate function
-        // Blink LED to show normal activity (1 blink pattern with pause)
-        if (now - last_led_toggle >= (LED_BLINK_DURATION * 2 + LED_BLINK_PAUSE))
-        {
-            // Single blink for normal operation
-            cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
-            sleep_ms(LED_BLINK_DURATION);
-            cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
-            last_led_toggle = now;
-        }
 
         // Small delay
         sleep_ms(100);

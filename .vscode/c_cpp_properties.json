@@ -18,7 +18,9 @@
                 "${workspaceFolder}/pico-sdk/src/rp2040/hardware_structs/include",
                 "${workspaceFolder}/pico-sdk/src/boards/include",
                 "${workspaceFolder}/build/generated/pico_base",
-                "${workspaceFolder}/build"
+                "${workspaceFolder}/build",
+                "${workspaceFolder}/pico-kvstore/include",
+                "${workspaceFolder}/pico-kvstore/lib/pico-vfs/include"
             ],
             "defines": [
                 "PICO_BOARD=pico_w",

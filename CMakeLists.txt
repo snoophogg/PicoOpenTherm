@@ -18,11 +18,15 @@ set(CMAKE_CXX_STANDARD 17)
 # Initialize the Pico SDK
 pico_sdk_init()
 
+# Add pico-kvstore library path
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pico-kvstore)
+
 # Add OpenTherm test executable
 add_executable(picoopentherm
     src/main.cpp
     src/opentherm.cpp
     src/opentherm_ha.cpp
+    src/config.cpp
 )
 
 # Generate the PIO header files for OpenTherm
@@ -32,6 +36,8 @@ pico_generate_pio_header(picoopentherm ${CMAKE_CURRENT_LIST_DIR}/src/opentherm_r
 # Add include directory for lwipopts.h
 target_include_directories(picoopentherm PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src
+    ${CMAKE_CURRENT_LIST_DIR}/pico-kvstore/include
+    ${CMAKE_CURRENT_LIST_DIR}/pico-kvstore/lib/pico-vfs/include
 )
 
 # Link the necessary libraries
@@ -40,6 +46,9 @@ target_link_libraries(picoopentherm
     pico_cyw43_arch_lwip_threadsafe_background
     hardware_pio
     pico_lwip_mqtt
+    kvstore_default
+    hardware_flash
+    hardware_sync
 )
 
 # Enable USB output, disable UART output
