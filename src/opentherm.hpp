@@ -5,7 +5,8 @@
 #include "hardware/pio.h"
 
 // OpenTherm message types
-enum class MessageType : uint8_t {
+enum class MessageType : uint8_t
+{
     READ_DATA = 0,
     WRITE_DATA = 1,
     INVALID_DATA = 2,
@@ -17,7 +18,8 @@ enum class MessageType : uint8_t {
 };
 
 // Maintain C compatibility typedefs
-typedef enum {
+typedef enum
+{
     OT_MSGTYPE_READ_DATA = 0,
     OT_MSGTYPE_WRITE_DATA = 1,
     OT_MSGTYPE_INVALID_DATA = 2,
@@ -29,91 +31,92 @@ typedef enum {
 } opentherm_msgtype_t;
 
 // OpenTherm frame structure
-typedef struct {
-    uint8_t parity;          // Parity bit
-    uint8_t msg_type;        // Message type (3 bits)
-    uint8_t spare;           // Spare bits (4 bits) - always 0
-    uint8_t data_id;         // Data ID (8 bits)
-    uint16_t data_value;     // Data value (16 bits)
+typedef struct
+{
+    uint8_t parity;      // Parity bit
+    uint8_t msg_type;    // Message type (3 bits)
+    uint8_t spare;       // Spare bits (4 bits) - always 0
+    uint8_t data_id;     // Data ID (8 bits)
+    uint16_t data_value; // Data value (16 bits)
 } opentherm_frame_t;
 
 // Common OpenTherm Data IDs
 // Class 1: Status Information
-#define OT_DATA_ID_STATUS           0
+#define OT_DATA_ID_STATUS 0
 #define OT_DATA_ID_CONTROL_SETPOINT 1
-#define OT_DATA_ID_MASTER_CONFIG    2
-#define OT_DATA_ID_SLAVE_CONFIG     3
-#define OT_DATA_ID_COMMAND          4
-#define OT_DATA_ID_FAULT_FLAGS      5
-#define OT_DATA_ID_REMOTE_PARAMS    6
-#define OT_DATA_ID_COOLING_CONTROL  7
+#define OT_DATA_ID_MASTER_CONFIG 2
+#define OT_DATA_ID_SLAVE_CONFIG 3
+#define OT_DATA_ID_COMMAND 4
+#define OT_DATA_ID_FAULT_FLAGS 5
+#define OT_DATA_ID_REMOTE_PARAMS 6
+#define OT_DATA_ID_COOLING_CONTROL 7
 #define OT_DATA_ID_CONTROL_SETPOINT_2 8
 
 // Class 2: Configuration Information
-#define OT_DATA_ID_REMOTE_OVERRIDE  9
-#define OT_DATA_ID_TSP_NUMBER       10
-#define OT_DATA_ID_TSP_ENTRY        11
-#define OT_DATA_ID_FHB_SIZE         12
-#define OT_DATA_ID_FHB_ENTRY        13
-#define OT_DATA_ID_MAX_REL_MOD      14
-#define OT_DATA_ID_MAX_CAPACITY     15
+#define OT_DATA_ID_REMOTE_OVERRIDE 9
+#define OT_DATA_ID_TSP_NUMBER 10
+#define OT_DATA_ID_TSP_ENTRY 11
+#define OT_DATA_ID_FHB_SIZE 12
+#define OT_DATA_ID_FHB_ENTRY 13
+#define OT_DATA_ID_MAX_REL_MOD 14
+#define OT_DATA_ID_MAX_CAPACITY 15
 
 // Class 4: Sensor and Informational Data
-#define OT_DATA_ID_ROOM_SETPOINT    16
-#define OT_DATA_ID_REL_MOD_LEVEL    17
-#define OT_DATA_ID_CH_WATER_PRESS   18
-#define OT_DATA_ID_DHW_FLOW_RATE    19
-#define OT_DATA_ID_DAY_TIME         20
-#define OT_DATA_ID_DATE             21
-#define OT_DATA_ID_YEAR             22
+#define OT_DATA_ID_ROOM_SETPOINT 16
+#define OT_DATA_ID_REL_MOD_LEVEL 17
+#define OT_DATA_ID_CH_WATER_PRESS 18
+#define OT_DATA_ID_DHW_FLOW_RATE 19
+#define OT_DATA_ID_DAY_TIME 20
+#define OT_DATA_ID_DATE 21
+#define OT_DATA_ID_YEAR 22
 #define OT_DATA_ID_ROOM_SETPOINT_CH2 23
-#define OT_DATA_ID_ROOM_TEMP        24
+#define OT_DATA_ID_ROOM_TEMP 24
 #define OT_DATA_ID_BOILER_WATER_TEMP 25
-#define OT_DATA_ID_DHW_TEMP         26
-#define OT_DATA_ID_OUTSIDE_TEMP     27
+#define OT_DATA_ID_DHW_TEMP 26
+#define OT_DATA_ID_OUTSIDE_TEMP 27
 #define OT_DATA_ID_RETURN_WATER_TEMP 28
 #define OT_DATA_ID_SOLAR_STORAGE_TEMP 29
-#define OT_DATA_ID_SOLAR_COLL_TEMP  30
-#define OT_DATA_ID_FLOW_TEMP_CH2    31
-#define OT_DATA_ID_DHW2_TEMP        32
-#define OT_DATA_ID_EXHAUST_TEMP     33
+#define OT_DATA_ID_SOLAR_COLL_TEMP 30
+#define OT_DATA_ID_FLOW_TEMP_CH2 31
+#define OT_DATA_ID_DHW2_TEMP 32
+#define OT_DATA_ID_EXHAUST_TEMP 33
 
-// Class 5: Pre-Defined Remote Boiler Parameters  
-#define OT_DATA_ID_DHW_BOUNDS       48
-#define OT_DATA_ID_CH_BOUNDS        49
-#define OT_DATA_ID_DHW_SETPOINT     56
-#define OT_DATA_ID_MAX_CH_SETPOINT  57
+// Class 5: Pre-Defined Remote Boiler Parameters
+#define OT_DATA_ID_DHW_BOUNDS 48
+#define OT_DATA_ID_CH_BOUNDS 49
+#define OT_DATA_ID_DHW_SETPOINT 56
+#define OT_DATA_ID_MAX_CH_SETPOINT 57
 
 // Class 4: Additional Informational Data
-#define OT_DATA_ID_BURNER_STARTS    116
-#define OT_DATA_ID_CH_PUMP_STARTS   117
-#define OT_DATA_ID_DHW_PUMP_STARTS  118
+#define OT_DATA_ID_BURNER_STARTS 116
+#define OT_DATA_ID_CH_PUMP_STARTS 117
+#define OT_DATA_ID_DHW_PUMP_STARTS 118
 #define OT_DATA_ID_DHW_BURNER_STARTS 119
-#define OT_DATA_ID_BURNER_HOURS     120
-#define OT_DATA_ID_CH_PUMP_HOURS    121
-#define OT_DATA_ID_DHW_PUMP_HOURS   122
+#define OT_DATA_ID_BURNER_HOURS 120
+#define OT_DATA_ID_CH_PUMP_HOURS 121
+#define OT_DATA_ID_DHW_PUMP_HOURS 122
 #define OT_DATA_ID_DHW_BURNER_HOURS 123
 
 // Class 2: OpenTherm Version & Product Info
 #define OT_DATA_ID_OPENTHERM_VERSION 124
-#define OT_DATA_ID_SLAVE_VERSION    125
-#define OT_DATA_ID_MASTER_VERSION   126
-#define OT_DATA_ID_SLAVE_PRODUCT    127
+#define OT_DATA_ID_SLAVE_VERSION 125
+#define OT_DATA_ID_MASTER_VERSION 126
+#define OT_DATA_ID_SLAVE_PRODUCT 127
 
 // Status flags (Data ID 0)
-#define OT_STATUS_MASTER_CH_ENABLE      (1 << 0)
-#define OT_STATUS_MASTER_DHW_ENABLE     (1 << 1)
+#define OT_STATUS_MASTER_CH_ENABLE (1 << 0)
+#define OT_STATUS_MASTER_DHW_ENABLE (1 << 1)
 #define OT_STATUS_MASTER_COOLING_ENABLE (1 << 2)
-#define OT_STATUS_MASTER_OTC_ACTIVE     (1 << 3)
-#define OT_STATUS_MASTER_CH2_ENABLE     (1 << 4)
+#define OT_STATUS_MASTER_OTC_ACTIVE (1 << 3)
+#define OT_STATUS_MASTER_CH2_ENABLE (1 << 4)
 
-#define OT_STATUS_SLAVE_FAULT           (1 << 0)
-#define OT_STATUS_SLAVE_CH_MODE         (1 << 1)
-#define OT_STATUS_SLAVE_DHW_MODE        (1 << 2)
-#define OT_STATUS_SLAVE_FLAME           (1 << 3)
-#define OT_STATUS_SLAVE_COOLING         (1 << 4)
-#define OT_STATUS_SLAVE_CH2_MODE        (1 << 5)
-#define OT_STATUS_SLAVE_DIAGNOSTIC      (1 << 6)
+#define OT_STATUS_SLAVE_FAULT (1 << 0)
+#define OT_STATUS_SLAVE_CH_MODE (1 << 1)
+#define OT_STATUS_SLAVE_DHW_MODE (1 << 2)
+#define OT_STATUS_SLAVE_FLAME (1 << 3)
+#define OT_STATUS_SLAVE_COOLING (1 << 4)
+#define OT_STATUS_SLAVE_CH2_MODE (1 << 5)
+#define OT_STATUS_SLAVE_DIAGNOSTIC (1 << 6)
 
 // Function prototypes
 
@@ -169,14 +172,15 @@ uint16_t opentherm_encode_s16(int16_t value);
 int16_t opentherm_decode_s16(uint16_t value);
 
 // Decode status flags (Data ID 0)
-typedef struct {
+typedef struct
+{
     // Master status flags (HB)
     bool ch_enable;
     bool dhw_enable;
     bool cooling_enable;
     bool otc_active;
     bool ch2_enable;
-    
+
     // Slave status flags (LB)
     bool fault;
     bool ch_mode;
@@ -191,12 +195,13 @@ void opentherm_decode_status(uint16_t value, opentherm_status_t *status);
 uint16_t opentherm_encode_status(const opentherm_status_t *status);
 
 // Decode configuration flags
-typedef struct {
+typedef struct
+{
     // Configuration bits
     bool dhw_present;
-    bool control_type;  // 0=modulating, 1=on/off
+    bool control_type; // 0=modulating, 1=on/off
     bool cooling_config;
-    bool dhw_config;  // 0=instantaneous, 1=storage tank
+    bool dhw_config; // 0=instantaneous, 1=storage tank
     bool master_pump_control;
     bool ch2_present;
 } opentherm_config_t;
@@ -207,8 +212,9 @@ void opentherm_decode_slave_config(uint16_t value, opentherm_config_t *config);
 uint16_t opentherm_encode_slave_config(const opentherm_config_t *config);
 
 // Decode fault flags (Data ID 5)
-typedef struct {
-    uint8_t code;  // OEM fault code
+typedef struct
+{
+    uint8_t code; // OEM fault code
     bool service_request;
     bool lockout_reset;
     bool low_water_pressure;
@@ -220,7 +226,8 @@ typedef struct {
 void opentherm_decode_fault(uint16_t value, opentherm_fault_t *fault);
 
 // Decode remote parameter flags (Data ID 6)
-typedef struct {
+typedef struct
+{
     bool dhw_setpoint_enable;
     bool max_ch_setpoint_enable;
     bool dhw_setpoint_rw;
@@ -230,19 +237,21 @@ typedef struct {
 void opentherm_decode_remote_params(uint16_t value, opentherm_remote_params_t *params);
 
 // Encode/decode day of week and time (Data ID 20)
-typedef struct {
-    uint8_t day_of_week;  // 1=Monday, 7=Sunday, 0=unknown
-    uint8_t hours;        // 0-23
-    uint8_t minutes;      // 0-59
+typedef struct
+{
+    uint8_t day_of_week; // 1=Monday, 7=Sunday, 0=unknown
+    uint8_t hours;       // 0-23
+    uint8_t minutes;     // 0-59
 } opentherm_time_t;
 
 uint16_t opentherm_encode_time(const opentherm_time_t *time);
 void opentherm_decode_time(uint16_t value, opentherm_time_t *time);
 
 // Encode/decode date (Data ID 21)
-typedef struct {
-    uint8_t month;  // 1-12
-    uint8_t day;    // 1-31
+typedef struct
+{
+    uint8_t month; // 1-12
+    uint8_t day;   // 1-31
 } opentherm_date_t;
 
 uint16_t opentherm_encode_date(const opentherm_date_t *date);
@@ -314,85 +323,88 @@ uint32_t opentherm_write_year(uint16_t year);
 bool opentherm_manchester_decode(uint64_t raw_data, uint32_t *decoded_frame);
 
 // C++ OpenTherm Interface
-namespace OpenTherm {
+namespace OpenTherm
+{
 
-class Interface {
-private:
-    PIO pio_tx_;
-    PIO pio_rx_;
-    unsigned int sm_tx_;
-    unsigned int sm_rx_;
-    unsigned int tx_pin_;
-    unsigned int rx_pin_;
-    uint32_t timeout_ms_;
+    class Interface
+    {
+    private:
+        PIO pio_tx_;
+        PIO pio_rx_;
+        unsigned int sm_tx_;
+        unsigned int sm_rx_;
+        unsigned int tx_pin_;
+        unsigned int rx_pin_;
+        uint32_t timeout_ms_;
 
-public:
-    // Constructor
-    Interface(unsigned int tx_pin, unsigned int rx_pin, PIO pio_tx = pio0, PIO pio_rx = pio1);
-    
-    // Set/get timeout for read/write operations (default 1000ms)
-    void setTimeout(uint32_t timeout_ms) { timeout_ms_ = timeout_ms; }
-    uint32_t getTimeout() const { return timeout_ms_; }
-    
-    // Send an OpenTherm frame
-    void send(uint32_t frame);
-    
-    // Receive an OpenTherm frame (non-blocking)
-    bool receive(uint32_t& frame);
-    
-    // Print frame details
-    static void printFrame(uint32_t frame_data);
-    
-    // High-level read functions with automatic request/response handling
-    // Returns true if successful, false if timeout or error
-    
-    // Status and configuration reads
-    bool readStatus(opentherm_status_t* status);
-    bool readSlaveConfig(opentherm_config_t* config);
-    bool readFaultFlags(opentherm_fault_t* fault);
-    
-    // Temperature sensor reads (returns temperature in °C)
-    bool readBoilerTemperature(float* temp);
-    bool readDHWTemperature(float* temp);
-    bool readOutsideTemperature(float* temp);
-    bool readReturnWaterTemperature(float* temp);
-    bool readRoomTemperature(float* temp);
-    bool readExhaustTemperature(int16_t* temp);
-    
-    // Pressure and flow reads
-    bool readCHWaterPressure(float* pressure);  // bar
-    bool readDHWFlowRate(float* flow_rate);     // l/min
-    
-    // Modulation level read (percentage)
-    bool readModulationLevel(float* level);
-    
-    // Setpoint reads
-    bool readControlSetpoint(float* setpoint);
-    bool readDHWSetpoint(float* setpoint);
-    bool readMaxCHSetpoint(float* setpoint);
-    
-    // Counter/statistics reads
-    bool readBurnerStarts(uint16_t* count);
-    bool readCHPumpStarts(uint16_t* count);
-    bool readDHWPumpStarts(uint16_t* count);
-    bool readBurnerHours(uint16_t* hours);
-    bool readCHPumpHours(uint16_t* hours);
-    bool readDHWPumpHours(uint16_t* hours);
-    
-    // Version information reads
-    bool readOpenThermVersion(float* version);
-    bool readSlaveVersion(uint8_t* type, uint8_t* version);
-    
-    // Write functions
-    bool writeControlSetpoint(float temperature);
-    bool writeRoomSetpoint(float temperature);
-    bool writeDHWSetpoint(float temperature);
-    bool writeMaxCHSetpoint(float temperature);
-    
-private:
-    // Helper function to send request and wait for response
-    bool sendAndReceive(uint32_t request, uint32_t* response);
-};
+    public:
+        // Constructor
+        Interface(unsigned int tx_pin, unsigned int rx_pin, PIO pio_tx = pio0, PIO pio_rx = pio1);
+
+        // Set/get timeout for read/write operations (default 1000ms)
+        void setTimeout(uint32_t timeout_ms) { timeout_ms_ = timeout_ms; }
+        uint32_t getTimeout() const { return timeout_ms_; }
+
+        // Send an OpenTherm frame
+        void send(uint32_t frame);
+
+        // Receive an OpenTherm frame (non-blocking)
+        bool receive(uint32_t &frame);
+
+        // Print frame details
+        static void printFrame(uint32_t frame_data);
+
+        // High-level read functions with automatic request/response handling
+        // Returns true if successful, false if timeout or error
+
+        // Status and configuration reads
+        bool readStatus(opentherm_status_t *status);
+        bool readSlaveConfig(opentherm_config_t *config);
+        bool readFaultFlags(opentherm_fault_t *fault);
+
+        // Temperature sensor reads (returns temperature in °C)
+        bool readBoilerTemperature(float *temp);
+        bool readDHWTemperature(float *temp);
+        bool readOutsideTemperature(float *temp);
+        bool readReturnWaterTemperature(float *temp);
+        bool readRoomTemperature(float *temp);
+        bool readExhaustTemperature(int16_t *temp);
+
+        // Pressure and flow reads
+        bool readCHWaterPressure(float *pressure); // bar
+        bool readDHWFlowRate(float *flow_rate);    // l/min
+
+        // Modulation level read (percentage)
+        bool readModulationLevel(float *level);
+
+        // Setpoint reads
+        bool readControlSetpoint(float *setpoint);
+        bool readDHWSetpoint(float *setpoint);
+        bool readMaxCHSetpoint(float *setpoint);
+
+        // Counter/statistics reads
+        bool readBurnerStarts(uint16_t *count);
+        bool readCHPumpStarts(uint16_t *count);
+        bool readDHWPumpStarts(uint16_t *count);
+        bool readBurnerHours(uint16_t *hours);
+        bool readCHPumpHours(uint16_t *hours);
+        bool readDHWPumpHours(uint16_t *hours);
+
+        // Version information reads
+        bool readOpenThermVersion(float *version);
+        bool readSlaveVersion(uint8_t *type, uint8_t *version);
+
+        // Write functions
+        bool writeControlSetpoint(float temperature);
+        bool writeRoomSetpoint(float temperature);
+        bool writeDHWSetpoint(float temperature);
+        bool writeMaxCHSetpoint(float temperature);
+
+        // Helper function to send request and wait for response
+        bool sendAndReceive(uint32_t request, uint32_t *response);
+
+    private:
+    };
 
 } // namespace OpenTherm
 

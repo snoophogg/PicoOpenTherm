@@ -19,25 +19,32 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 # Add OpenTherm test executable
-add_executable(opentherm_test
-    src/opentherm_test.cpp
+add_executable(picoopentherm
+    src/main.cpp
     src/opentherm.cpp
+    src/opentherm_ha.cpp
 )
 
 # Generate the PIO header files for OpenTherm
-pico_generate_pio_header(opentherm_test ${CMAKE_CURRENT_LIST_DIR}/src/opentherm_write.pio)
-pico_generate_pio_header(opentherm_test ${CMAKE_CURRENT_LIST_DIR}/src/opentherm_read.pio)
+pico_generate_pio_header(picoopentherm ${CMAKE_CURRENT_LIST_DIR}/src/opentherm_write.pio)
+pico_generate_pio_header(picoopentherm ${CMAKE_CURRENT_LIST_DIR}/src/opentherm_read.pio)
+
+# Add include directory for lwipopts.h
+target_include_directories(picoopentherm PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/src
+)
 
 # Link the necessary libraries
-target_link_libraries(opentherm_test
+target_link_libraries(picoopentherm
     pico_stdlib
-    pico_cyw43_arch_none
+    pico_cyw43_arch_lwip_threadsafe_background
     hardware_pio
+    pico_lwip_mqtt
 )
 
 # Enable USB output, disable UART output
-pico_enable_stdio_usb(opentherm_test 1)
-pico_enable_stdio_uart(opentherm_test 0)
+pico_enable_stdio_usb(picoopentherm 1)
+pico_enable_stdio_uart(picoopentherm 0)
 
 # Create map/bin/hex/uf2 files
-pico_add_extra_outputs(opentherm_test)
+pico_add_extra_outputs(picoopentherm)

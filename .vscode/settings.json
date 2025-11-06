@@ -6,5 +6,11 @@
     "cmake.configureSettings": {
         "PICO_BOARD": "pico_w",
         "PICO_SDK_PATH": "${workspaceFolder}/pico-sdk"
+    },
+    "files.associations": {
+        "*.tf": "log",
+        "*.pScript": "vb",
+        "*.jobfilexla": "xml",
+        "memory": "cpp"
     }
 }

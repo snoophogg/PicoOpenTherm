@@ -21,4 +21,4 @@ make -j$(nproc)
 
 echo ""
 echo "Build complete!"
-echo "Flash opentherm_test.uf2 to your Pico W"
+echo "Flash picoopentherm.uf2 to your Pico W"
