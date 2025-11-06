@@ -4,3 +4,5 @@
 [submodule "picotool"]
 	path = picotool
 	url = https://github.com/raspberrypi/picotool.git
+[submodule "pico-kvstore"]
+	path = pico-kvstore
