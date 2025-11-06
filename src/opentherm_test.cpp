@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdint>
 #include "pico/stdlib.h"
+#include "pico/cyw43_arch.h"
 #include "opentherm.hpp"
 
 // Main application
@@ -8,6 +9,12 @@
 int main() {
     stdio_init_all();
     sleep_ms(2000);  // Wait for USB connection
+    
+    // Initialize Wi-Fi chip for LED control
+    if (cyw43_arch_init()) {
+        printf("Failed to initialize cyw43\n");
+        return 1;
+    }
     
     printf("\n=== OpenTherm PIO Implementation (C++) ===\n");
     printf("Protocol: OpenTherm v2.2\n");
@@ -42,6 +49,11 @@ int main() {
             printf("\n[RX] Frame #%lu received:\n", ++frame_count);
             OpenTherm::Interface::printFrame(received_frame);
             printf("\n");
+            
+            // Blink LED on frame reception
+            cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+            sleep_ms(100);
+            cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
         }
         
         sleep_ms(100);

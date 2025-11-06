@@ -55,6 +55,7 @@ pico_generate_pio_header(opentherm_test ${CMAKE_CURRENT_LIST_DIR}/src/opentherm_
 # Link the necessary libraries
 target_link_libraries(opentherm_test
     pico_stdlib
+    pico_cyw43_arch_none
     hardware_pio
 )
 
