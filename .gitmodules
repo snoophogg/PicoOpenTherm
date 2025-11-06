@@ -6,3 +6,4 @@
 	url = https://github.com/raspberrypi/picotool.git
 [submodule "pico-kvstore"]
 	path = pico-kvstore
+	url = https://github.com/oyama/pico-kvstore.git
