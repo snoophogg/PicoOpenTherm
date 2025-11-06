@@ -79,6 +79,13 @@ namespace OpenTherm
             bool setCHEnable(bool enable);
             bool setDHWEnable(bool enable);
 
+            // Configuration functions
+            bool setDeviceName(const char *name);
+            bool setDeviceID(const char *id);
+            bool setOpenThermTxPin(uint8_t pin);
+            bool setOpenThermRxPin(uint8_t pin);
+            void publishDeviceConfiguration();
+
         private:
             OpenTherm::Interface &ot_;
             Config config_;

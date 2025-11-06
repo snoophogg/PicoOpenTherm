@@ -1,4 +1,5 @@
 #include "opentherm_ha.hpp"
+#include "config.hpp"
 #include <cstdio>
 #include <cstring>
 #include <sstream>
@@ -207,6 +208,22 @@ namespace OpenTherm
             publishDiscoveryConfig("sensor", "opentherm_version", "OpenTherm Version",
                                    buildStateTopic("opentherm_version").c_str(), nullptr, nullptr, "mdi:information");
 
+            // Device configuration (text entities)
+            publishDiscoveryConfig("text", "device_name", "Device Name",
+                                   buildStateTopic("device_name").c_str(), nullptr, nullptr, "mdi:tag-text",
+                                   buildCommandTopic("device_name").c_str());
+            publishDiscoveryConfig("text", "device_id", "Device ID",
+                                   buildStateTopic("device_id").c_str(), nullptr, nullptr, "mdi:identifier",
+                                   buildCommandTopic("device_id").c_str());
+
+            // OpenTherm GPIO configuration (number entities)
+            publishDiscoveryConfig("number", "opentherm_tx_pin", "OpenTherm TX Pin",
+                                   buildStateTopic("opentherm_tx_pin").c_str(), nullptr, nullptr, "mdi:pin",
+                                   buildCommandTopic("opentherm_tx_pin").c_str(), nullptr, 0.0f, 28.0f, 1.0f);
+            publishDiscoveryConfig("number", "opentherm_rx_pin", "OpenTherm RX Pin",
+                                   buildStateTopic("opentherm_rx_pin").c_str(), nullptr, nullptr, "mdi:pin",
+                                   buildCommandTopic("opentherm_rx_pin").c_str(), nullptr, 0.0f, 28.0f, 1.0f);
+
             printf("Discovery configs published!\n");
         }
 
@@ -409,6 +426,27 @@ namespace OpenTherm
             }
         }
 
+        void HAInterface::publishDeviceConfiguration()
+        {
+            char buffer[128];
+
+            // Publish device name
+            if (::Config::getDeviceName(buffer, sizeof(buffer)))
+            {
+                publishSensor("device_name", buffer);
+            }
+
+            // Publish device ID
+            if (::Config::getDeviceID(buffer, sizeof(buffer)))
+            {
+                publishSensor("device_id", buffer);
+            }
+
+            // Publish OpenTherm GPIO pins
+            publishSensor("opentherm_tx_pin", (int)::Config::getOpenThermTxPin());
+            publishSensor("opentherm_rx_pin", (int)::Config::getOpenThermRxPin());
+        }
+
         void HAInterface::update()
         {
             // TODO : Add failsafe mode
@@ -426,6 +464,7 @@ namespace OpenTherm
                 publishCounters();
                 publishConfiguration();
                 publishFaults();
+                publishDeviceConfiguration();
             }
         }
 
@@ -468,6 +507,28 @@ namespace OpenTherm
             {
                 float temp = atof(payload);
                 setMaxCHSetpoint(temp);
+            }
+            // Device name
+            else if (strcmp(topic, (cmd_base + "/device_name").c_str()) == 0)
+            {
+                setDeviceName(payload);
+            }
+            // Device ID
+            else if (strcmp(topic, (cmd_base + "/device_id").c_str()) == 0)
+            {
+                setDeviceID(payload);
+            }
+            // OpenTherm TX pin
+            else if (strcmp(topic, (cmd_base + "/opentherm_tx_pin").c_str()) == 0)
+            {
+                uint8_t pin = (uint8_t)atoi(payload);
+                setOpenThermTxPin(pin);
+            }
+            // OpenTherm RX pin
+            else if (strcmp(topic, (cmd_base + "/opentherm_rx_pin").c_str()) == 0)
+            {
+                uint8_t pin = (uint8_t)atoi(payload);
+                setOpenThermRxPin(pin);
             }
         }
 
@@ -548,6 +609,50 @@ namespace OpenTherm
             if (ot_.sendAndReceive(request, &response))
             {
                 publishBinarySensor("dhw_enable", enable);
+                return true;
+            }
+            return false;
+        }
+
+        bool HAInterface::setDeviceName(const char *name)
+        {
+            if (::Config::setDeviceName(name))
+            {
+                publishSensor("device_name", name);
+                printf("Device name updated to: %s (requires restart to take effect)\n", name);
+                return true;
+            }
+            return false;
+        }
+
+        bool HAInterface::setDeviceID(const char *id)
+        {
+            if (::Config::setDeviceID(id))
+            {
+                publishSensor("device_id", id);
+                printf("Device ID updated to: %s (requires restart to take effect)\n", id);
+                return true;
+            }
+            return false;
+        }
+
+        bool HAInterface::setOpenThermTxPin(uint8_t pin)
+        {
+            if (::Config::setOpenThermTxPin(pin))
+            {
+                publishSensor("opentherm_tx_pin", (int)pin);
+                printf("OpenTherm TX pin updated to: GPIO%u (requires restart to take effect)\n", pin);
+                return true;
+            }
+            return false;
+        }
+
+        bool HAInterface::setOpenThermRxPin(uint8_t pin)
+        {
+            if (::Config::setOpenThermRxPin(pin))
+            {
+                publishSensor("opentherm_rx_pin", (int)pin);
+                printf("OpenTherm RX pin updated to: GPIO%u (requires restart to take effect)\n", pin);
                 return true;
             }
             return false;
