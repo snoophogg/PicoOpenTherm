@@ -42,3 +42,7 @@ build/
 *.cmake
 CMakeCache.txt
 CMakeFiles/
+
+# Secrets Files
+secrets.cfg
+settings.bin
