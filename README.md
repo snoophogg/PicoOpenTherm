@@ -496,7 +496,7 @@ Connect via serial terminal at 115200 baud to see:
 
 ## License
 
-This project is open source. See LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## References
 
