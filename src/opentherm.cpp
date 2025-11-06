@@ -1,5 +1,6 @@
 #include "opentherm.hpp"
 #include "hardware/pio.h"
+#include "pico/stdlib.h"
 #include "opentherm_write.pio.h"
 #include "opentherm_read.pio.h"
 #include <cstdio>
@@ -81,6 +82,31 @@ uint16_t opentherm_f8_8_from_float(float temp) {
 float opentherm_f8_8_to_float(uint16_t value) {
     int16_t signed_value = static_cast<int16_t>(value);
     return static_cast<float>(signed_value) / 256.0f;
+}
+
+// Helper functions to extract and convert data values from frames
+
+// Extract data value from a frame
+uint16_t opentherm_get_u16(uint32_t frame) {
+    return static_cast<uint16_t>(frame & 0xFFFF);
+}
+
+// Extract and convert f8.8 temperature value from a frame
+float opentherm_get_f8_8(uint32_t frame) {
+    uint16_t value = opentherm_get_u16(frame);
+    return opentherm_f8_8_to_float(value);
+}
+
+// Extract and convert s16 signed integer from a frame
+int16_t opentherm_get_s16(uint32_t frame) {
+    uint16_t value = opentherm_get_u16(frame);
+    return opentherm_decode_s16(value);
+}
+
+// Extract two u8 bytes from a frame
+void opentherm_get_u8_u8(uint32_t frame, uint8_t *hb, uint8_t *lb) {
+    uint16_t value = opentherm_get_u16(frame);
+    opentherm_decode_u8_u8(value, hb, lb);
 }
 
 // Encode two bytes into a 16-bit data value (HB:LB)
@@ -247,6 +273,215 @@ void opentherm_decode_date(uint16_t value, opentherm_date_t *date) {
     opentherm_decode_u8_u8(value, &date->month, &date->day);
 }
 
+// Helper functions for reading sensor data with proper type conversions
+
+// Build read requests for specific data types
+uint32_t opentherm_read_status() {
+    return opentherm_build_read_request(OT_DATA_ID_STATUS);
+}
+
+uint32_t opentherm_read_control_setpoint() {
+    return opentherm_build_read_request(OT_DATA_ID_CONTROL_SETPOINT);
+}
+
+uint32_t opentherm_read_master_config() {
+    return opentherm_build_read_request(OT_DATA_ID_MASTER_CONFIG);
+}
+
+uint32_t opentherm_read_slave_config() {
+    return opentherm_build_read_request(OT_DATA_ID_SLAVE_CONFIG);
+}
+
+uint32_t opentherm_read_fault_flags() {
+    return opentherm_build_read_request(OT_DATA_ID_FAULT_FLAGS);
+}
+
+uint32_t opentherm_read_remote_params() {
+    return opentherm_build_read_request(OT_DATA_ID_REMOTE_PARAMS);
+}
+
+uint32_t opentherm_read_max_rel_mod() {
+    return opentherm_build_read_request(OT_DATA_ID_MAX_REL_MOD);
+}
+
+uint32_t opentherm_read_max_capacity() {
+    return opentherm_build_read_request(OT_DATA_ID_MAX_CAPACITY);
+}
+
+// Sensor data reads
+uint32_t opentherm_read_rel_mod_level() {
+    return opentherm_build_read_request(OT_DATA_ID_REL_MOD_LEVEL);
+}
+
+uint32_t opentherm_read_ch_water_pressure() {
+    return opentherm_build_read_request(OT_DATA_ID_CH_WATER_PRESS);
+}
+
+uint32_t opentherm_read_dhw_flow_rate() {
+    return opentherm_build_read_request(OT_DATA_ID_DHW_FLOW_RATE);
+}
+
+uint32_t opentherm_read_day_time() {
+    return opentherm_build_read_request(OT_DATA_ID_DAY_TIME);
+}
+
+uint32_t opentherm_read_date() {
+    return opentherm_build_read_request(OT_DATA_ID_DATE);
+}
+
+uint32_t opentherm_read_year() {
+    return opentherm_build_read_request(OT_DATA_ID_YEAR);
+}
+
+uint32_t opentherm_read_room_temp() {
+    return opentherm_build_read_request(OT_DATA_ID_ROOM_TEMP);
+}
+
+uint32_t opentherm_read_boiler_water_temp() {
+    return opentherm_build_read_request(OT_DATA_ID_BOILER_WATER_TEMP);
+}
+
+uint32_t opentherm_read_dhw_temp() {
+    return opentherm_build_read_request(OT_DATA_ID_DHW_TEMP);
+}
+
+uint32_t opentherm_read_outside_temp() {
+    return opentherm_build_read_request(OT_DATA_ID_OUTSIDE_TEMP);
+}
+
+uint32_t opentherm_read_return_water_temp() {
+    return opentherm_build_read_request(OT_DATA_ID_RETURN_WATER_TEMP);
+}
+
+uint32_t opentherm_read_solar_storage_temp() {
+    return opentherm_build_read_request(OT_DATA_ID_SOLAR_STORAGE_TEMP);
+}
+
+uint32_t opentherm_read_solar_collector_temp() {
+    return opentherm_build_read_request(OT_DATA_ID_SOLAR_COLL_TEMP);
+}
+
+uint32_t opentherm_read_flow_temp_ch2() {
+    return opentherm_build_read_request(OT_DATA_ID_FLOW_TEMP_CH2);
+}
+
+uint32_t opentherm_read_dhw2_temp() {
+    return opentherm_build_read_request(OT_DATA_ID_DHW2_TEMP);
+}
+
+uint32_t opentherm_read_exhaust_temp() {
+    return opentherm_build_read_request(OT_DATA_ID_EXHAUST_TEMP);
+}
+
+// Remote boiler parameter reads
+uint32_t opentherm_read_dhw_bounds() {
+    return opentherm_build_read_request(OT_DATA_ID_DHW_BOUNDS);
+}
+
+uint32_t opentherm_read_ch_bounds() {
+    return opentherm_build_read_request(OT_DATA_ID_CH_BOUNDS);
+}
+
+uint32_t opentherm_read_dhw_setpoint() {
+    return opentherm_build_read_request(OT_DATA_ID_DHW_SETPOINT);
+}
+
+uint32_t opentherm_read_max_ch_setpoint() {
+    return opentherm_build_read_request(OT_DATA_ID_MAX_CH_SETPOINT);
+}
+
+// Counter/statistics reads
+uint32_t opentherm_read_burner_starts() {
+    return opentherm_build_read_request(OT_DATA_ID_BURNER_STARTS);
+}
+
+uint32_t opentherm_read_ch_pump_starts() {
+    return opentherm_build_read_request(OT_DATA_ID_CH_PUMP_STARTS);
+}
+
+uint32_t opentherm_read_dhw_pump_starts() {
+    return opentherm_build_read_request(OT_DATA_ID_DHW_PUMP_STARTS);
+}
+
+uint32_t opentherm_read_dhw_burner_starts() {
+    return opentherm_build_read_request(OT_DATA_ID_DHW_BURNER_STARTS);
+}
+
+uint32_t opentherm_read_burner_hours() {
+    return opentherm_build_read_request(OT_DATA_ID_BURNER_HOURS);
+}
+
+uint32_t opentherm_read_ch_pump_hours() {
+    return opentherm_build_read_request(OT_DATA_ID_CH_PUMP_HOURS);
+}
+
+uint32_t opentherm_read_dhw_pump_hours() {
+    return opentherm_build_read_request(OT_DATA_ID_DHW_PUMP_HOURS);
+}
+
+uint32_t opentherm_read_dhw_burner_hours() {
+    return opentherm_build_read_request(OT_DATA_ID_DHW_BURNER_HOURS);
+}
+
+// Version information reads
+uint32_t opentherm_read_opentherm_version() {
+    return opentherm_build_read_request(OT_DATA_ID_OPENTHERM_VERSION);
+}
+
+uint32_t opentherm_read_slave_version() {
+    return opentherm_build_read_request(OT_DATA_ID_SLAVE_VERSION);
+}
+
+uint32_t opentherm_read_master_version() {
+    return opentherm_build_read_request(OT_DATA_ID_MASTER_VERSION);
+}
+
+uint32_t opentherm_read_slave_product() {
+    return opentherm_build_read_request(OT_DATA_ID_SLAVE_PRODUCT);
+}
+
+// Build write requests with proper encoding
+uint32_t opentherm_write_control_setpoint(float temperature) {
+    uint16_t value = opentherm_f8_8_from_float(temperature);
+    return opentherm_build_write_request(OT_DATA_ID_CONTROL_SETPOINT, value);
+}
+
+uint32_t opentherm_write_room_setpoint(float temperature) {
+    uint16_t value = opentherm_f8_8_from_float(temperature);
+    return opentherm_build_write_request(OT_DATA_ID_ROOM_SETPOINT, value);
+}
+
+uint32_t opentherm_write_room_setpoint_ch2(float temperature) {
+    uint16_t value = opentherm_f8_8_from_float(temperature);
+    return opentherm_build_write_request(OT_DATA_ID_ROOM_SETPOINT_CH2, value);
+}
+
+uint32_t opentherm_write_dhw_setpoint(float temperature) {
+    uint16_t value = opentherm_f8_8_from_float(temperature);
+    return opentherm_build_write_request(OT_DATA_ID_DHW_SETPOINT, value);
+}
+
+uint32_t opentherm_write_max_ch_setpoint(float temperature) {
+    uint16_t value = opentherm_f8_8_from_float(temperature);
+    return opentherm_build_write_request(OT_DATA_ID_MAX_CH_SETPOINT, value);
+}
+
+uint32_t opentherm_write_day_time(uint8_t day_of_week, uint8_t hours, uint8_t minutes) {
+    opentherm_time_t time = { day_of_week, hours, minutes };
+    uint16_t value = opentherm_encode_time(&time);
+    return opentherm_build_write_request(OT_DATA_ID_DAY_TIME, value);
+}
+
+uint32_t opentherm_write_date(uint8_t month, uint8_t day) {
+    opentherm_date_t date = { month, day };
+    uint16_t value = opentherm_encode_date(&date);
+    return opentherm_build_write_request(OT_DATA_ID_DATE, value);
+}
+
+uint32_t opentherm_write_year(uint16_t year) {
+    return opentherm_build_write_request(OT_DATA_ID_YEAR, year);
+}
+
 // Manchester encoding/decoding
 // Decode Manchester encoding: each bit is represented by 2 samples
 // '1' = 1,0 (active-to-idle)
@@ -357,6 +592,285 @@ void Interface::printFrame(uint32_t frame_data) {
         float temp = opentherm_f8_8_to_float(frame.data_value);
         printf("    -> Temperature: %.2f°C\n", temp);
     }
+}
+
+// Helper function to send request and wait for response
+bool Interface::sendAndReceive(uint32_t request, uint32_t* response, uint32_t timeout_ms) {
+    send(request);
+    
+    absolute_time_t start = get_absolute_time();
+    while (absolute_time_diff_us(start, get_absolute_time()) < (timeout_ms * 1000)) {
+        if (receive(*response)) {
+            return true;
+        }
+        sleep_ms(10);
+    }
+    return false;  // Timeout
+}
+
+// Status and configuration reads
+bool Interface::readStatus(opentherm_status_t* status, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_status();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    uint16_t value = opentherm_get_u16(response);
+    opentherm_decode_status(value, status);
+    return true;
+}
+
+bool Interface::readSlaveConfig(opentherm_config_t* config, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_slave_config();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    uint16_t value = opentherm_get_u16(response);
+    opentherm_decode_slave_config(value, config);
+    return true;
+}
+
+bool Interface::readFaultFlags(opentherm_fault_t* fault, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_fault_flags();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    uint16_t value = opentherm_get_u16(response);
+    opentherm_decode_fault(value, fault);
+    return true;
+}
+
+// Temperature sensor reads
+bool Interface::readBoilerTemperature(float* temp, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_boiler_water_temp();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *temp = opentherm_get_f8_8(response);
+    return true;
+}
+
+bool Interface::readDHWTemperature(float* temp, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_dhw_temp();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *temp = opentherm_get_f8_8(response);
+    return true;
+}
+
+bool Interface::readOutsideTemperature(float* temp, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_outside_temp();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *temp = opentherm_get_f8_8(response);
+    return true;
+}
+
+bool Interface::readReturnWaterTemperature(float* temp, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_return_water_temp();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *temp = opentherm_get_f8_8(response);
+    return true;
+}
+
+bool Interface::readRoomTemperature(float* temp, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_room_temp();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *temp = opentherm_get_f8_8(response);
+    return true;
+}
+
+bool Interface::readExhaustTemperature(int16_t* temp, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_exhaust_temp();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *temp = opentherm_get_s16(response);
+    return true;
+}
+
+// Pressure and flow reads
+bool Interface::readCHWaterPressure(float* pressure, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_ch_water_pressure();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *pressure = opentherm_get_f8_8(response);
+    return true;
+}
+
+bool Interface::readDHWFlowRate(float* flow_rate, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_dhw_flow_rate();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *flow_rate = opentherm_get_f8_8(response);
+    return true;
+}
+
+// Modulation level read
+bool Interface::readModulationLevel(float* level, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_rel_mod_level();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *level = opentherm_get_f8_8(response);
+    return true;
+}
+
+// Setpoint reads
+bool Interface::readControlSetpoint(float* setpoint, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_control_setpoint();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *setpoint = opentherm_get_f8_8(response);
+    return true;
+}
+
+bool Interface::readDHWSetpoint(float* setpoint, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_dhw_setpoint();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *setpoint = opentherm_get_f8_8(response);
+    return true;
+}
+
+bool Interface::readMaxCHSetpoint(float* setpoint, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_max_ch_setpoint();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *setpoint = opentherm_get_f8_8(response);
+    return true;
+}
+
+// Counter/statistics reads
+bool Interface::readBurnerStarts(uint16_t* count, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_burner_starts();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *count = opentherm_get_u16(response);
+    return true;
+}
+
+bool Interface::readCHPumpStarts(uint16_t* count, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_ch_pump_starts();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *count = opentherm_get_u16(response);
+    return true;
+}
+
+bool Interface::readDHWPumpStarts(uint16_t* count, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_dhw_pump_starts();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *count = opentherm_get_u16(response);
+    return true;
+}
+
+bool Interface::readBurnerHours(uint16_t* hours, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_burner_hours();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *hours = opentherm_get_u16(response);
+    return true;
+}
+
+bool Interface::readCHPumpHours(uint16_t* hours, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_ch_pump_hours();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *hours = opentherm_get_u16(response);
+    return true;
+}
+
+bool Interface::readDHWPumpHours(uint16_t* hours, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_dhw_pump_hours();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *hours = opentherm_get_u16(response);
+    return true;
+}
+
+// Version information reads
+bool Interface::readOpenThermVersion(float* version, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_opentherm_version();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    *version = opentherm_get_f8_8(response);
+    return true;
+}
+
+bool Interface::readSlaveVersion(uint8_t* type, uint8_t* version, uint32_t timeout_ms) {
+    uint32_t request = opentherm_read_slave_version();
+    uint32_t response;
+    if (!sendAndReceive(request, &response, timeout_ms)) {
+        return false;
+    }
+    opentherm_get_u8_u8(response, type, version);
+    return true;
+}
+
+// Write functions
+bool Interface::writeControlSetpoint(float temperature, uint32_t timeout_ms) {
+    uint32_t request = opentherm_write_control_setpoint(temperature);
+    uint32_t response;
+    return sendAndReceive(request, &response, timeout_ms);
+}
+
+bool Interface::writeRoomSetpoint(float temperature, uint32_t timeout_ms) {
+    uint32_t request = opentherm_write_room_setpoint(temperature);
+    uint32_t response;
+    return sendAndReceive(request, &response, timeout_ms);
+}
+
+bool Interface::writeDHWSetpoint(float temperature, uint32_t timeout_ms) {
+    uint32_t request = opentherm_write_dhw_setpoint(temperature);
+    uint32_t response;
+    return sendAndReceive(request, &response, timeout_ms);
+}
+
+bool Interface::writeMaxCHSetpoint(float temperature, uint32_t timeout_ms) {
+    uint32_t request = opentherm_write_max_ch_setpoint(temperature);
+    uint32_t response;
+    return sendAndReceive(request, &response, timeout_ms);
 }
 
 } // namespace OpenTherm

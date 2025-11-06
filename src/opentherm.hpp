@@ -141,6 +141,19 @@ uint16_t opentherm_f8_8_from_float(float temp);
 // Convert f8.8 format to float temperature
 float opentherm_f8_8_to_float(uint16_t value);
 
+// Helper functions to extract and convert data values from frames
+// Extract data value from a frame
+uint16_t opentherm_get_u16(uint32_t frame);
+
+// Extract and convert f8.8 temperature value from a frame
+float opentherm_get_f8_8(uint32_t frame);
+
+// Extract and convert s16 signed integer from a frame
+int16_t opentherm_get_s16(uint32_t frame);
+
+// Extract two u8 bytes from a frame
+void opentherm_get_u8_u8(uint32_t frame, uint8_t *hb, uint8_t *lb);
+
 // Encode/Decode functions for specific data types
 
 // Encode two bytes into a 16-bit data value (HB:LB)
@@ -235,7 +248,69 @@ typedef struct {
 uint16_t opentherm_encode_date(const opentherm_date_t *date);
 void opentherm_decode_date(uint16_t value, opentherm_date_t *date);
 
-// Manchester encoding
+// Helper functions for reading sensor data with proper type conversions
+
+// Build read requests for specific data types
+uint32_t opentherm_read_status();
+uint32_t opentherm_read_control_setpoint();
+uint32_t opentherm_read_master_config();
+uint32_t opentherm_read_slave_config();
+uint32_t opentherm_read_fault_flags();
+uint32_t opentherm_read_remote_params();
+uint32_t opentherm_read_max_rel_mod();
+uint32_t opentherm_read_max_capacity();
+
+// Sensor data reads (temperatures, pressures, etc.)
+uint32_t opentherm_read_rel_mod_level();
+uint32_t opentherm_read_ch_water_pressure();
+uint32_t opentherm_read_dhw_flow_rate();
+uint32_t opentherm_read_day_time();
+uint32_t opentherm_read_date();
+uint32_t opentherm_read_year();
+uint32_t opentherm_read_room_temp();
+uint32_t opentherm_read_boiler_water_temp();
+uint32_t opentherm_read_dhw_temp();
+uint32_t opentherm_read_outside_temp();
+uint32_t opentherm_read_return_water_temp();
+uint32_t opentherm_read_solar_storage_temp();
+uint32_t opentherm_read_solar_collector_temp();
+uint32_t opentherm_read_flow_temp_ch2();
+uint32_t opentherm_read_dhw2_temp();
+uint32_t opentherm_read_exhaust_temp();
+
+// Remote boiler parameter reads
+uint32_t opentherm_read_dhw_bounds();
+uint32_t opentherm_read_ch_bounds();
+uint32_t opentherm_read_dhw_setpoint();
+uint32_t opentherm_read_max_ch_setpoint();
+
+// Counter/statistics reads
+uint32_t opentherm_read_burner_starts();
+uint32_t opentherm_read_ch_pump_starts();
+uint32_t opentherm_read_dhw_pump_starts();
+uint32_t opentherm_read_dhw_burner_starts();
+uint32_t opentherm_read_burner_hours();
+uint32_t opentherm_read_ch_pump_hours();
+uint32_t opentherm_read_dhw_pump_hours();
+uint32_t opentherm_read_dhw_burner_hours();
+
+// Version information reads
+uint32_t opentherm_read_opentherm_version();
+uint32_t opentherm_read_slave_version();
+uint32_t opentherm_read_master_version();
+uint32_t opentherm_read_slave_product();
+
+// Build write requests with proper encoding
+uint32_t opentherm_write_control_setpoint(float temperature);
+uint32_t opentherm_write_room_setpoint(float temperature);
+uint32_t opentherm_write_room_setpoint_ch2(float temperature);
+uint32_t opentherm_write_dhw_setpoint(float temperature);
+uint32_t opentherm_write_max_ch_setpoint(float temperature);
+uint32_t opentherm_write_day_time(uint8_t day_of_week, uint8_t hours, uint8_t minutes);
+uint32_t opentherm_write_date(uint8_t month, uint8_t day);
+uint32_t opentherm_write_year(uint16_t year);
+
+// Manchester decoding
 bool opentherm_manchester_decode(uint64_t raw_data, uint32_t *decoded_frame);
 
 // C++ OpenTherm Interface
@@ -262,6 +337,56 @@ public:
     
     // Print frame details
     static void printFrame(uint32_t frame_data);
+    
+    // High-level read functions with automatic request/response handling
+    // Returns true if successful, false if timeout or error
+    
+    // Status and configuration reads
+    bool readStatus(opentherm_status_t* status, uint32_t timeout_ms = 1000);
+    bool readSlaveConfig(opentherm_config_t* config, uint32_t timeout_ms = 1000);
+    bool readFaultFlags(opentherm_fault_t* fault, uint32_t timeout_ms = 1000);
+    
+    // Temperature sensor reads (returns temperature in °C)
+    bool readBoilerTemperature(float* temp, uint32_t timeout_ms = 1000);
+    bool readDHWTemperature(float* temp, uint32_t timeout_ms = 1000);
+    bool readOutsideTemperature(float* temp, uint32_t timeout_ms = 1000);
+    bool readReturnWaterTemperature(float* temp, uint32_t timeout_ms = 1000);
+    bool readRoomTemperature(float* temp, uint32_t timeout_ms = 1000);
+    bool readExhaustTemperature(int16_t* temp, uint32_t timeout_ms = 1000);
+    
+    // Pressure and flow reads
+    bool readCHWaterPressure(float* pressure, uint32_t timeout_ms = 1000);  // bar
+    bool readDHWFlowRate(float* flow_rate, uint32_t timeout_ms = 1000);     // l/min
+    
+    // Modulation level read (percentage)
+    bool readModulationLevel(float* level, uint32_t timeout_ms = 1000);
+    
+    // Setpoint reads
+    bool readControlSetpoint(float* setpoint, uint32_t timeout_ms = 1000);
+    bool readDHWSetpoint(float* setpoint, uint32_t timeout_ms = 1000);
+    bool readMaxCHSetpoint(float* setpoint, uint32_t timeout_ms = 1000);
+    
+    // Counter/statistics reads
+    bool readBurnerStarts(uint16_t* count, uint32_t timeout_ms = 1000);
+    bool readCHPumpStarts(uint16_t* count, uint32_t timeout_ms = 1000);
+    bool readDHWPumpStarts(uint16_t* count, uint32_t timeout_ms = 1000);
+    bool readBurnerHours(uint16_t* hours, uint32_t timeout_ms = 1000);
+    bool readCHPumpHours(uint16_t* hours, uint32_t timeout_ms = 1000);
+    bool readDHWPumpHours(uint16_t* hours, uint32_t timeout_ms = 1000);
+    
+    // Version information reads
+    bool readOpenThermVersion(float* version, uint32_t timeout_ms = 1000);
+    bool readSlaveVersion(uint8_t* type, uint8_t* version, uint32_t timeout_ms = 1000);
+    
+    // Write functions
+    bool writeControlSetpoint(float temperature, uint32_t timeout_ms = 1000);
+    bool writeRoomSetpoint(float temperature, uint32_t timeout_ms = 1000);
+    bool writeDHWSetpoint(float temperature, uint32_t timeout_ms = 1000);
+    bool writeMaxCHSetpoint(float temperature, uint32_t timeout_ms = 1000);
+    
+private:
+    // Helper function to send request and wait for response
+    bool sendAndReceive(uint32_t request, uint32_t* response, uint32_t timeout_ms);
 };
 
 } // namespace OpenTherm
