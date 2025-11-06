@@ -1,0 +1,215 @@
+#include "simulated_opentherm.hpp"
+#include <cmath>
+#include <algorithm>
+#include <cstdio>
+
+namespace OpenTherm
+{
+    namespace Simulator
+    {
+
+        SimulatedInterface::SimulatedInterface() = default;
+
+        // Simulate boiler temperature with sine wave + modulation heating effect
+        float SimulatedInterface::readBoilerTemperature()
+        {
+            float base = 50.0f + 30.0f * std::sin(state_.time * 0.1f); // 50-80°C sine wave
+            float heating_effect = state_.modulation * 0.3f;           // Up to +30°C when modulating
+            return base + heating_effect;
+        }
+
+        // Simulate room temperature approaching setpoint
+        float SimulatedInterface::readRoomTemperature()
+        {
+            float base = 18.0f + 4.0f * std::sin(state_.time * 0.05f); // 18-22°C slow sine wave
+            // Gradually move toward setpoint
+            float current = base;
+            float diff = state_.room_setpoint - current;
+            return current + (diff * 0.1f); // 10% toward setpoint each read
+        }
+
+        // DHW temperature
+        float SimulatedInterface::readDHWTemperature()
+        {
+            if (state_.dhw_enabled)
+            {
+                return 55.0f + 10.0f * std::sin(state_.time * 0.15f); // 55-65°C
+            }
+            return 30.0f; // Cold when not heating
+        }
+
+        // Return water temperature (slightly cooler than boiler)
+        float SimulatedInterface::readReturnWaterTemperature()
+        {
+            return readBoilerTemperature() - 10.0f;
+        }
+
+        // Outside temperature
+        float SimulatedInterface::readOutsideTemperature()
+        {
+            return 10.0f + 8.0f * std::sin(state_.time * 0.02f); // 2-18°C daily variation
+        }
+
+        // Modulation level (affected by temperature difference)
+        float SimulatedInterface::readModulationLevel()
+        {
+            if (!state_.ch_enabled)
+                return 0.0f;
+
+            float temp_diff = state_.room_setpoint - readRoomTemperature();
+            if (temp_diff > 0)
+            {
+                state_.modulation = std::min(100.0f, temp_diff * 20.0f); // 20% per degree
+                state_.flame_on = state_.modulation > 5.0f;
+            }
+            else
+            {
+                state_.modulation = 0.0f;
+                state_.flame_on = false;
+            }
+
+            return state_.modulation;
+        }
+
+        // CH water pressure (stable)
+        float SimulatedInterface::readCHWaterPressure()
+        {
+            return 1.5f + 0.2f * std::sin(state_.time * 0.3f); // 1.3-1.7 bar
+        }
+
+        // Flame status
+        bool SimulatedInterface::readFlameStatus()
+        {
+            readModulationLevel(); // Update flame status
+            return state_.flame_on;
+        }
+
+        // CH active
+        bool SimulatedInterface::readCHActive()
+        {
+            return state_.ch_enabled && state_.flame_on;
+        }
+
+        // DHW active
+        bool SimulatedInterface::readDHWActive()
+        {
+            return state_.dhw_enabled && (readDHWTemperature() < state_.dhw_setpoint);
+        }
+
+        // Setpoints
+        float SimulatedInterface::readRoomSetpoint()
+        {
+            return state_.room_setpoint;
+        }
+
+        float SimulatedInterface::readDHWSetpoint()
+        {
+            return state_.dhw_setpoint;
+        }
+
+        bool SimulatedInterface::writeRoomSetpoint(float setpoint)
+        {
+            state_.room_setpoint = setpoint;
+            printf("Simulator: Room setpoint set to %.1f°C\n", setpoint);
+            return true;
+        }
+
+        bool SimulatedInterface::writeDHWSetpoint(float setpoint)
+        {
+            state_.dhw_setpoint = setpoint;
+            printf("Simulator: DHW setpoint set to %.1f°C\n", setpoint);
+            return true;
+        }
+
+        // Status flags
+        bool SimulatedInterface::readCHEnabled() { return state_.ch_enabled; }
+        bool SimulatedInterface::readDHWEnabled() { return state_.dhw_enabled; }
+        bool SimulatedInterface::readCoolingEnabled() { return state_.cooling_enabled; }
+
+        bool SimulatedInterface::writeCHEnabled(bool enabled)
+        {
+            state_.ch_enabled = enabled;
+            printf("Simulator: CH %s\n", enabled ? "enabled" : "disabled");
+            return true;
+        }
+
+        bool SimulatedInterface::writeDHWEnabled(bool enabled)
+        {
+            state_.dhw_enabled = enabled;
+            printf("Simulator: DHW %s\n", enabled ? "enabled" : "disabled");
+            return true;
+        }
+
+        // Statistics (slowly incrementing)
+        uint32_t SimulatedInterface::readBurnerStarts()
+        {
+            return state_.burner_starts;
+        }
+
+        uint32_t SimulatedInterface::readBurnerHours()
+        {
+            return state_.burner_hours;
+        }
+
+        uint32_t SimulatedInterface::readCHPumpHours()
+        {
+            return state_.ch_pump_hours;
+        }
+
+        uint32_t SimulatedInterface::readDHWPumpHours()
+        {
+            return state_.dhw_pump_hours;
+        }
+
+        // Max modulation (fixed)
+        float SimulatedInterface::readMaxModulationLevel()
+        {
+            return 100.0f;
+        }
+
+        // Fault/diagnostic codes (none in simulator)
+        uint16_t SimulatedInterface::readOEMFaultCode() { return 0; }
+        uint16_t SimulatedInterface::readOEMDiagnosticCode() { return 0; }
+
+        // Update simulator state
+        void SimulatedInterface::update()
+        {
+            state_.time += 0.1f; // Increment time
+
+            // Increment statistics slowly
+            if (state_.flame_on)
+            {
+                static uint32_t flame_time = 0;
+                flame_time++;
+                if (flame_time >= 36000)
+                { // ~1 hour of flame time
+                    state_.burner_hours++;
+                    flame_time = 0;
+                }
+            }
+
+            if (state_.ch_enabled)
+            {
+                static uint32_t ch_time = 0;
+                ch_time++;
+                if (ch_time >= 36000)
+                {
+                    state_.ch_pump_hours++;
+                    ch_time = 0;
+                }
+            }
+
+            if (state_.dhw_enabled)
+            {
+                static uint32_t dhw_time = 0;
+                dhw_time++;
+                if (dhw_time >= 36000)
+                {
+                    state_.dhw_pump_hours++;
+                    dhw_time = 0;
+                }
+            }
+        }
+
+    } // namespace Simulator
+} // namespace OpenTherm

@@ -148,8 +148,15 @@ cmake -DPICO_BOARD=pico_w ..
 make -j4
 ```
 
-This will generate the firmware file:
+Both firmware files are built automatically:
 - `picoopentherm.uf2` - Complete OpenTherm gateway with Home Assistant MQTT integration
+- `picoopentherm_simulator.uf2` - Simulator firmware for testing without hardware
+
+### Building only the simulator:
+```bash
+cd build
+make picoopentherm_simulator
+```
 
 ## Flashing
 
@@ -263,6 +270,40 @@ This provides:
 - [docker/STRUCTURE.md](docker/STRUCTURE.md) - File structure overview
 
 Access the pre-configured environment at **http://localhost:8123** after starting.
+
+### Simulator Firmware
+
+**Test without hardware!** A special simulator firmware is available that generates realistic OpenTherm data without requiring physical OpenTherm hardware or a boiler.
+
+**Perfect for:**
+- Testing Home Assistant integration and dashboards
+- Developing automations without risk
+- Demonstrating the system to others
+- CI/CD testing and validation
+
+**Features:**
+- Realistic temperature behavior with sine waves and thermal inertia
+- Dynamic modulation based on heating demand
+- DHW temperature simulation
+- Pressure variations and statistics tracking
+- Responds to MQTT setpoint commands
+
+**Quick Start:**
+1. Download `picoopentherm_simulator.uf2` from [Releases](https://github.com/snoophogg/PicoOpenTherm/releases/latest)
+2. Flash to your Pico W (hold BOOTSEL, copy file)
+3. Configure WiFi/MQTT in `secrets.cfg` and provision
+4. Start Docker environment: `cd docker && docker-compose up -d`
+5. Watch realistic data flow into Home Assistant!
+
+📖 **See [SIMULATOR.md](SIMULATOR.md) for complete documentation including:**
+- Detailed flashing instructions
+- Docker environment setup guide
+- Simulated data behavior and characteristics
+- Testing scenarios and automation validation
+- Troubleshooting guide
+- Architecture and development info
+
+The simulator shares 90% of its codebase with the main firmware, ensuring consistent behavior and easy maintenance.
 
 ## Library Usage Example
 

@@ -33,6 +33,7 @@ jobs:
         cd build
         cmake -DPICO_BOARD=pico_w -DCMAKE_BUILD_TYPE=Release ..
         make -j$(nproc)
+        make picoopentherm_simulator -j$(nproc)
     
     - name: Get version from tag
       id: get_version
@@ -44,6 +45,9 @@ jobs:
         cp build/picoopentherm.uf2 release/picoopentherm-${{ steps.get_version.outputs.VERSION }}.uf2
         cp build/picoopentherm.elf release/picoopentherm-${{ steps.get_version.outputs.VERSION }}.elf
         cp build/picoopentherm.bin release/picoopentherm-${{ steps.get_version.outputs.VERSION }}.bin
+        cp build/picoopentherm_simulator.uf2 release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.uf2
+        cp build/picoopentherm_simulator.elf release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.elf
+        cp build/picoopentherm_simulator.bin release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.bin
         cd release
         sha256sum * > checksums.txt
     
@@ -54,6 +58,9 @@ jobs:
           release/picoopentherm-${{ steps.get_version.outputs.VERSION }}.uf2
           release/picoopentherm-${{ steps.get_version.outputs.VERSION }}.elf
           release/picoopentherm-${{ steps.get_version.outputs.VERSION }}.bin
+          release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.uf2
+          release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.elf
+          release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.bin
           release/checksums.txt
         body: |
           ## PicoOpenTherm ${{ steps.get_version.outputs.VERSION }}
@@ -67,6 +74,10 @@ jobs:
           3. Copy the .uf2 file to the Pico W drive
           4. The device will automatically reboot and start running
           
+          ### Simulator
+          
+          The simulator firmware (`picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.uf2`) provides simulated OpenTherm data for testing Home Assistant integration without physical hardware. It generates realistic temperature, pressure, and modulation values with dynamic behavior.
+          
           ### Configuration
           
           Before flashing, update WiFi and MQTT settings in `src/main.cpp`:
@@ -77,9 +88,17 @@ jobs:
           
           ### Files
           
+          **Main Firmware:**
           - **picoopentherm.uf2** - Ready to flash firmware (recommended)
           - **picoopentherm.elf** - Executable with debug symbols
           - **picoopentherm.bin** - Raw binary image
+          
+          **Simulator Firmware:**
+          - **picoopentherm_simulator.uf2** - Simulator for testing without hardware
+          - **picoopentherm_simulator.elf** - Simulator with debug symbols
+          - **picoopentherm_simulator.bin** - Simulator raw binary
+          
+          **Verification:**
           - **checksums.txt** - SHA256 checksums for verification
         draft: false
         prerelease: false

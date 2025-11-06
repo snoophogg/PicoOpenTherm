@@ -27,6 +27,7 @@ add_executable(picoopentherm
     src/opentherm.cpp
     src/opentherm_ha.cpp
     src/config.cpp
+    src/mqtt_common.cpp
 )
 
 # Generate the PIO header files for OpenTherm
@@ -58,3 +59,37 @@ pico_enable_stdio_uart(picoopentherm 0)
 
 # Create map/bin/hex/uf2 files
 pico_add_extra_outputs(picoopentherm)
+
+# Add OpenTherm Simulator executable
+add_executable(picoopentherm_simulator
+    src/simulator.cpp
+    src/simulated_opentherm.cpp
+    src/opentherm_ha.cpp
+    src/config.cpp
+    src/mqtt_common.cpp
+)
+
+# Add include directory for simulator
+target_include_directories(picoopentherm_simulator PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/src
+    ${CMAKE_CURRENT_LIST_DIR}/pico-kvstore/include
+    ${CMAKE_CURRENT_LIST_DIR}/pico-kvstore/lib/pico-vfs/include
+)
+
+# Link the necessary libraries for simulator
+target_link_libraries(picoopentherm_simulator
+    pico_stdlib
+    pico_cyw43_arch_lwip_threadsafe_background
+    hardware_watchdog
+    pico_lwip_mqtt
+    kvstore_default
+    hardware_flash
+    hardware_sync
+)
+
+# Enable USB output for simulator
+pico_enable_stdio_usb(picoopentherm_simulator 1)
+pico_enable_stdio_uart(picoopentherm_simulator 0)
+
+# Create map/bin/hex/uf2 files for simulator
+pico_add_extra_outputs(picoopentherm_simulator)

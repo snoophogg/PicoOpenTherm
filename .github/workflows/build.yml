@@ -32,6 +32,11 @@ jobs:
         cmake -DPICO_BOARD=pico_w ..
         make -j$(nproc)
     
+    - name: Build simulator
+      run: |
+        cd build
+        make picoopentherm_simulator -j$(nproc)
+    
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -40,6 +45,9 @@ jobs:
           build/picoopentherm.uf2
           build/picoopentherm.elf
           build/picoopentherm.bin
+          build/picoopentherm_simulator.uf2
+          build/picoopentherm_simulator.elf
+          build/picoopentherm_simulator.bin
         retention-days: 30
     
     - name: Build summary
@@ -48,9 +56,16 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "✅ Firmware built successfully" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "### Main Firmware" >> $GITHUB_STEP_SUMMARY
         echo "- \`picoopentherm.uf2\` - Ready to flash to Pico W" >> $GITHUB_STEP_SUMMARY
         echo "- \`picoopentherm.elf\` - Executable with debug symbols" >> $GITHUB_STEP_SUMMARY
         echo "- \`picoopentherm.bin\` - Raw binary image" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        ls -lh build/picoopentherm.* >> $GITHUB_STEP_SUMMARY || true
+        ls -lh build/picoopentherm.uf2 build/picoopentherm.elf build/picoopentherm.bin >> $GITHUB_STEP_SUMMARY 2>/dev/null || true
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Simulator Firmware" >> $GITHUB_STEP_SUMMARY
+        echo "- \`picoopentherm_simulator.uf2\` - Simulator for testing without hardware" >> $GITHUB_STEP_SUMMARY
+        echo "- \`picoopentherm_simulator.elf\` - Simulator with debug symbols" >> $GITHUB_STEP_SUMMARY
+        echo "- \`picoopentherm_simulator.bin\` - Simulator raw binary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        ls -lh build/picoopentherm_simulator.uf2 build/picoopentherm_simulator.elf build/picoopentherm_simulator.bin >> $GITHUB_STEP_SUMMARY 2>/dev/null || true
