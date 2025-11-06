@@ -7,8 +7,8 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 set(PICO_SDK_PATH ${CMAKE_CURRENT_LIST_DIR}/pico-sdk)
 set(PICOTOOL_FETCH_FROM_GIT_PATH ${CMAKE_CURRENT_LIST_DIR}/picotool)
 
-# Include the Pico SDK
-include(pico_sdk_import.cmake)
+# Include the Pico SDK import from the SDK submodule
+include(${PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
 project(PicoOpenTherm C CXX ASM)
 
