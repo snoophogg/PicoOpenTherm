@@ -91,6 +91,27 @@ Configuration is automatically saved to flash memory and persists across reboots
 
 **Runtime Configuration**: Device name, device ID, and OpenTherm GPIO pins can be changed via Home Assistant MQTT entities. Changes are saved to flash and the device automatically restarts to apply new settings.
 
+## Configuration Provisioning
+
+You can pre-configure your device before flashing the firmware using the included provisioning script. This allows you to set WiFi credentials, MQTT settings, and device configuration directly to flash memory.
+
+**Quick Start:**
+```bash
+# 1. Create your configuration file
+cp secrets.cfg.example secrets.cfg
+nano secrets.cfg
+
+# 2. Flash configuration to Pico
+./provision-config.sh
+
+# 3. Flash firmware
+picotool load build/picoopentherm.uf2
+```
+
+The provisioning script uses `kvstore-util` to create a configuration binary and flashes it to the correct location in the Pico's flash memory (last 256KB).
+
+📖 **See [PROVISIONING.md](PROVISIONING.md) for detailed instructions, configuration options, and troubleshooting.**
+
 ### LED Status Indicator
 
 The onboard LED provides visual feedback:
@@ -527,6 +548,27 @@ Connect via serial terminal at 115200 baud to see:
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Credits and Dependencies
+
+This project builds upon excellent work from the following projects:
+
+### Core Dependencies
+- **[Raspberry Pi Pico SDK](https://github.com/raspberrypi/pico-sdk)** - Official SDK for RP2040 microcontroller
+- **[Picotool](https://github.com/raspberrypi/picotool)** - Tool for inspecting and flashing RP2040 binaries
+- **[pico-kvstore](https://github.com/oyama/pico-kvstore)** - Flash-based key-value storage library by Hiroyuki OYAMA
+  - Provides persistent configuration storage
+  - Includes kvstore-util for configuration management
+
+### Technologies
+- **OpenTherm Protocol v2.2** - Open standard for boiler/thermostat communication
+- **lwIP MQTT Client** - Lightweight IP stack with MQTT support (included in Pico SDK)
+- **PIO (Programmable I/O)** - Hardware Manchester encoding/decoding
+
+### Special Thanks
+- OpenTherm community for protocol documentation
+- Home Assistant community for MQTT auto-discovery standards
+- Raspberry Pi Foundation for the excellent Pico W platform and SDK
 
 ## References
 
