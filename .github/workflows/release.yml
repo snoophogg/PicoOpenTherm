@@ -51,7 +51,7 @@ jobs:
         cd pico-kvstore/host/build/sdk
         if [ ! -d pico-sdk ]; then
           echo "Fetching Pico SDK 2.1.1..."
-          git clone --branch 2.1.1 https://github.com/raspberrypi/pico-sdk.git
+          git clone --branch 2.1.1 --single-branch https://github.com/raspberrypi/pico-sdk.git
           cd pico-sdk
           git submodule update --init --recursive
           cd ..

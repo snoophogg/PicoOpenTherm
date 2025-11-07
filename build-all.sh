@@ -40,7 +40,7 @@ cd build/sdk
 # Manually fetch and prepare SDK 2.1.1 for kvstore-util
 if [ ! -d pico-sdk ]; then
   echo "Fetching Pico SDK 2.1.1..."
-  git clone --branch 2.1.1 https://github.com/raspberrypi/pico-sdk.git
+  git clone --branch 2.1.1 --single-branch https://github.com/raspberrypi/pico-sdk.git
   cd pico-sdk
   echo "Initializing SDK submodules..."
   git submodule update --init --recursive

@@ -20,8 +20,8 @@ cd pico-kvstore/host
 mkdir -p build/sdk
 cd build/sdk
 
-# Clone SDK 2.1.1
-git clone --branch 2.1.1 https://github.com/raspberrypi/pico-sdk.git
+# Clone SDK 2.1.1 tag
+git clone --branch 2.1.1 --single-branch https://github.com/raspberrypi/pico-sdk.git
 cd pico-sdk
 
 # Initialize all submodules recursively
