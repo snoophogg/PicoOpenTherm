@@ -39,6 +39,7 @@ jobs:
     
     - name: Build picotool
       run: |
+        export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
         cd picotool
         mkdir -p build
         cd build

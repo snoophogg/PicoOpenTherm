@@ -107,15 +107,23 @@ make kvstore-util
 
 #### picotool
 
-Install picotool to flash the configuration:
+Install picotool to flash the configuration. Picotool requires the Pico SDK to build:
 
 ```bash
+# Set PICO_SDK_PATH to the pico-sdk submodule in this project
+export PICO_SDK_PATH=$(pwd)/pico-sdk
+
+# Build picotool
 cd picotool
 mkdir -p build && cd build
 cmake ..
 make
+
+# Optional: install system-wide
 sudo make install
 ```
+
+**Note:** The `PICO_SDK_PATH` must point to a valid Pico SDK directory. This project includes the SDK as a submodule at `pico-sdk/`.
 
 ## Workflow
 
@@ -204,12 +212,34 @@ Building from source:
 cd pico-kvstore/tools
 make kvstore-util
 
-# picotool
+# picotool (requires PICO_SDK_PATH)
+export PICO_SDK_PATH=$(pwd)/pico-sdk
 cd picotool
 mkdir -p build && cd build
 cmake ..
 make
 sudo make install
+```
+
+**"PICO_SDK_PATH is not defined" error when building picotool:**
+
+Picotool requires the Pico SDK to build. Set the environment variable to point to the SDK submodule:
+
+```bash
+# From the project root directory
+export PICO_SDK_PATH=$(pwd)/pico-sdk
+
+# Then build picotool
+cd picotool
+mkdir -p build && cd build
+cmake ..
+make
+```
+
+Or set it permanently in your shell profile:
+```bash
+echo 'export PICO_SDK_PATH=/path/to/PicoOpenTherm/pico-sdk' >> ~/.bashrc
+source ~/.bashrc
 ```
 
 **Pico not detected:**
