@@ -31,11 +31,11 @@ jobs:
         cmake ..
         make
     
-      - name: Run tests
-        working-directory: build_tests
-        run: ctest --output-on-failure    - name: Test Summary
+    - name: Run tests
+      working-directory: tests/build
+      run: ctest --output-on-failure
+    
+    - name: Test Summary
       if: always()
       run: |
         echo "Test execution completed"
-        cd tests/build
-        ctest --output-on-failure || true
