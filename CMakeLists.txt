@@ -25,6 +25,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pico-kvstore)
 add_executable(picoopentherm
     src/main.cpp
     src/opentherm.cpp
+    src/opentherm_protocol.cpp
     src/opentherm_ha.cpp
     src/config.cpp
     src/mqtt_common.cpp
@@ -64,6 +65,7 @@ pico_add_extra_outputs(picoopentherm)
 add_executable(picoopentherm_simulator
     src/simulator.cpp
     src/simulated_opentherm.cpp
+    src/opentherm_protocol.cpp
     src/opentherm_ha.cpp
     src/config.cpp
     src/mqtt_common.cpp
