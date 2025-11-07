@@ -103,10 +103,14 @@ To manually build:
 ```bash
 export PICO_SDK_PATH=$(pwd)/pico-sdk
 cd pico-kvstore/host
+# Apply compatibility patch for Pico SDK 2.2.0+
+sed -i.bak '36,39s/^add_library/#add_library/' CMakeLists.txt
 mkdir -p build && cd build
 cmake ..
 make
 ```
+
+**Note:** The sed command patches the CMakeLists.txt to comment out library definitions that conflict with Pico SDK 2.2.0+ host mode libraries.
 
 #### picotool
 
@@ -211,9 +215,10 @@ chmod +x bin/*
 
 Building from source:
 ```bash
-# kvstore-util (requires PICO_SDK_PATH)
+# kvstore-util (requires PICO_SDK_PATH and compatibility patch)
 export PICO_SDK_PATH=$(pwd)/pico-sdk
 cd pico-kvstore/host
+sed -i.bak '36,39s/^add_library/#add_library/' CMakeLists.txt
 mkdir -p build && cd build
 cmake ..
 make

@@ -53,6 +53,8 @@ if [ ! -f "$KVSTORE_UTIL" ]; then
         export PICO_SDK_PATH="${SCRIPT_DIR}/pico-sdk"
         cd "${SCRIPT_DIR}/pico-kvstore/host"
         if [ -f "CMakeLists.txt" ]; then
+            # Patch: Comment out add_library calls that conflict with SDK's host libraries
+            sed -i.bak '36,39s/^add_library/#add_library/' CMakeLists.txt
             mkdir -p build
             cd build
             cmake ..
