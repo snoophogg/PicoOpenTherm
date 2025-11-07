@@ -11,32 +11,29 @@ The firmware includes hardcoded default configuration values in `src/config.cpp`
 
 No provisioning needed!
 
-## Option 2: Use an Older Pico SDK
+## Option 2: Build kvstore-util with Compatible SDK (Advanced)
 
-If you need to use kvstore-util for provisioning:
+If you need kvstore-util for automated provisioning, you can build it with an older SDK version that's compatible. The build system can automatically fetch the correct SDK version:
 
-1. Check out an older Pico SDK version that's compatible with pico-kvstore:
-   ```bash
-   cd pico-sdk
-   git checkout 1.5.1  # Or another compatible version
-   cd ..
-   ```
+```bash
+cd pico-kvstore/host
+mkdir -p build && cd build
 
-2. Build kvstore-util:
-   ```bash
-   export PICO_SDK_PATH=$(pwd)/pico-sdk
-   cd pico-kvstore/host
-   mkdir -p build && cd build
-   cmake ..
-   make
-   ```
+# Let CMake fetch SDK 2.1.1 (compatible with kvstore-util)
+cmake -DPICO_SDK_FETCH_FROM_GIT=ON \
+      -DPICO_SDK_FETCH_FROM_GIT_TAG=2.1.1 \
+      -DPICO_SDK_FETCH_FROM_GIT_PATH=./sdk \
+      ..
+make
+```
 
-3. After building kvstore-util, switch back to the newer SDK for firmware:
-   ```bash
-   cd ../../../pico-sdk
-   git checkout 2.2.0
-   cd ..
-   ```
+The `kvstore-util` binary will be in `pico-kvstore/host/build/`
+
+**How it works**: 
+- CMake will download Pico SDK 2.1.1 to `pico-kvstore/host/build/sdk/`
+- This is isolated from your main SDK 2.2.0 installation
+- No need to manually manage multiple SDK versions
+- SDK 2.1.1 has compatible mbedtls API for kvstore's usage
 
 ## Option 3: Runtime Configuration
 

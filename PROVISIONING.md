@@ -30,31 +30,66 @@ The easiest way to configure PicoOpenTherm is to edit the default values directl
    - After first boot, configure settings via MQTT/Home Assistant entities
    - Changes are saved to flash automatically
 
-## Advanced: Build from Source
+## Advanced: Using Provisioning Scripts
 
-If you want to build everything yourself:
+If you prefer to provision configuration data before flashing, you can use the provisioning scripts. **Note:** These scripts will automatically build kvstore-util with a compatible SDK version if needed.
 
-1. **Build firmware:**
+### provision-config.sh
+
+This script provisions WiFi and MQTT configuration from a secrets file:
+
+1. **Create secrets file:**
+   ```bash
+   cat > secrets.cfg << EOF
+   WIFI_SSID="YourNetworkName"
+   WIFI_PASSWORD="YourPassword"
+   MQTT_BROKER="192.168.1.100"
+   MQTT_USER="homeassistant"
+   MQTT_PASSWORD="mqttpassword"
+   DEVICE_NAME="PicoOpenTherm"
+   DEVICE_ID="pico_opentherm_01"
+   EOF
+   ```
+
+2. **Run provisioning:**
+   ```bash
+   ./provision-config.sh
+   ```
+   
+   The script will:
+   - Automatically build kvstore-util with SDK 2.1.1 if not present
+   - Create a provisioned configuration file (pico-kvstore.img)
+   - This is isolated from your main SDK 2.2.0 installation
+
+3. **Build firmware:**
    ```bash
    ./build-all.sh
    ```
 
-2. **Flash firmware:**
+4. **Flash firmware:**
    ```bash
    picotool load build/picoopentherm.uf2
    ```
 
-**Note:** kvstore-util provisioning is not supported with Pico SDK 2.2.0. See "Quick Start" above for the recommended configuration method.
+**How it works**: The provision script uses CMake's `PICO_SDK_FETCH_FROM_GIT` feature to automatically download SDK 2.1.1 to a temporary location just for building kvstore-util. This doesn't affect your main SDK installation.
 
 ## What do the provisioning scripts do?
 
-### provision-simple.sh (Deprecated)
-This script is deprecated due to kvstore-util incompatibility with Pico SDK 2.2.0.
-Use the "Quick Start" method above instead (edit src/config.cpp directly).
+### provision-simple.sh
 
-### provision-config.sh (Deprecated)
-This script is deprecated due to kvstore-util incompatibility with Pico SDK 2.2.0.
-Use the "Quick Start" method above instead (edit src/config.cpp directly).
+This script provisions basic WiFi and MQTT configuration by prompting for values:
+- Will automatically build kvstore-util with SDK 2.1.1 if needed
+- Creates a provisioned configuration file (pico-kvstore.img)
+- Prompts for WiFi SSID, password, MQTT broker, etc.
+
+### provision-config.sh
+
+This script provisions configuration from a secrets file:
+- Will automatically build kvstore-util with SDK 2.1.1 if needed
+- Reads configuration from `secrets.cfg`
+- More suitable for automation/CI/CD
+
+**Note:** These scripts use CMake's fetch feature to build kvstore-util with a compatible SDK version (2.1.1) without affecting your main SDK 2.2.0 installation.
 
 ## Configuration Keys
 

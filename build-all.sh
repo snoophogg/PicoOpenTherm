@@ -33,8 +33,17 @@ echo ""
 
 # Stage 2: Build host tools
 echo -e "${BLUE}Stage 2: Building host tools (kvstore-util)...${NC}"
-echo -e "${YELLOW}Note: kvstore-util build skipped due to Pico SDK 2.2.0 incompatibility${NC}"
-echo -e "${YELLOW}See KVSTORE-UTIL.md for alternative build instructions${NC}"
+cd "${SCRIPT_DIR}/pico-kvstore/host"
+mkdir -p build
+cd build
+echo "Fetching Pico SDK 2.1.1 for kvstore-util build..."
+cmake -DPICO_SDK_FETCH_FROM_GIT=ON \
+      -DPICO_SDK_FETCH_FROM_GIT_TAG=2.1.1 \
+      -DPICO_SDK_FETCH_FROM_GIT_PATH=./sdk \
+      ..
+make -j$(nproc)
+echo -e "${GREEN}✓ kvstore-util built successfully${NC}"
+echo "  - pico-kvstore/host/build/kvstore-util"
 echo ""
 
 echo "================================================"
@@ -45,10 +54,10 @@ echo "Firmware outputs:"
 echo "  ${SCRIPT_DIR}/build/picoopentherm.uf2"
 echo "  ${SCRIPT_DIR}/build/picoopentherm_simulator.uf2"
 echo ""
-echo "Note: kvstore-util build was skipped."
-echo "See KVSTORE-UTIL.md for build instructions if needed."
+echo "Tool outputs:"
+echo "  ${SCRIPT_DIR}/pico-kvstore/host/build/kvstore-util"
 echo ""
 echo "Next steps:"
-echo "  1. Flash firmware: picotool load build/picoopentherm.uf2"
-echo "  2. For configuration provisioning, see KVSTORE-UTIL.md"
+echo "  1. Provision configuration (optional): ./provision-config.sh"
+echo "  2. Flash firmware: picotool load build/picoopentherm.uf2"
 echo ""

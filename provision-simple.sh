@@ -60,22 +60,39 @@ if [ -f "$BIN_DIR/kvstore-util" ]; then
 elif [ -f "$BIN_DIR/kvstore-util-linux-amd64" ]; then
     KVSTORE_UTIL="$BIN_DIR/kvstore-util-linux-amd64"
     chmod +x "$KVSTORE_UTIL" 2>/dev/null || true
+elif [ -f "pico-kvstore/host/build/kvstore-util" ]; then
+    KVSTORE_UTIL="pico-kvstore/host/build/kvstore-util"
 elif command -v kvstore-util &> /dev/null; then
     KVSTORE_UTIL="kvstore-util"
 else
-    echo -e "${RED}Error: kvstore-util not found!${NC}"
+    echo -e "${YELLOW}Warning: kvstore-util not found. Building with compatible SDK version...${NC}"
     echo ""
-    echo "Download it from GitHub releases:"
-    echo -e "  ${BLUE}https://github.com/snoophogg/PicoOpenTherm/releases/latest${NC}"
+    
+    # Build kvstore-util with SDK 2.1.1 (compatible with its mbedtls usage)
+    mkdir -p pico-kvstore/host/build
+    cd pico-kvstore/host/build
+    
+    echo "Fetching Pico SDK 2.1.1 for kvstore-util build..."
+    cmake -DPICO_SDK_FETCH_FROM_GIT=ON \
+          -DPICO_SDK_FETCH_FROM_GIT_TAG=2.1.1 \
+          -DPICO_SDK_FETCH_FROM_GIT_PATH=./sdk \
+          .. || {
+        echo -e "${RED}Error: CMake configuration failed${NC}"
+        echo "Please see KVSTORE-UTIL.md for alternative configuration options."
+        exit 1
+    }
+    
+    echo "Building kvstore-util..."
+    make || {
+        echo -e "${RED}Error: Build failed${NC}"
+        echo "Please see KVSTORE-UTIL.md for alternative configuration options."
+        exit 1
+    }
+    
+    cd ../../..
+    KVSTORE_UTIL="pico-kvstore/host/build/kvstore-util"
+    echo -e "${GREEN}✓ kvstore-util built successfully!${NC}"
     echo ""
-    echo "Then place it in the bin/ folder:"
-    echo "  mkdir -p bin"
-    echo "  mv ~/Downloads/kvstore-util-linux-amd64-* bin/kvstore-util"
-    echo "  chmod +x bin/kvstore-util"
-    echo ""
-    echo "Or build from source with: ./provision-config.sh"
-    echo ""
-    exit 1
 fi
 
 echo -e "${GREEN}✓ Found kvstore-util${NC}"

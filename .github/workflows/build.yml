@@ -46,6 +46,17 @@ jobs:
         cd build
         make picoopentherm_simulator -j$(nproc)
     
+    - name: Build kvstore-util
+      run: |
+        cd pico-kvstore/host
+        mkdir -p build
+        cd build
+        cmake -DPICO_SDK_FETCH_FROM_GIT=ON \
+              -DPICO_SDK_FETCH_FROM_GIT_TAG=2.1.1 \
+              -DPICO_SDK_FETCH_FROM_GIT_PATH=./sdk \
+              ..
+        make -j$(nproc)
+    
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -65,6 +76,7 @@ jobs:
         name: picoopentherm-tools
         path: |
           picotool/build/picotool
+          pico-kvstore/host/build/kvstore-util
         retention-days: 30
     
     - name: Build summary
@@ -89,5 +101,6 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Tools" >> $GITHUB_STEP_SUMMARY
         echo "- \`picotool\` - Flash and manage Pico devices" >> $GITHUB_STEP_SUMMARY
+        echo "- \`kvstore-util\` - Provision configuration data" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        ls -lh picotool/build/picotool >> $GITHUB_STEP_SUMMARY 2>/dev/null || true
+        ls -lh picotool/build/picotool pico-kvstore/host/build/kvstore-util >> $GITHUB_STEP_SUMMARY 2>/dev/null || true

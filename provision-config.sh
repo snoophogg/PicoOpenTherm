@@ -46,12 +46,33 @@ fi
 
 # Check if kvstore-util exists and is built
 if [ ! -f "$KVSTORE_UTIL" ]; then
-    echo -e "${YELLOW}Warning: kvstore-util not found at ${KVSTORE_UTIL}${NC}"
+    echo -e "${YELLOW}Warning: kvstore-util not found. Building with compatible SDK version...${NC}"
     echo ""
-    echo "kvstore-util must be built separately due to Pico SDK compatibility issues."
-    echo "Please see KVSTORE-UTIL.md for build instructions."
+    
+    # Build kvstore-util with SDK 2.1.1 (compatible with its mbedtls usage)
+    mkdir -p pico-kvstore/host/build
+    cd pico-kvstore/host/build
+    
+    echo "Fetching Pico SDK 2.1.1 for kvstore-util build..."
+    cmake -DPICO_SDK_FETCH_FROM_GIT=ON \
+          -DPICO_SDK_FETCH_FROM_GIT_TAG=2.1.1 \
+          -DPICO_SDK_FETCH_FROM_GIT_PATH=./sdk \
+          .. || {
+        echo -e "${RED}Error: CMake configuration failed${NC}"
+        echo "Please see KVSTORE-UTIL.md for alternative configuration options."
+        exit 1
+    }
+    
+    echo "Building kvstore-util..."
+    make || {
+        echo -e "${RED}Error: Build failed${NC}"
+        echo "Please see KVSTORE-UTIL.md for alternative configuration options."
+        exit 1
+    }
+    
+    cd ../../..
+    echo -e "${GREEN}✓ kvstore-util built successfully!${NC}"
     echo ""
-    exit 1
 fi
 
 # Check if picotool is available

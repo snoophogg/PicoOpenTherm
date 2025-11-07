@@ -44,6 +44,17 @@ jobs:
         make -j$(nproc)
         make picoopentherm_simulator -j$(nproc)
     
+    - name: Build kvstore-util
+      run: |
+        cd pico-kvstore/host
+        mkdir -p build
+        cd build
+        cmake -DPICO_SDK_FETCH_FROM_GIT=ON \
+              -DPICO_SDK_FETCH_FROM_GIT_TAG=2.1.1 \
+              -DPICO_SDK_FETCH_FROM_GIT_PATH=./sdk \
+              ..
+        make -j$(nproc)
+    
     - name: Get version from tag
       id: get_version
       run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
@@ -59,6 +70,8 @@ jobs:
         cp build/picoopentherm_simulator.bin release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.bin
         cp picotool/build/picotool release/picotool-linux-amd64-${{ steps.get_version.outputs.VERSION }}
         chmod +x release/picotool-linux-amd64-${{ steps.get_version.outputs.VERSION }}
+        cp pico-kvstore/host/build/kvstore-util release/kvstore-util-linux-amd64-${{ steps.get_version.outputs.VERSION }}
+        chmod +x release/kvstore-util-linux-amd64-${{ steps.get_version.outputs.VERSION }}
         cd release
         sha256sum * > checksums.txt
     
@@ -73,6 +86,7 @@ jobs:
           release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.elf
           release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.bin
           release/picotool-linux-amd64-${{ steps.get_version.outputs.VERSION }}
+          release/kvstore-util-linux-amd64-${{ steps.get_version.outputs.VERSION }}
           release/checksums.txt
         body: |
           ## PicoOpenTherm ${{ steps.get_version.outputs.VERSION }}
@@ -112,9 +126,7 @@ jobs:
           
           **Tools (Linux x64):**
           - **picotool-linux-amd64** - Flash and manage Pico devices from Linux
-          
-          **Note:** `kvstore-util` is not included in releases due to build compatibility issues with Pico SDK 2.2.0.  
-          Users should build it locally using `./build-all.sh` or use the `provision-simple.sh` script without auto-building.
+          - **kvstore-util-linux-amd64** - Provision configuration data (built with SDK 2.1.1)
           
           **Verification:**
           - **checksums.txt** - SHA256 checksums for verification
