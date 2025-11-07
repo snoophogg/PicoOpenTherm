@@ -7,8 +7,6 @@
 #include "mqtt_common.hpp"
 #include <string>
 
-using namespace OpenTherm::Common;
-
 // Global configuration buffers
 static char wifi_ssid[64];
 static char wifi_password[64];
@@ -54,7 +52,7 @@ int main()
     if (!Config::init())
     {
         printf("Failed to initialize configuration system\n");
-        blink_error_fatal();
+        OpenTherm::Common::blink_error_fatal();
     }
 
     // Load configuration from flash
@@ -73,7 +71,7 @@ int main()
 
     // Connect to WiFi and MQTT with retry logic
     cyw43_arch_enable_sta_mode();
-    connect_with_retry(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port, mqtt_client_id);
+    OpenTherm::Common::connect_with_retry(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port, mqtt_client_id);
 
     // Initialize OpenTherm with configured pins
     printf("Initializing OpenTherm...\n");
@@ -95,8 +93,8 @@ int main()
 
     // Set up MQTT callbacks
     OpenTherm::HomeAssistant::MQTTCallbacks mqtt_callbacks = {
-        .publish = mqtt_publish_wrapper,
-        .subscribe = mqtt_subscribe_wrapper};
+        .publish = OpenTherm::Common::mqtt_publish_wrapper,
+        .subscribe = OpenTherm::Common::mqtt_subscribe_wrapper};
 
     // Initialize Home Assistant interface
     ha.begin(mqtt_callbacks);
@@ -113,23 +111,23 @@ int main()
         uint32_t now = to_ms_since_boot(get_absolute_time());
 
         // Blink LED to show normal activity (1 blink pattern with pause)
-        last_led_toggle = blink_check(LED_BLINK_NORMAL_COUNT, last_led_toggle);
+        last_led_toggle = OpenTherm::Common::blink_check(OpenTherm::Common::LED_BLINK_NORMAL_COUNT, last_led_toggle);
 
-        if (now - last_connection_check >= CONNECTION_CHECK_DELAY_MS)
+        if (now - last_connection_check >= OpenTherm::Common::CONNECTION_CHECK_DELAY_MS)
         {
-            check_and_reconnect(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port,
-                                mqtt_client_id, on_reconnect);
+            OpenTherm::Common::check_and_reconnect(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port,
+                                                   mqtt_client_id, on_reconnect);
             last_connection_check = now;
         }
 
         // Process any pending MQTT messages
-        if (!g_pending_messages.empty())
+        if (!OpenTherm::Common::g_pending_messages.empty())
         {
-            for (auto &msg : g_pending_messages)
+            for (auto &msg : OpenTherm::Common::g_pending_messages)
             {
                 ha.handleMessage(msg.first.c_str(), msg.second.c_str());
             }
-            g_pending_messages.clear();
+            OpenTherm::Common::g_pending_messages.clear();
         }
 
         // Update Home Assistant (reads sensors and publishes to MQTT)

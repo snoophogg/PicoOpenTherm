@@ -1,0 +1,5 @@
+/mnt/c/Users/ghogg/source/repos/PicoOpenTherm/build_tests/pioasm-install/pioasm/pioasm
+/mnt/c/Users/ghogg/source/repos/PicoOpenTherm/build_tests/pioasm-install/pioasm/pioasmTargets.cmake
+/mnt/c/Users/ghogg/source/repos/PicoOpenTherm/build_tests/pioasm-install/pioasm/pioasmTargets-release.cmake
+/mnt/c/Users/ghogg/source/repos/PicoOpenTherm/build_tests/pioasm-install/pioasm/pioasmConfig.cmake
+/mnt/c/Users/ghogg/source/repos/PicoOpenTherm/build_tests/pioasm-install/pioasm/pioasmConfigVersion.cmake

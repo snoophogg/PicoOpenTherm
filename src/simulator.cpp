@@ -7,8 +7,6 @@
 #include "mqtt_common.hpp"
 #include <string>
 
-using namespace OpenTherm::Common;
-
 // Global configuration buffers
 static char wifi_ssid[64];
 static char wifi_password[64];
@@ -39,7 +37,7 @@ int main()
     if (!Config::init())
     {
         printf("Failed to initialize configuration system\n");
-        blink_error_fatal();
+        OpenTherm::Common::blink_error_fatal();
     }
 
     // Load configuration
@@ -55,7 +53,7 @@ int main()
 
     // Connect to WiFi and MQTT
     cyw43_arch_enable_sta_mode();
-    connect_with_retry(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port, mqtt_client_id);
+    OpenTherm::Common::connect_with_retry(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port, mqtt_client_id);
 
     // Create simulated OpenTherm interface
     printf("Initializing OpenTherm Simulator...\n");
@@ -87,13 +85,13 @@ int main()
         uint32_t now = to_ms_since_boot(get_absolute_time());
 
         // Blink LED for normal activity
-        last_led_toggle = blink_check(LED_BLINK_NORMAL_COUNT, last_led_toggle);
+        last_led_toggle = OpenTherm::Common::blink_check(OpenTherm::Common::LED_BLINK_NORMAL_COUNT, last_led_toggle);
 
         // Check connections
-        if (now - last_connection_check >= CONNECTION_CHECK_DELAY_MS)
+        if (now - last_connection_check >= OpenTherm::Common::CONNECTION_CHECK_DELAY_MS)
         {
-            check_and_reconnect(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port,
-                                mqtt_client_id, nullptr);
+            OpenTherm::Common::check_and_reconnect(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port,
+                                                   mqtt_client_id, nullptr);
             last_connection_check = now;
         }
 
@@ -109,32 +107,32 @@ int main()
             // Room temperature
             snprintf(topic, sizeof(topic), "opentherm/state/%s/room_temperature", device_id);
             snprintf(payload, sizeof(payload), "%.2f", sim_ot.readRoomTemperature());
-            mqtt_publish_wrapper(topic, payload, false);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, false);
 
             // Boiler temperature
             snprintf(topic, sizeof(topic), "opentherm/state/%s/boiler_temperature", device_id);
             snprintf(payload, sizeof(payload), "%.2f", sim_ot.readBoilerTemperature());
-            mqtt_publish_wrapper(topic, payload, false);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, false);
 
             // DHW temperature
             snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_temperature", device_id);
             snprintf(payload, sizeof(payload), "%.2f", sim_ot.readDHWTemperature());
-            mqtt_publish_wrapper(topic, payload, false);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, false);
 
             // Modulation
             snprintf(topic, sizeof(topic), "opentherm/state/%s/modulation", device_id);
             snprintf(payload, sizeof(payload), "%.1f", sim_ot.readModulationLevel());
-            mqtt_publish_wrapper(topic, payload, false);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, false);
 
             // Pressure
             snprintf(topic, sizeof(topic), "opentherm/state/%s/pressure", device_id);
             snprintf(payload, sizeof(payload), "%.2f", sim_ot.readCHWaterPressure());
-            mqtt_publish_wrapper(topic, payload, false);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, false);
 
             // Flame status
             snprintf(topic, sizeof(topic), "opentherm/state/%s/flame", device_id);
             snprintf(payload, sizeof(payload), "%s", sim_ot.readFlameStatus() ? "ON" : "OFF");
-            mqtt_publish_wrapper(topic, payload, false);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, false);
 
             printf("[SIM] T_room=%.1f T_boiler=%.1f Mod=%.0f%% Flame=%s\n",
                    sim_ot.readRoomTemperature(),
@@ -146,9 +144,9 @@ int main()
         }
 
         // Process incoming MQTT messages
-        if (!g_pending_messages.empty())
+        if (!OpenTherm::Common::g_pending_messages.empty())
         {
-            for (auto &msg : g_pending_messages)
+            for (auto &msg : OpenTherm::Common::g_pending_messages)
             {
                 // Handle setpoint changes
                 if (msg.first.find("/room_setpoint") != std::string::npos)
@@ -162,7 +160,7 @@ int main()
                     sim_ot.writeDHWSetpoint(setpoint);
                 }
             }
-            g_pending_messages.clear();
+            OpenTherm::Common::g_pending_messages.clear();
         }
 
         sleep_ms(100);
