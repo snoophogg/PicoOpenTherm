@@ -37,6 +37,7 @@ jobs:
     
     - name: Build picotool
       run: |
+        export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
         cd picotool
         mkdir -p build
         cd build
@@ -45,8 +46,12 @@ jobs:
     
     - name: Build kvstore-util
       run: |
-        cd pico-kvstore/tools
-        make kvstore-util
+        export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
+        cd pico-kvstore/host
+        mkdir -p build
+        cd build
+        cmake ..
+        make -j$(nproc)
     
     - name: Get version from tag
       id: get_version
@@ -62,7 +67,7 @@ jobs:
         cp build/picoopentherm_simulator.elf release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.elf
         cp build/picoopentherm_simulator.bin release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.bin
         cp picotool/build/picotool release/picotool-linux-amd64-${{ steps.get_version.outputs.VERSION }}
-        cp pico-kvstore/tools/kvstore-util release/kvstore-util-linux-amd64-${{ steps.get_version.outputs.VERSION }}
+        cp pico-kvstore/host/build/kvstore-util release/kvstore-util-linux-amd64-${{ steps.get_version.outputs.VERSION }}
         chmod +x release/picotool-linux-amd64-${{ steps.get_version.outputs.VERSION }}
         chmod +x release/kvstore-util-linux-amd64-${{ steps.get_version.outputs.VERSION }}
         cd release
