@@ -19,7 +19,16 @@ static char device_id[64];
 int main()
 {
     stdio_init_all();
-    sleep_ms(3000);
+
+    // Longer pause to allow UART connection for debugging
+    printf("\n");
+    printf("Waiting for UART connection...\n");
+    for (int i = 5; i > 0; i--)
+    {
+        printf("%d...\n", i);
+        sleep_ms(1000);
+    }
+    printf("\n");
 
     printf("\n=== PicoOpenTherm SIMULATOR Mode ===\n");
     printf("This firmware simulates OpenTherm data without hardware\n\n");
@@ -50,6 +59,15 @@ int main()
     Config::getDeviceID(device_id, sizeof(device_id));
 
     Config::printConfig();
+
+    printf("\n=== Connection Settings ===\n");
+    printf("WiFi SSID:        %s\n", wifi_ssid);
+    printf("WiFi Password:    %s\n", strlen(wifi_password) > 0 ? "********" : "(not set)");
+    printf("MQTT Server:      %s:%d\n", mqtt_server_ip, mqtt_server_port);
+    printf("MQTT Client ID:   %s\n", mqtt_client_id);
+    printf("Device Name:      %s\n", device_name);
+    printf("Device ID:        %s\n", device_id);
+    printf("===========================\n\n");
 
     // Connect to WiFi and MQTT
     cyw43_arch_enable_sta_mode();
