@@ -231,7 +231,7 @@ TEST(DeviceInfoTests, DeviceInfoInDiscovery)
     
     EXPECT_NE(json.find("\"device\""), std::string::npos);
     EXPECT_NE(json.find("\"identifiers\""), std::string::npos);
-    EXPECT_NE(json.find("\"name\":\"OpenTherm Gateway\""), std::string::npos);
+    EXPECT_NE(json.find("\"name\": \"OpenTherm Gateway\""), std::string::npos);
 }
 
 TEST(DeviceInfoTests, UniqueIdFormat)

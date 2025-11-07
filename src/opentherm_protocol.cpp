@@ -35,7 +35,8 @@ namespace OpenTherm
             uint32_t packed = 0;
 
             packed |= (static_cast<uint32_t>(frame->msg_type) & 0x07) << 28;
-            packed |= (static_cast<uint32_t>(frame->spare) & 0x0F) << 24;
+            // Spare bits must always be 0 per OpenTherm spec
+            packed |= (0) << 24;
             packed |= (static_cast<uint32_t>(frame->data_id) & 0xFF) << 16;
             packed |= (static_cast<uint32_t>(frame->data_value) & 0xFFFF);
 
