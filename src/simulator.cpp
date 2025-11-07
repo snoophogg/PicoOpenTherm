@@ -21,13 +21,6 @@ int main()
 {
     stdio_init_all();
 
-    // Starts with continuous blink until properly configured
-    printf("Starting LED blink timer...\n");
-    if (!OpenTherm::LED::init())
-    {
-        printf("Warning: Failed to initialize LED blink timer\n");
-    }
-
     // Longer pause to allow UART connection for debugging
     printf("\n");
     printf("Waiting for UART connection...\n");
@@ -48,6 +41,13 @@ int main()
         {
             sleep_ms(1000);
         }
+    }
+
+    // Starts with continuous blink until properly configured
+    printf("Starting LED blink timer...\n");
+    if (!OpenTherm::LED::init())
+    {
+        printf("Warning: Failed to initialize LED blink timer\n");
     }
 
     printf("Initializing configuration...\n");
