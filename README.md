@@ -654,6 +654,11 @@ This project builds upon excellent work from the following projects:
 - **lwIP MQTT Client** - Lightweight IP stack with MQTT support (included in Pico SDK)
 - **PIO (Programmable I/O)** - Hardware Manchester encoding/decoding
 
+### Development
+This project was developed almost entirely with the assistance of AI coding tools:
+- **[GitHub Copilot](https://github.com/features/copilot)** - AI pair programmer for code completion and suggestions
+- **[Claude Sonnet 4.5](https://www.anthropic.com/claude)** - AI assistant for architecture design, implementation, and documentation
+
 ### Special Thanks
 - Andrew Duncan (adq) for the pioneering PicoTherm project
 - Ihor Melnyk for the reliable OpenTherm adapter hardware
