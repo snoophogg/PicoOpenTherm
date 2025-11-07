@@ -54,15 +54,25 @@ Note: The Pico SDK and Picotool are included as git submodules and will be autom
 
 ## Hardware Setup
 
+### Recommended OpenTherm Adapter
+
+This project is designed to work with the **OpenTherm Adapter** from [Ihor Melnyk](https://ihormelnyk.com/opentherm_adapter):
+- Provides proper isolation and level shifting for OpenTherm communication
+- Safe connection between Pico W and your boiler
+- Tested and verified to work with this firmware
+
+**Purchase**: Available at [ihormelnyk.com/opentherm_adapter](https://ihormelnyk.com/opentherm_adapter)
+
 ### OpenTherm Connection
 
-Connect your OpenTherm device to the Pico W:
+Connect your OpenTherm adapter to the Pico W:
 
-- **TX Pin** (default GPIO 16): Connect to OpenTherm device RX
-- **RX Pin** (default GPIO 17): Connect to OpenTherm device TX
+- **TX Pin** (default GPIO 16): Connect to OpenTherm adapter's input
+- **RX Pin** (default GPIO 17): Connect to OpenTherm adapter's output
 - **Ground**: Common ground connection
+- **Power**: 5V to adapter (if required by your adapter model)
 
-**Important**: OpenTherm uses a voltage signaling standard. You may need appropriate level shifting or isolation circuitry depending on your specific hardware.
+**Important**: Always use a proper OpenTherm adapter with isolation. Direct connection to boiler terminals can be dangerous and may damage your equipment.
 
 ### WiFi & MQTT Configuration
 
@@ -621,6 +631,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 This project builds upon excellent work from the following projects:
 
+### Inspiration
+- **[PicoTherm by Andrew Duncan](https://github.com/adq/picotherm)** - Original OpenTherm implementation for Raspberry Pi Pico
+  - Blog post: [Controlling an OpenTherm boiler with a Raspberry Pi Pico](https://blog.lidskialf.net/2024/03/12/picotherm-controlling-an-opentherm-boiler-with-a-raspberry-pi-pico/)
+  - Inspired the PIO-based Manchester encoding/decoding approach
+  - Demonstrated the feasibility of using Pico for OpenTherm communication
+
 ### Core Dependencies
 - **[Raspberry Pi Pico SDK](https://github.com/raspberrypi/pico-sdk)** - Official SDK for RP2040 microcontroller
 - **[Picotool](https://github.com/raspberrypi/picotool)** - Tool for inspecting and flashing RP2040 binaries
@@ -628,12 +644,19 @@ This project builds upon excellent work from the following projects:
   - Provides persistent configuration storage
   - Includes kvstore-util for configuration management
 
+### Recommended Hardware
+- **[OpenTherm Adapter by Ihor Melnyk](https://ihormelnyk.com/opentherm_adapter)** - Safe isolation and level shifting
+  - Tested and verified to work with this firmware
+  - Provides proper electrical isolation between Pico and boiler
+
 ### Technologies
 - **OpenTherm Protocol v2.2** - Open standard for boiler/thermostat communication
 - **lwIP MQTT Client** - Lightweight IP stack with MQTT support (included in Pico SDK)
 - **PIO (Programmable I/O)** - Hardware Manchester encoding/decoding
 
 ### Special Thanks
+- Andrew Duncan (adq) for the pioneering PicoTherm project
+- Ihor Melnyk for the reliable OpenTherm adapter hardware
 - OpenTherm community for protocol documentation
 - Home Assistant community for MQTT auto-discovery standards
 - Raspberry Pi Foundation for the excellent Pico W platform and SDK
