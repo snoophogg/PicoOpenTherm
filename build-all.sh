@@ -51,7 +51,7 @@ cd ..
 # Now configure with the manually fetched SDK
 export PICO_SDK_PATH="$PWD/sdk/pico-sdk"
 echo "Configuring kvstore-util build..."
-cmake ..
+cmake -DPICO_PLATFORM=host ..
 make -j$(nproc)
 echo -e "${GREEN}✓ kvstore-util built successfully${NC}"
 echo "  - pico-kvstore/host/build/kvstore-util"

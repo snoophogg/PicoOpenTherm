@@ -30,7 +30,7 @@ cd ../..
 
 # Build kvstore-util
 export PICO_SDK_PATH=$PWD/sdk/pico-sdk
-cmake ..
+cmake -DPICO_PLATFORM=host ..
 make
 ```
 

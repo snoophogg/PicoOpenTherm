@@ -47,8 +47,9 @@ jobs:
     - name: Build kvstore-util
       run: |
         # Manually fetch and prepare SDK 2.1.1 for kvstore-util
-        mkdir -p pico-kvstore/host/build/sdk
-        cd pico-kvstore/host/build/sdk
+        cd pico-kvstore/host
+        mkdir -p build/sdk
+        cd build/sdk
         if [ ! -d pico-sdk ]; then
           echo "Fetching Pico SDK 2.1.1..."
           git clone --branch 2.1.1 --single-branch https://github.com/raspberrypi/pico-sdk.git
@@ -56,10 +57,10 @@ jobs:
           git submodule update --init --recursive
           cd ..
         fi
-        cd ../..
-        # Now configure with the manually fetched SDK
-        export PICO_SDK_PATH=$PWD/build/sdk/pico-sdk
-        cmake ..
+        cd ..
+        # Now we're in pico-kvstore/host/build
+        export PICO_SDK_PATH=$PWD/sdk/pico-sdk
+        cmake -DPICO_PLATFORM=host ..
         make -j$(nproc)
     
     - name: Get version from tag

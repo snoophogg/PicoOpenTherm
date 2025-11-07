@@ -67,7 +67,7 @@ if [ ! -f "$KVSTORE_UTIL" ]; then
     # Now configure with the manually fetched SDK
     export PICO_SDK_PATH="$PWD/sdk/pico-sdk"
     echo "Configuring kvstore-util build..."
-    cmake .. || {
+    cmake -DPICO_PLATFORM=host .. || {
         echo -e "${RED}Error: CMake configuration failed${NC}"
         echo "Please see KVSTORE-UTIL.md for alternative configuration options."
         exit 1
