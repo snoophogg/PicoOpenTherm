@@ -36,8 +36,7 @@ This starts:
 2. Click the **+ Add Integration** button (bottom right)
 3. Search for and select **MQTT**
 4. Configure the broker connection:
-   - **Broker**: Enter `mosquitto` (the container name)
-     - _Alternative_: If using host networking, use `localhost`
+   - **Broker**: Enter `mosquitto` (the Mosquitto container name)
    - **Port**: `1883`
    - **Username**: Leave empty (unless you set up authentication)
    - **Password**: Leave empty (unless you set up authentication)

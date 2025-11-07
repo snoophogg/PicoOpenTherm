@@ -51,7 +51,7 @@ The MQTT broker is configured for auto-discovery:
 
 ```yaml
 mqtt:
-  broker: localhost  # Due to host network mode
+  broker: mosquitto  # Container name on bridge network
   port: 1883
   discovery: true
   discovery_prefix: homeassistant
@@ -80,7 +80,7 @@ Once the MQTT integration is added in Home Assistant, all PicoOpenTherm entities
    - Click **+ Add Integration**
    - Search for and select **MQTT**
    - Configure the connection:
-     - **Broker**: `mosquitto` (container name) or `localhost` (with host networking)
+     - **Broker**: `mosquitto` (the Mosquitto container name)
      - **Port**: `1883`
      - Leave **Username** and **Password** empty (unless you configured authentication)
    - Click **Submit**
@@ -184,28 +184,25 @@ All automations can be edited via:
 
 ## Network Configuration
 
-The Docker Compose file uses **host network mode** for Home Assistant to ensure:
-- Easy access to MQTT broker (localhost:1883)
-- mDNS/Bonjour discovery works correctly
-- No port mapping issues
+The Docker Compose file uses **bridge networking** with explicit port mappings:
+- Mosquitto MQTT: 1883 (standard MQTT)
+- Mosquitto WebSocket: 9001
+- Home Assistant: 8123 (web UI)
 
-If you prefer bridge networking, modify `docker-compose.yml`:
+Home Assistant connects to Mosquitto using the container name `mosquitto` within the Docker network.
+
+**Note**: The previous setup used host networking, but bridge networking is now configured for better isolation and standard Docker practices.
+
+If you need to switch back to host networking, modify `docker-compose.yml`:
 
 ```yaml
 homeassistant:
-  # Remove: network_mode: host
+  # Remove networks and ports sections
   # Add:
-  networks:
-    - picoopentherm
-  ports:
-    - "8123:8123"
+  network_mode: host
 ```
 
-And update `homeassistant/configuration.yaml` MQTT broker:
-```yaml
-mqtt:
-  broker: mosquitto  # Use service name instead of localhost
-```
+And update the MQTT broker to `localhost` in Home Assistant's MQTT integration configuration.
 
 ## Security
 
@@ -226,15 +223,13 @@ password_file /mosquitto/config/passwd
 
 **2. Home Assistant MQTT:**
 
-Edit `homeassistant/configuration.yaml`:
-```yaml
-mqtt:
-  broker: localhost
-  port: 1883
-  username: admin
-  password: your_secure_password
-  discovery: true
-```
+Configure via the MQTT integration in the UI:
+- Go to Settings → Devices & Services → MQTT → Configure
+- Update with your credentials:
+  - Broker: `mosquitto`
+  - Port: `1883`
+  - Username: `admin`
+  - Password: `your_secure_password`
 
 **3. Home Assistant Access:**
 
