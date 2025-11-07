@@ -103,24 +103,41 @@ Configuration is automatically saved to flash memory and persists across reboots
 
 ## Configuration Provisioning
 
-You can pre-configure your device before flashing the firmware using the included provisioning script. This allows you to set WiFi credentials, MQTT settings, and device configuration directly to flash memory.
+You can pre-configure your device before flashing the firmware using the included provisioning scripts. This allows you to set WiFi credentials, MQTT settings, and device configuration directly to flash memory.
 
-**Quick Start:**
+**Quick Start (No Build Required):**
+```bash
+# 1. Download pre-built tools from GitHub releases to bin/ folder
+mkdir -p bin
+# Place picotool and kvstore-util in bin/ and make executable
+
+# 2. Create your configuration file
+cp secrets.cfg.example secrets.cfg
+nano secrets.cfg
+
+# 3. Flash configuration to Pico
+./provision-simple.sh
+
+# 4. Flash firmware (download from releases)
+bin/picotool load picoopentherm-vX.X.X.uf2
+```
+
+**Alternative (Build from Source):**
 ```bash
 # 1. Create your configuration file
 cp secrets.cfg.example secrets.cfg
 nano secrets.cfg
 
-# 2. Flash configuration to Pico
+# 2. Flash configuration to Pico (builds tools if needed)
 ./provision-config.sh
 
 # 3. Flash firmware
 picotool load build/picoopentherm.uf2
 ```
 
-The provisioning script uses `kvstore-util` to create a configuration binary and flashes it to the correct location in the Pico's flash memory (last 256KB).
+The provisioning scripts use `kvstore-util` to create a configuration binary and flash it to the correct location in the Pico's flash memory (last 256KB).
 
-📖 **See [PROVISIONING.md](PROVISIONING.md) for detailed instructions, configuration options, and troubleshooting.**
+📖 **See [PROVISIONING.md](PROVISIONING.md) for detailed instructions, pre-built tool download links, and troubleshooting.**
 
 ### LED Status Indicator
 

@@ -2,7 +2,38 @@
 
 This directory contains tools to provision your PicoOpenTherm configuration to the device before flashing the firmware.
 
-## Quick Start
+## Quick Start (Pre-built Tools)
+
+**Easiest method - no compilation required!**
+
+1. **Download pre-built tools from [GitHub Releases](https://github.com/snoophogg/PicoOpenTherm/releases/latest):**
+   - `picotool-linux-amd64-vX.X.X`
+   - `kvstore-util-linux-amd64-vX.X.X`
+
+2. **Place them in the bin/ folder:**
+   ```bash
+   mkdir -p bin
+   mv ~/Downloads/picotool-linux-amd64-* bin/picotool
+   mv ~/Downloads/kvstore-util-linux-amd64-* bin/kvstore-util
+   chmod +x bin/picotool bin/kvstore-util
+   ```
+
+3. **Create your configuration file:**
+   ```bash
+   cp secrets.cfg.example secrets.cfg
+   nano secrets.cfg
+   ```
+
+4. **Run the simple provisioning script:**
+   ```bash
+   ./provision-simple.sh
+   ```
+
+5. **Flash your firmware** (download from releases or use drag-and-drop)
+
+## Advanced: Build from Source
+
+If you prefer to build the tools yourself:
 
 1. **Create your configuration file:**
    ```bash
@@ -10,28 +41,31 @@ This directory contains tools to provision your PicoOpenTherm configuration to t
    nano secrets.cfg
    ```
 
-2. **Edit `secrets.cfg` with your settings:**
-   - WiFi SSID and password
-   - MQTT broker IP and port
-   - Device name and ID
-   - OpenTherm GPIO pins
-
-3. **Run the provisioning script:**
+2. **Run the full provisioning script:**
    ```bash
    ./provision-config.sh
    ```
+   This will build kvstore-util and picotool if needed.
 
-4. **Flash your firmware:**
+3. **Flash your firmware:**
    ```bash
    picotool load build/picoopentherm.uf2
    ```
 
-## What does provision-config.sh do?
+## What do the provisioning scripts do?
 
-1. Reads your configuration from `secrets.cfg`
-2. Uses `kvstore-util` to create a `settings.bin` file
-3. Flashes the configuration to the Pico W at the correct flash offset (last 256KB)
-4. The configuration persists in flash memory
+### provision-simple.sh (Recommended)
+- Uses pre-built tools from the `bin/` folder
+- No compilation required
+- Reads your configuration from `secrets.cfg`
+- Creates a `settings.bin` file using `kvstore-util`
+- Flashes the configuration to the Pico W at the correct flash offset (last 256KB)
+- Configuration persists in flash memory
+
+### provision-config.sh (Advanced)
+- Same functionality as provision-simple.sh
+- Additionally builds kvstore-util and picotool from source if not found
+- Useful for developers or if pre-built tools aren't available
 
 ## Configuration Keys
 
@@ -51,7 +85,17 @@ The following keys are supported in `secrets.cfg`:
 
 ## Requirements
 
-### kvstore-util
+### Option 1: Pre-built Tools (Easiest)
+
+Download from [GitHub Releases](https://github.com/snoophogg/PicoOpenTherm/releases/latest):
+- `picotool-linux-amd64` - Tool for flashing Pico devices
+- `kvstore-util-linux-amd64` - Configuration management tool
+
+Place them in the `bin/` folder and make them executable.
+
+### Option 2: Build from Source
+
+#### kvstore-util
 
 The `kvstore-util` tool is part of the pico-kvstore submodule. If not built, the script will attempt to build it automatically.
 
@@ -61,7 +105,7 @@ cd pico-kvstore/tools
 make kvstore-util
 ```
 
-### picotool
+#### picotool
 
 Install picotool to flash the configuration:
 
@@ -75,7 +119,29 @@ sudo make install
 
 ## Workflow
 
-### First Time Setup
+### First Time Setup (Using Pre-built Tools)
+```bash
+# 1. Download pre-built tools from GitHub releases
+mkdir -p bin
+mv ~/Downloads/picotool-linux-amd64-* bin/picotool
+mv ~/Downloads/kvstore-util-linux-amd64-* bin/kvstore-util
+chmod +x bin/picotool bin/kvstore-util
+
+# 2. Configure your settings
+cp secrets.cfg.example secrets.cfg
+nano secrets.cfg
+
+# 3. Connect Pico in BOOTSEL mode
+# (hold BOOTSEL button, connect USB, release BOOTSEL)
+
+# 4. Provision configuration
+./provision-simple.sh
+
+# 5. Download and flash firmware from GitHub releases
+bin/picotool load picoopentherm-vX.X.X.uf2
+```
+
+### First Time Setup (Building from Source)
 ```bash
 # 1. Configure your settings
 cp secrets.cfg.example secrets.cfg
@@ -87,7 +153,7 @@ nano secrets.cfg
 # 3. Connect Pico in BOOTSEL mode
 # (hold BOOTSEL button, connect USB, release BOOTSEL)
 
-# 4. Provision configuration
+# 4. Provision configuration (builds tools if needed)
 ./provision-config.sh
 
 # 5. Flash firmware
@@ -100,8 +166,9 @@ picotool load build/picoopentherm.uf2
 nano secrets.cfg
 
 # 2. Connect Pico in BOOTSEL mode
+
 # 3. Re-provision
-./provision-config.sh
+./provision-simple.sh  # or ./provision-config.sh
 
 # 4. Reboot (or re-flash firmware)
 picotool reboot
@@ -119,27 +186,47 @@ Changes made via Home Assistant are saved to flash and trigger an automatic rest
 
 ## Troubleshooting
 
-**kvstore-util not found:**
+**Tools not found:**
+
+Using pre-built tools:
 ```bash
-cd pico-kvstore/tools
-make kvstore-util
+# Download from releases and place in bin/
+mkdir -p bin
+# Download picotool-linux-amd64-* and kvstore-util-linux-amd64-*
+mv ~/Downloads/picotool-linux-amd64-* bin/picotool
+mv ~/Downloads/kvstore-util-linux-amd64-* bin/kvstore-util
+chmod +x bin/*
 ```
 
-**picotool not found:**
+Building from source:
 ```bash
-sudo apt install picotool
-# or build from source (see above)
+# kvstore-util
+cd pico-kvstore/tools
+make kvstore-util
+
+# picotool
+cd picotool
+mkdir -p build && cd build
+cmake ..
+make
+sudo make install
 ```
 
 **Pico not detected:**
 - Make sure Pico is in BOOTSEL mode (hold button while connecting USB)
 - Check USB connection
 - Try `lsusb` to see if device is recognized
+- On Linux, you may need udev rules for non-root access
 
 **Configuration not applied:**
 - Verify settings.bin was created
 - Check flash offset is correct (0x1FC0000 for 2MB flash)
 - Ensure you flash firmware after provisioning config
+
+**Permission denied when running tools:**
+```bash
+chmod +x bin/picotool bin/kvstore-util
+```
 
 ## Flash Layout
 
