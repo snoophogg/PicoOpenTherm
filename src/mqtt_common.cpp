@@ -160,9 +160,12 @@ namespace OpenTherm
                 cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
                 sleep_ms(LED_BLINK_DURATION);
                 cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
-                sleep_ms(LED_BLINK_DURATION);
+                if (i < blink_count - 1) // Only add short pause between blinks in pattern
+                {
+                    sleep_ms(LED_BLINK_DURATION);
+                }
             }
-            sleep_ms(LED_BLINK_PAUSE);
+            // No pause at the end - let blink_check handle the timing
         }
 
         uint32_t blink_check(uint8_t blink_count, uint32_t last_led_toggle)
@@ -211,6 +214,7 @@ namespace OpenTherm
                 while ((to_ms_since_boot(get_absolute_time()) - delay_start) < WIFI_RETRY_DELAY_MS)
                 {
                     last_led_toggle = blink_check(LED_BLINK_WIFI_ERROR_COUNT, last_led_toggle);
+                    sleep_ms(100); // Small delay to prevent tight loop
                 }
 
                 wifi_attempt++;
@@ -242,6 +246,7 @@ namespace OpenTherm
                 while ((to_ms_since_boot(get_absolute_time()) - delay_start) < MQTT_RETRY_DELAY_MS)
                 {
                     last_led_toggle = blink_check(LED_BLINK_MQTT_ERROR_COUNT, last_led_toggle);
+                    sleep_ms(100); // Small delay to prevent tight loop
                 }
 
                 mqtt_attempt++;
