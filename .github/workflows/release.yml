@@ -31,6 +31,9 @@ jobs:
       run: |
         export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
         cd pico-kvstore/host
+        # Comment out conflicting add_library calls (lines 36-39)
+        # The Pico SDK already provides these libraries in host mode
+        sed -i '36,39s/^add_library/#add_library/' CMakeLists.txt
         mkdir -p build
         cd build
         cmake ..
