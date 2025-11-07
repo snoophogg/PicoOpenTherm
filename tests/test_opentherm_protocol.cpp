@@ -281,18 +281,19 @@ TEST(ConfigTests, MasterConfigEncodeDecode)
 
 TEST(FaultTests, DecodeAllFlags)
 {
-    // OEM code=5, service request + water over-temp
+    // OEM code=5, service request + air pressure fault
     uint16_t value = (5 << 8) | 0x11;
 
     opentherm_fault_t fault;
-    decode_fault(value, &fault);
+    OpenTherm::Protocol::decode_fault(value, &fault);
 
     EXPECT_EQ(fault.code, 5);
     EXPECT_TRUE(fault.service_request);
     EXPECT_FALSE(fault.lockout_reset);
     EXPECT_FALSE(fault.low_water_pressure);
     EXPECT_FALSE(fault.gas_flame_fault);
-    EXPECT_TRUE(fault.water_overtemp);
+    EXPECT_TRUE(fault.air_pressure_fault);
+    EXPECT_FALSE(fault.water_overtemp);
 }
 
 // ============================================================================
