@@ -50,30 +50,24 @@ if [ ! -f "$KVSTORE_UTIL" ]; then
     echo ""
     
     # Build kvstore-util with SDK 2.1.1 (compatible with its mbedtls usage)
-    mkdir -p pico-kvstore/host/build
-    cd pico-kvstore/host/build
+    mkdir -p pico-kvstore/host/build/sdk
+    cd pico-kvstore/host/build/sdk
     
-    echo "Fetching Pico SDK 2.1.1 for kvstore-util build..."
-    # First cmake run will fetch the SDK
-    cmake -DPICO_SDK_FETCH_FROM_GIT=ON \
-          -DPICO_SDK_FETCH_FROM_GIT_TAG=2.1.1 \
-          -DPICO_SDK_FETCH_FROM_GIT_PATH=./sdk \
-          .. 2>/dev/null || true
-    
-    # Initialize SDK submodules
-    if [ -d sdk/pico_sdk-src ]; then
+    # Manually fetch and prepare SDK 2.1.1
+    if [ ! -d pico-sdk ]; then
+        echo "Fetching Pico SDK 2.1.1..."
+        git clone --branch 2.1.1 https://github.com/raspberrypi/pico-sdk.git
+        cd pico-sdk
         echo "Initializing SDK submodules..."
-        cd sdk/pico_sdk-src
         git submodule update --init --recursive
-        cd ../..
+        cd ..
     fi
     
-    # Reconfigure now that submodules are initialized
+    cd ..
+    # Now configure with the manually fetched SDK
+    export PICO_SDK_PATH="$PWD/sdk/pico-sdk"
     echo "Configuring kvstore-util build..."
-    cmake -DPICO_SDK_FETCH_FROM_GIT=ON \
-          -DPICO_SDK_FETCH_FROM_GIT_TAG=2.1.1 \
-          -DPICO_SDK_FETCH_FROM_GIT_PATH=./sdk \
-          .. || {
+    cmake .. || {
         echo -e "${RED}Error: CMake configuration failed${NC}"
         echo "Please see KVSTORE-UTIL.md for alternative configuration options."
         exit 1

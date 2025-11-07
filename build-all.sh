@@ -34,27 +34,24 @@ echo ""
 # Stage 2: Build host tools
 echo -e "${BLUE}Stage 2: Building host tools (kvstore-util)...${NC}"
 cd "${SCRIPT_DIR}/pico-kvstore/host"
-mkdir -p build
-cd build
-echo "Fetching Pico SDK 2.1.1 for kvstore-util build..."
-# First cmake run will fetch the SDK
-cmake -DPICO_SDK_FETCH_FROM_GIT=ON \
-      -DPICO_SDK_FETCH_FROM_GIT_TAG=2.1.1 \
-      -DPICO_SDK_FETCH_FROM_GIT_PATH=./sdk \
-      .. || true
-# Initialize SDK submodules
-if [ -d sdk/pico_sdk-src ]; then
+mkdir -p build/sdk
+cd build/sdk
+
+# Manually fetch and prepare SDK 2.1.1 for kvstore-util
+if [ ! -d pico-sdk ]; then
+  echo "Fetching Pico SDK 2.1.1..."
+  git clone --branch 2.1.1 https://github.com/raspberrypi/pico-sdk.git
+  cd pico-sdk
   echo "Initializing SDK submodules..."
-  cd sdk/pico_sdk-src
   git submodule update --init --recursive
-  cd ../..
+  cd ..
 fi
-# Reconfigure now that submodules are initialized
+
+cd ..
+# Now configure with the manually fetched SDK
+export PICO_SDK_PATH="$PWD/sdk/pico-sdk"
 echo "Configuring kvstore-util build..."
-cmake -DPICO_SDK_FETCH_FROM_GIT=ON \
-      -DPICO_SDK_FETCH_FROM_GIT_TAG=2.1.1 \
-      -DPICO_SDK_FETCH_FROM_GIT_PATH=./sdk \
-      ..
+cmake ..
 make -j$(nproc)
 echo -e "${GREEN}✓ kvstore-util built successfully${NC}"
 echo "  - pico-kvstore/host/build/kvstore-util"
