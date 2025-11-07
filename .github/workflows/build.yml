@@ -37,6 +37,19 @@ jobs:
         cd build
         make picoopentherm_simulator -j$(nproc)
     
+    - name: Build picotool
+      run: |
+        cd picotool
+        mkdir -p build
+        cd build
+        cmake ..
+        make -j$(nproc)
+    
+    - name: Build kvstore-util
+      run: |
+        cd pico-kvstore/tools
+        make kvstore-util
+    
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -48,6 +61,15 @@ jobs:
           build/picoopentherm_simulator.uf2
           build/picoopentherm_simulator.elf
           build/picoopentherm_simulator.bin
+        retention-days: 30
+    
+    - name: Upload tools artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: picoopentherm-tools
+        path: |
+          picotool/build/picotool
+          pico-kvstore/tools/kvstore-util
         retention-days: 30
     
     - name: Build summary
@@ -69,3 +91,9 @@ jobs:
         echo "- \`picoopentherm_simulator.bin\` - Simulator raw binary" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         ls -lh build/picoopentherm_simulator.uf2 build/picoopentherm_simulator.elf build/picoopentherm_simulator.bin >> $GITHUB_STEP_SUMMARY 2>/dev/null || true
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Tools" >> $GITHUB_STEP_SUMMARY
+        echo "- \`picotool\` - Flash and manage Pico devices" >> $GITHUB_STEP_SUMMARY
+        echo "- \`kvstore-util\` - Configuration provisioning tool" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        ls -lh picotool/build/picotool pico-kvstore/tools/kvstore-util >> $GITHUB_STEP_SUMMARY 2>/dev/null || true

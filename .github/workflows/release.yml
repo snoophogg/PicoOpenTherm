@@ -35,6 +35,19 @@ jobs:
         make -j$(nproc)
         make picoopentherm_simulator -j$(nproc)
     
+    - name: Build picotool
+      run: |
+        cd picotool
+        mkdir -p build
+        cd build
+        cmake ..
+        make -j$(nproc)
+    
+    - name: Build kvstore-util
+      run: |
+        cd pico-kvstore/tools
+        make kvstore-util
+    
     - name: Get version from tag
       id: get_version
       run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
@@ -48,6 +61,10 @@ jobs:
         cp build/picoopentherm_simulator.uf2 release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.uf2
         cp build/picoopentherm_simulator.elf release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.elf
         cp build/picoopentherm_simulator.bin release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.bin
+        cp picotool/build/picotool release/picotool-linux-amd64-${{ steps.get_version.outputs.VERSION }}
+        cp pico-kvstore/tools/kvstore-util release/kvstore-util-linux-amd64-${{ steps.get_version.outputs.VERSION }}
+        chmod +x release/picotool-linux-amd64-${{ steps.get_version.outputs.VERSION }}
+        chmod +x release/kvstore-util-linux-amd64-${{ steps.get_version.outputs.VERSION }}
         cd release
         sha256sum * > checksums.txt
     
@@ -61,6 +78,8 @@ jobs:
           release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.uf2
           release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.elf
           release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.bin
+          release/picotool-linux-amd64-${{ steps.get_version.outputs.VERSION }}
+          release/kvstore-util-linux-amd64-${{ steps.get_version.outputs.VERSION }}
           release/checksums.txt
         body: |
           ## PicoOpenTherm ${{ steps.get_version.outputs.VERSION }}
@@ -97,6 +116,10 @@ jobs:
           - **picoopentherm_simulator.uf2** - Simulator for testing without hardware
           - **picoopentherm_simulator.elf** - Simulator with debug symbols
           - **picoopentherm_simulator.bin** - Simulator raw binary
+          
+          **Tools (Linux x64):**
+          - **picotool-linux-amd64** - Flash and manage Pico devices from Linux
+          - **kvstore-util-linux-amd64** - Configuration provisioning utility
           
           **Verification:**
           - **checksums.txt** - SHA256 checksums for verification
