@@ -101,8 +101,11 @@ The `kvstore-util` tool is part of the pico-kvstore submodule. If not built, the
 
 To manually build:
 ```bash
-cd pico-kvstore/tools
-make kvstore-util
+export PICO_SDK_PATH=$(pwd)/pico-sdk
+cd pico-kvstore/host
+mkdir -p build && cd build
+cmake ..
+make
 ```
 
 #### picotool
@@ -208,9 +211,12 @@ chmod +x bin/*
 
 Building from source:
 ```bash
-# kvstore-util
-cd pico-kvstore/tools
-make kvstore-util
+# kvstore-util (requires PICO_SDK_PATH)
+export PICO_SDK_PATH=$(pwd)/pico-sdk
+cd pico-kvstore/host
+mkdir -p build && cd build
+cmake ..
+make
 
 # picotool (requires PICO_SDK_PATH)
 export PICO_SDK_PATH=$(pwd)/pico-sdk

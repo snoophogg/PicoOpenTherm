@@ -16,7 +16,7 @@ set -e  # Exit on error
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECRETS_FILE="${SCRIPT_DIR}/secrets.cfg"
 SETTINGS_BIN="${SCRIPT_DIR}/settings.bin"
-KVSTORE_UTIL="${SCRIPT_DIR}/pico-kvstore/tools/kvstore-util"
+KVSTORE_UTIL="${SCRIPT_DIR}/pico-kvstore/host/build/kvstore-util"
 
 # Flash offset for kvstore (last 256KB of 2MB flash)
 FLASH_OFFSET=0x1FC0000
@@ -49,17 +49,21 @@ if [ ! -f "$KVSTORE_UTIL" ]; then
     echo -e "${YELLOW}Warning: kvstore-util not found at ${KVSTORE_UTIL}${NC}"
     echo "Attempting to build kvstore-util..."
     
-    if [ -d "${SCRIPT_DIR}/pico-kvstore/tools" ]; then
-        cd "${SCRIPT_DIR}/pico-kvstore/tools"
-        if [ -f "Makefile" ]; then
-            make kvstore-util
+    if [ -d "${SCRIPT_DIR}/pico-kvstore/host" ]; then
+        export PICO_SDK_PATH="${SCRIPT_DIR}/pico-sdk"
+        cd "${SCRIPT_DIR}/pico-kvstore/host"
+        if [ -f "CMakeLists.txt" ]; then
+            mkdir -p build
+            cd build
+            cmake ..
+            make
             cd "${SCRIPT_DIR}"
         else
             echo -e "${RED}Error: Could not build kvstore-util${NC}"
             exit 1
         fi
     else
-        echo -e "${RED}Error: pico-kvstore/tools directory not found${NC}"
+        echo -e "${RED}Error: pico-kvstore/host directory not found${NC}"
         exit 1
     fi
 fi
