@@ -33,6 +33,7 @@
 
 # Build artifacts
 build/
+build_tests/
 *.elf
 *.bin
 *.hex

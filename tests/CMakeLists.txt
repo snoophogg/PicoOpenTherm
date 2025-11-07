@@ -17,6 +17,17 @@ set(CMAKE_CXX_STANDARD 17)
 # Initialize the Pico SDK
 pico_sdk_init()
 
+# Fetch Google Test
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG v1.14.0
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
 # Test 1: OpenTherm Protocol Tests
 add_executable(test_opentherm_protocol
     test_opentherm_protocol.cpp
@@ -30,6 +41,7 @@ target_include_directories(test_opentherm_protocol PRIVATE
 # Link minimal required libraries for host build  
 target_link_libraries(test_opentherm_protocol
     pico_stdlib
+    GTest::gtest_main
 )
 
 # Test 2: MQTT Topics Tests
@@ -44,6 +56,7 @@ target_include_directories(test_mqtt_topics PRIVATE
 # Link minimal required libraries for host build
 target_link_libraries(test_mqtt_topics
     pico_stdlib
+    GTest::gtest_main
 )
 
 # Test 3: Simulator Tests
@@ -59,12 +72,14 @@ target_include_directories(test_simulator PRIVATE
 # Link minimal required libraries for host build
 target_link_libraries(test_simulator
     pico_stdlib
+    GTest::gtest_main
 )
 
 # Enable testing
 enable_testing()
 
-# Add tests to CTest
-add_test(NAME OpenThermProtocol COMMAND test_opentherm_protocol)
-add_test(NAME MQTTTopics COMMAND test_mqtt_topics)
-add_test(NAME Simulator COMMAND test_simulator)
+# Add tests to CTest (gtest_discover_tests automatically finds all tests)
+include(GoogleTest)
+gtest_discover_tests(test_opentherm_protocol)
+gtest_discover_tests(test_mqtt_topics)
+gtest_discover_tests(test_simulator)

@@ -31,22 +31,9 @@ jobs:
         cmake ..
         make
     
-    - name: Run OpenTherm Protocol tests
-      run: |
-        cd tests/build
-        ./test_opentherm_protocol
-    
-    - name: Run MQTT Topics tests
-      run: |
-        cd tests/build
-        ./test_mqtt_topics
-    
-    - name: Run Simulator tests
-      run: |
-        cd tests/build
-        ./test_simulator
-    
-    - name: Test Summary
+      - name: Run tests
+        working-directory: build_tests
+        run: ctest --output-on-failure    - name: Test Summary
       if: always()
       run: |
         echo "Test execution completed"
