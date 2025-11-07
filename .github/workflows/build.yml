@@ -25,6 +25,24 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential cmake
     
+    - name: Build kvstore-util
+      run: |
+        export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
+        cd pico-kvstore/host
+        mkdir -p build
+        cd build
+        cmake ..
+        make -j$(nproc)
+    
+    - name: Build picotool
+      run: |
+        export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
+        cd picotool
+        mkdir -p build
+        cd build
+        cmake ..
+        make -j$(nproc)
+    
     - name: Build firmware
       run: |
         mkdir -p build
@@ -36,24 +54,6 @@ jobs:
       run: |
         cd build
         make picoopentherm_simulator -j$(nproc)
-    
-    - name: Build picotool
-      run: |
-        export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
-        cd picotool
-        mkdir -p build
-        cd build
-        cmake ..
-        make -j$(nproc)
-    
-    - name: Build kvstore-util
-      run: |
-        export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
-        cd pico-kvstore/host
-        mkdir -p build
-        cd build
-        cmake ..
-        make -j$(nproc)
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4

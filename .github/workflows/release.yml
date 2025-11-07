@@ -27,13 +27,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential cmake
     
-    - name: Build firmware
+    - name: Build kvstore-util
       run: |
+        export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
+        cd pico-kvstore/host
         mkdir -p build
         cd build
-        cmake -DPICO_BOARD=pico_w -DCMAKE_BUILD_TYPE=Release ..
+        cmake ..
         make -j$(nproc)
-        make picoopentherm_simulator -j$(nproc)
     
     - name: Build picotool
       run: |
@@ -44,14 +45,13 @@ jobs:
         cmake ..
         make -j$(nproc)
     
-    - name: Build kvstore-util
+    - name: Build firmware
       run: |
-        export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
-        cd pico-kvstore/host
         mkdir -p build
         cd build
-        cmake ..
+        cmake -DPICO_BOARD=pico_w -DCMAKE_BUILD_TYPE=Release ..
         make -j$(nproc)
+        make picoopentherm_simulator -j$(nproc)
     
     - name: Get version from tag
       id: get_version
