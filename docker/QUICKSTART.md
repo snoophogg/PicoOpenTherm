@@ -28,6 +28,24 @@ This starts:
    - Set your home location (or skip)
    - Choose your preferences
 
+## Step 2.5: Configure MQTT Integration
+
+**Important**: Recent versions of Home Assistant require manual MQTT setup:
+
+1. In Home Assistant, go to: **Settings → Devices & Services**
+2. Click the **+ Add Integration** button (bottom right)
+3. Search for and select **MQTT**
+4. Configure the broker connection:
+   - **Broker**: Enter `mosquitto` (the container name)
+     - _Alternative_: If using host networking, use `localhost`
+   - **Port**: `1883`
+   - **Username**: Leave empty (unless you set up authentication)
+   - **Password**: Leave empty (unless you set up authentication)
+   - **Advanced Options**: Leave defaults
+5. Click **Submit**
+
+You should see "Success! The MQTT integration has been configured."
+
 ## Step 3: Configure Your PicoOpenTherm Device
 
 Your device needs to connect to the MQTT broker. Create a `secrets.cfg` file in your project root:
@@ -70,14 +88,16 @@ picotool load build/picoopentherm.uf2
 
 Or use drag-and-drop if you prefer.
 
-## Step 5: Watch Auto-Discovery
+## Step 5: Verify Auto-Discovery
 
 After your device boots and connects:
 
 1. In Home Assistant, go to: **Settings → Devices & Services**
-2. Click on **MQTT** integration
-3. You should see **"OpenTherm Gateway"** appear automatically!
-4. Click on it to see all discovered entities
+2. Click on the **MQTT** integration card (should show "1 device")
+3. You should see **"OpenTherm Gateway"** listed
+4. Click on it to see all ~60 discovered entities (sensors, switches, numbers)
+
+**Note**: It may take 30-60 seconds after the device connects for all entities to appear.
 
 ## Step 6: Explore the Dashboards
 
@@ -133,6 +153,11 @@ docker-compose logs mosquitto
 
 ### No Auto-Discovery
 
+**First, ensure MQTT integration is configured:**
+- Go to Settings → Devices & Services
+- Look for "MQTT" integration
+- If missing, add it manually (see Step 2.5 above)
+
 **Watch MQTT topics:**
 ```bash
 docker exec -it picoopentherm-mosquitto mosquitto_sub -h localhost -t 'homeassistant/#' -v
@@ -144,6 +169,7 @@ You should see discovery messages when device connects.
 - Device may not be connected to MQTT
 - Check device serial console for errors
 - Verify MQTT credentials (if auth enabled)
+- Ensure MQTT integration is properly configured in HA
 
 ### Dashboard Doesn't Load
 

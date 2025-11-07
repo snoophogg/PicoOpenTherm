@@ -45,7 +45,9 @@ The setup includes **pre-configured dashboards and automations** for PicoOpenThe
 
 ### MQTT Auto-Discovery
 
-The Home Assistant configuration is pre-configured to use Mosquitto for MQTT auto-discovery:
+**Note**: Recent versions of Home Assistant require you to manually add the MQTT integration before auto-discovery works. See [First-Time Setup](#first-time-setup) for instructions.
+
+The MQTT broker is configured for auto-discovery:
 
 ```yaml
 mqtt:
@@ -54,6 +56,8 @@ mqtt:
   discovery: true
   discovery_prefix: homeassistant
 ```
+
+Once the MQTT integration is added in Home Assistant, all PicoOpenTherm entities will be automatically discovered and registered.
 
 ### First-Time Setup
 
@@ -68,15 +72,30 @@ mqtt:
    - Complete the initial setup wizard
    - Create your admin account
 
-3. **Configure your PicoOpenTherm device:**
+3. **Configure MQTT Integration:**
+   
+   Recent versions of Home Assistant require manual MQTT configuration:
+   
+   - Go to **Settings → Devices & Services**
+   - Click **+ Add Integration**
+   - Search for and select **MQTT**
+   - Configure the connection:
+     - **Broker**: `mosquitto` (container name) or `localhost` (with host networking)
+     - **Port**: `1883`
+     - Leave **Username** and **Password** empty (unless you configured authentication)
+   - Click **Submit**
+   
+   The MQTT integration will now be active and ready for auto-discovery.
+
+4. **Configure your PicoOpenTherm device:**
    - Set MQTT broker IP to your host machine's IP address
    - Use port 1883
-   - The device will auto-discover via MQTT
+   - The device will auto-discover via MQTT once connected
 
-4. **View discovered entities:**
+5. **View discovered entities:**
    - Go to Settings → Devices & Services
-   - Look for "MQTT" integration
-   - Your OpenTherm Gateway will appear automatically
+   - Click on the "MQTT" integration
+   - Your OpenTherm Gateway will appear automatically after the device connects
 
 ## Pre-configured UI
 
