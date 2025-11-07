@@ -75,6 +75,21 @@ target_link_libraries(test_simulator
     GTest::gtest_main
 )
 
+# Test 4: LED Blink Tests
+add_executable(test_led_blink
+    test_led_blink.cpp
+)
+
+target_include_directories(test_led_blink PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/../src
+)
+
+# Link minimal required libraries for host build
+target_link_libraries(test_led_blink
+    pico_stdlib
+    GTest::gtest_main
+)
+
 # Enable testing
 enable_testing()
 
@@ -83,3 +98,4 @@ include(GoogleTest)
 gtest_discover_tests(test_opentherm_protocol)
 gtest_discover_tests(test_mqtt_topics)
 gtest_discover_tests(test_simulator)
+gtest_discover_tests(test_led_blink)

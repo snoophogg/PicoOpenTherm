@@ -5,6 +5,7 @@
 #include "opentherm_ha.hpp"
 #include "config.hpp"
 #include "mqtt_common.hpp"
+#include "led_blink.hpp"
 #include <string>
 
 // Global configuration buffers
@@ -47,12 +48,23 @@ int main()
         }
     }
 
+    // Initialize LED state machine early
+    printf("Initializing LED state machine...\n");
+    if (!OpenTherm::LED::init())
+    {
+        printf("Warning: Failed to initialize LED state machine\n");
+    }
+
     // Initialize configuration system
+    OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_CONFIG_ERROR);
     printf("Initializing configuration...\n");
     if (!Config::init())
     {
         printf("Failed to initialize configuration system\n");
-        OpenTherm::Common::blink_error_fatal();
+        while (true)
+        {
+            sleep_ms(1000);
+        }
     }
 
     // Load configuration from flash
@@ -71,7 +83,11 @@ int main()
 
     // Connect to WiFi and MQTT with retry logic
     cyw43_arch_enable_sta_mode();
+    OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_WIFI_ERROR);
     OpenTherm::Common::connect_with_retry(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port, mqtt_client_id);
+
+    // Set normal blink pattern after successful connection
+    OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_NORMAL);
 
     // Initialize OpenTherm with configured pins
     printf("Initializing OpenTherm...\n");
@@ -101,7 +117,6 @@ int main()
 
     printf("System ready! Publishing to Home Assistant via MQTT...\n");
 
-    uint32_t last_led_toggle = 0;
     uint32_t last_connection_check = 0;
 
     // Main loop
@@ -109,9 +124,6 @@ int main()
     {
         // Check connections periodically
         uint32_t now = to_ms_since_boot(get_absolute_time());
-
-        // Blink LED to show normal activity (1 blink pattern with pause)
-        last_led_toggle = OpenTherm::Common::blink_check(OpenTherm::Common::LED_BLINK_NORMAL_COUNT, last_led_toggle);
 
         if (now - last_connection_check >= OpenTherm::Common::CONNECTION_CHECK_DELAY_MS)
         {

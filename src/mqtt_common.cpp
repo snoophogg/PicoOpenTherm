@@ -1,4 +1,5 @@
 #include "mqtt_common.hpp"
+#include "led_blink.hpp"
 #include <cstdio>
 
 namespace OpenTherm
@@ -152,70 +153,26 @@ namespace OpenTherm
             return g_mqtt_connected;
         }
 
-        // LED blink functions
-        void blink_led_pattern(uint8_t blink_count)
-        {
-            for (uint8_t i = 0; i < blink_count; i++)
-            {
-                cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
-                sleep_ms(LED_BLINK_DURATION);
-                cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
-                if (i < blink_count - 1) // Only add short pause between blinks in pattern
-                {
-                    sleep_ms(LED_BLINK_DURATION);
-                }
-            }
-            // No pause at the end - let blink_check handle the timing
-        }
-
-        uint32_t blink_check(uint8_t blink_count, uint32_t last_led_toggle)
-        {
-            uint32_t now = to_ms_since_boot(get_absolute_time());
-            if (now - last_led_toggle >= LED_BLINK_PAUSE)
-            {
-                blink_led_pattern(blink_count);
-                return now;
-            }
-            return last_led_toggle;
-        }
-
-        [[noreturn]] void blink_error_fatal()
-        {
-            printf("Fatal error - blinking continuously\n");
-            while (true)
-            {
-                cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
-                sleep_ms(100);
-                cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
-                sleep_ms(100);
-            }
-        }
-
         bool connect_with_retry(const char *ssid, const char *password,
                                 const char *server_ip, uint16_t port, const char *client_id)
         {
-            uint32_t last_led_toggle = 0;
-
             // Connect to WiFi
             int wifi_attempt = 1;
             while (true)
             {
                 printf("WiFi connection attempt %d\n", wifi_attempt);
 
+                // Set LED pattern to WiFi error
+                OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_WIFI_ERROR);
+
                 if (connect_wifi(ssid, password))
                 {
-                    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
+                    printf("WiFi connected!\n");
                     break;
                 }
 
                 printf("WiFi connection failed, retrying in %d seconds...\n", WIFI_RETRY_DELAY_MS / 1000);
-
-                uint32_t delay_start = to_ms_since_boot(get_absolute_time());
-                while ((to_ms_since_boot(get_absolute_time()) - delay_start) < WIFI_RETRY_DELAY_MS)
-                {
-                    last_led_toggle = blink_check(LED_BLINK_WIFI_ERROR_COUNT, last_led_toggle);
-                    sleep_ms(100); // Small delay to prevent tight loop
-                }
+                sleep_ms(WIFI_RETRY_DELAY_MS);
 
                 wifi_attempt++;
             }
@@ -234,20 +191,17 @@ namespace OpenTherm
             {
                 printf("MQTT connection attempt %d\n", mqtt_attempt);
 
+                // Set LED pattern to MQTT error
+                OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_MQTT_ERROR);
+
                 if (connect_mqtt(server_ip, port, client_id))
                 {
-                    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
+                    printf("MQTT connected!\n");
                     return true;
                 }
 
                 printf("MQTT connection failed, retrying in %d seconds...\n", MQTT_RETRY_DELAY_MS / 1000);
-
-                uint32_t delay_start = to_ms_since_boot(get_absolute_time());
-                while ((to_ms_since_boot(get_absolute_time()) - delay_start) < MQTT_RETRY_DELAY_MS)
-                {
-                    last_led_toggle = blink_check(LED_BLINK_MQTT_ERROR_COUNT, last_led_toggle);
-                    sleep_ms(100); // Small delay to prevent tight loop
-                }
+                sleep_ms(MQTT_RETRY_DELAY_MS);
 
                 mqtt_attempt++;
             }
@@ -262,7 +216,7 @@ namespace OpenTherm
             if (link_status != CYW43_LINK_UP)
             {
                 printf("WiFi connection lost! Reconnecting...\n");
-                cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
+                OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_WIFI_ERROR);
 
                 connect_with_retry(ssid, password, server_ip, port, client_id);
 
@@ -278,6 +232,7 @@ namespace OpenTherm
             if (!g_mqtt_connected)
             {
                 printf("MQTT connection lost! Reconnecting...\n");
+                OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_MQTT_ERROR);
 
                 g_mqtt_connected = false;
 
@@ -294,7 +249,7 @@ namespace OpenTherm
 
                     if (connect_mqtt(server_ip, port, client_id))
                     {
-                        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
+                        printf("MQTT reconnected!\n");
 
                         if (on_reconnect_callback)
                         {
@@ -305,12 +260,7 @@ namespace OpenTherm
                     }
 
                     printf("MQTT reconnection failed, retrying in %d seconds...\n", MQTT_RETRY_DELAY_MS / 1000);
-
-                    uint32_t delay_start = to_ms_since_boot(get_absolute_time());
-                    while ((to_ms_since_boot(get_absolute_time()) - delay_start) < MQTT_RETRY_DELAY_MS)
-                    {
-                        blink_led_pattern(LED_BLINK_MQTT_ERROR_COUNT);
-                    }
+                    sleep_ms(MQTT_RETRY_DELAY_MS);
 
                     mqtt_attempt++;
                 }

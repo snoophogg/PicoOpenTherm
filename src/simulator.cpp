@@ -5,6 +5,7 @@
 #include "opentherm_ha.hpp"
 #include "config.hpp"
 #include "mqtt_common.hpp"
+#include "led_blink.hpp"
 #include <string>
 
 // Global configuration buffers
@@ -19,6 +20,13 @@ static char device_id[64];
 int main()
 {
     stdio_init_all();
+
+    // Starts with continuous blink until properly configured
+    printf("Starting LED blink timer...\n");
+    if (!OpenTherm::LED::init())
+    {
+        printf("Warning: Failed to initialize LED blink timer\n");
+    }
 
     // Longer pause to allow UART connection for debugging
     printf("\n");
@@ -43,10 +51,14 @@ int main()
     }
 
     printf("Initializing configuration...\n");
+    OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_CONFIG_ERROR);
     if (!Config::init())
     {
         printf("Failed to initialize configuration system\n");
-        OpenTherm::Common::blink_error_fatal();
+        while (true)
+        {
+            sleep_ms(1000);
+        }
     }
 
     // Load configuration
@@ -71,7 +83,14 @@ int main()
 
     // Connect to WiFi and MQTT
     cyw43_arch_enable_sta_mode();
+
+    // Set pattern to WiFi error while attempting connection
+    OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_WIFI_ERROR);
+
     OpenTherm::Common::connect_with_retry(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port, mqtt_client_id);
+
+    // Connection successful - set to normal blink pattern
+    OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_NORMAL);
 
     // Create simulated OpenTherm interface
     printf("Initializing OpenTherm Simulator...\n");
@@ -93,7 +112,6 @@ int main()
 
     printf("Simulator ready! Publishing simulated data to Home Assistant...\n");
 
-    uint32_t last_led_toggle = 0;
     uint32_t last_connection_check = 0;
     uint32_t last_update = 0;
 
@@ -102,14 +120,23 @@ int main()
     {
         uint32_t now = to_ms_since_boot(get_absolute_time());
 
-        // Blink LED for normal activity
-        last_led_toggle = OpenTherm::Common::blink_check(OpenTherm::Common::LED_BLINK_NORMAL_COUNT, last_led_toggle);
+        // LED blinking is now handled asynchronously by timer
 
         // Check connections
         if (now - last_connection_check >= OpenTherm::Common::CONNECTION_CHECK_DELAY_MS)
         {
+            bool was_connected = OpenTherm::Common::g_mqtt_connected;
+
             OpenTherm::Common::check_and_reconnect(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port,
                                                    mqtt_client_id, nullptr);
+
+            // Update LED pattern based on connection status
+            if (OpenTherm::Common::g_mqtt_connected && !was_connected)
+            {
+                // Just reconnected - set to normal pattern
+                OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_NORMAL);
+            }
+
             last_connection_check = now;
         }
 

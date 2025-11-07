@@ -20,7 +20,9 @@
                 "${workspaceFolder}/build/generated/pico_base",
                 "${workspaceFolder}/build",
                 "${workspaceFolder}/pico-kvstore/include",
-                "${workspaceFolder}/pico-kvstore/lib/pico-vfs/include"
+                "${workspaceFolder}/pico-kvstore/lib/pico-vfs/include",
+                "${workspaceFolder}/build_tests/_deps/googletest-src/googletest/include",
+                "${workspaceFolder}/build_tests/_deps/googletest-src/googlemock/include"
             ],
             "defines": [
                 "PICO_BOARD=pico_w",

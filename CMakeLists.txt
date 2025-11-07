@@ -29,6 +29,7 @@ add_executable(picoopentherm
     src/opentherm_ha.cpp
     src/config.cpp
     src/mqtt_common.cpp
+    src/led_blink.cpp
 )
 
 # Generate the PIO header files for OpenTherm
@@ -48,6 +49,7 @@ target_link_libraries(picoopentherm
     pico_cyw43_arch_lwip_threadsafe_background
     hardware_pio
     hardware_watchdog
+    hardware_timer
     pico_lwip_mqtt
     kvstore_default
     hardware_flash
@@ -69,6 +71,7 @@ add_executable(picoopentherm_simulator
     src/opentherm_ha.cpp
     src/config.cpp
     src/mqtt_common.cpp
+    src/led_blink.cpp
 )
 
 # Add include directory for simulator
@@ -83,6 +86,7 @@ target_link_libraries(picoopentherm_simulator
     pico_stdlib
     pico_cyw43_arch_lwip_threadsafe_background
     hardware_watchdog
+    hardware_timer
     pico_lwip_mqtt
     kvstore_default
     hardware_flash
