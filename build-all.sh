@@ -37,6 +37,20 @@ cd "${SCRIPT_DIR}/pico-kvstore/host"
 mkdir -p build
 cd build
 echo "Fetching Pico SDK 2.1.1 for kvstore-util build..."
+# First cmake run will fetch the SDK
+cmake -DPICO_SDK_FETCH_FROM_GIT=ON \
+      -DPICO_SDK_FETCH_FROM_GIT_TAG=2.1.1 \
+      -DPICO_SDK_FETCH_FROM_GIT_PATH=./sdk \
+      .. || true
+# Initialize SDK submodules
+if [ -d sdk/pico_sdk-src ]; then
+  echo "Initializing SDK submodules..."
+  cd sdk/pico_sdk-src
+  git submodule update --init --recursive
+  cd ../..
+fi
+# Reconfigure now that submodules are initialized
+echo "Configuring kvstore-util build..."
 cmake -DPICO_SDK_FETCH_FROM_GIT=ON \
       -DPICO_SDK_FETCH_FROM_GIT_TAG=2.1.1 \
       -DPICO_SDK_FETCH_FROM_GIT_PATH=./sdk \

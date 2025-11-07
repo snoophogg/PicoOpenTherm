@@ -23,7 +23,21 @@ mkdir -p build && cd build
 cmake -DPICO_SDK_FETCH_FROM_GIT=ON \
       -DPICO_SDK_FETCH_FROM_GIT_TAG=2.1.1 \
       -DPICO_SDK_FETCH_FROM_GIT_PATH=./sdk \
+      .. || true
+
+# Initialize SDK submodules (required after fetch)
+if [ -d sdk/pico_sdk-src ]; then
+  cd sdk/pico_sdk-src
+  git submodule update --init --recursive
+  cd ../..
+fi
+
+# Reconfigure now that submodules are initialized
+cmake -DPICO_SDK_FETCH_FROM_GIT=ON \
+      -DPICO_SDK_FETCH_FROM_GIT_TAG=2.1.1 \
+      -DPICO_SDK_FETCH_FROM_GIT_PATH=./sdk \
       ..
+
 make
 ```
 
@@ -31,6 +45,8 @@ The `kvstore-util` binary will be in `pico-kvstore/host/build/`
 
 **How it works**: 
 - CMake will download Pico SDK 2.1.1 to `pico-kvstore/host/build/sdk/`
+- We then initialize the SDK's submodules (like mbedtls)
+- A second cmake run completes the configuration
 - This is isolated from your main SDK 2.2.0 installation
 - No need to manually manage multiple SDK versions
 - SDK 2.1.1 has compatible mbedtls API for kvstore's usage
