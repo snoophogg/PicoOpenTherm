@@ -37,5 +37,34 @@ jobs:
     
     - name: Test Summary
       if: always()
+      working-directory: tests/build
       run: |
-        echo "Test execution completed"
+        echo "================================"
+        echo "Test Execution Summary"
+        echo "================================"
+        echo ""
+        
+        # Run ctest again in verbose mode to get detailed results
+        ctest --output-on-failure --verbose || true
+        
+        echo ""
+        echo "================================"
+        echo "Test Statistics"
+        echo "================================"
+        
+        # Count test files
+        TEST_BINARIES=$(ls -1 test_* 2>/dev/null | wc -l)
+        echo "Test executables: $TEST_BINARIES"
+        
+        # Get detailed test counts
+        TOTAL_TESTS=$(ctest -N 2>/dev/null | grep "Total Tests:" | awk '{print $3}')
+        echo "Total test cases: ${TOTAL_TESTS:-0}"
+        
+        echo ""
+        echo "Test suites:"
+        echo "  - OpenTherm Protocol Tests (encoding, decoding, validation)"
+        echo "  - MQTT Topic Tests (Home Assistant integration)"
+        echo "  - Simulator Tests (virtual boiler behavior)"
+        
+        echo ""
+        echo "================================"
