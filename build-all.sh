@@ -35,8 +35,10 @@ echo ""
 echo -e "${BLUE}Stage 2: Building host tools (kvstore-util)...${NC}"
 export PICO_SDK_PATH="${SCRIPT_DIR}/pico-sdk"
 cd "${SCRIPT_DIR}/pico-kvstore/host"
-# Apply compatibility patch for Pico SDK 2.2.0+
+# Apply compatibility patches for Pico SDK 2.2.0+
 sed -i.bak '36,39s/^add_library/#add_library/' CMakeLists.txt
+sed -i.bak2 '/kvstore_securekvs/d' CMakeLists.txt
+sed -i.bak3 '/mbedcrypto/d' CMakeLists.txt
 mkdir -p build
 cd build
 cmake ..

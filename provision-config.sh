@@ -55,6 +55,9 @@ if [ ! -f "$KVSTORE_UTIL" ]; then
         if [ -f "CMakeLists.txt" ]; then
             # Patch: Comment out add_library calls that conflict with SDK's host libraries
             sed -i.bak '36,39s/^add_library/#add_library/' CMakeLists.txt
+            # Patch: Remove kvstore_securekvs dependency (incompatible with SDK 2.2.0 mbedtls)
+            sed -i.bak2 '/kvstore_securekvs/d' CMakeLists.txt
+            sed -i.bak3 '/mbedcrypto/d' CMakeLists.txt
             mkdir -p build
             cd build
             cmake ..

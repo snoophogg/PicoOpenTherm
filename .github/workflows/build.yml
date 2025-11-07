@@ -29,9 +29,13 @@ jobs:
       run: |
         export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
         cd pico-kvstore/host
-        # Patch: Comment out add_library calls that conflict with SDK's host libraries
+        # Patch 1: Comment out add_library calls that conflict with SDK's host libraries
         # The Pico SDK 2.2.0+ provides these libraries, but pico-kvstore tries to create them
         sed -i '36,39s/^add_library/#add_library/' CMakeLists.txt
+        # Patch 2: Remove kvstore_securekvs dependency (incompatible with SDK 2.2.0 mbedtls API)
+        # We don't use encryption, so this is safe to remove
+        sed -i '/kvstore_securekvs/d' CMakeLists.txt
+        sed -i '/mbedcrypto/d' CMakeLists.txt
         mkdir -p build
         cd build
         cmake ..
