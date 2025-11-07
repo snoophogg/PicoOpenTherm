@@ -1,44 +1,52 @@
 # Getting kvstore-util
 
-The `kvstore-util` tool is needed for provisioning configuration to your Pico W device. Due to compatibility issues between the pico-kvstore submodule and newer Pico SDK versions, pre-built binaries are not provided in releases.
+The `kvstore-util` tool is needed for provisioning configuration to your Pico W device. Due to incompatibility between the pico-kvstore submodule and Pico SDK 2.2.0, this tool cannot be built with the current SDK version.
 
-## Building Locally (Recommended)
+## Option 1: Skip Provisioning (Easiest)
 
-The easiest way is to use the provided build script:
+The firmware includes hardcoded default configuration values in `src/config.cpp`. You can:
+1. Edit `src/config.cpp` directly with your WiFi/MQTT settings
+2. Rebuild the firmware with `./build-all.sh`
+3. Flash it to your Pico W
 
-```bash
-./build-all.sh
-```
+No provisioning needed!
 
-This builds both the firmware and `kvstore-util`. The tool will be available at:
-```
-pico-kvstore/host/build/kvstore-util
-```
+## Option 2: Use an Older Pico SDK
 
-The `provision-config.sh` script will automatically find and use this tool, or attempt to build it if not found.
+If you need to use kvstore-util for provisioning:
 
-## Manual Build
+1. Check out an older Pico SDK version that's compatible with pico-kvstore:
+   ```bash
+   cd pico-sdk
+   git checkout 1.5.1  # Or another compatible version
+   cd ..
+   ```
 
-If you prefer to build manually:
+2. Build kvstore-util:
+   ```bash
+   export PICO_SDK_PATH=$(pwd)/pico-sdk
+   cd pico-kvstore/host
+   mkdir -p build && cd build
+   cmake ..
+   make
+   ```
 
-```bash
-export PICO_SDK_PATH=$(pwd)/pico-sdk
-cd pico-kvstore/host
+3. After building kvstore-util, switch back to the newer SDK for firmware:
+   ```bash
+   cd ../../../pico-sdk
+   git checkout 2.2.0
+   cd ..
+   ```
 
-# Apply compatibility patches for Pico SDK 2.2.0+
-sed -i.bak '36,39s/^add_library/#add_library/' CMakeLists.txt
-sed -i.bak2 '/kvstore_securekvs/d' CMakeLists.txt
-sed -i.bak3 '/mbedcrypto/d' CMakeLists.txt
+## Option 3: Runtime Configuration
 
-mkdir -p build && cd build
-cmake ..
-make
-```
+The firmware supports runtime configuration through Home Assistant MQTT:
+- WiFi SSID and Password can be configured via text entities
+- MQTT settings can be configured via text entities
+- Changes are saved to flash automatically
 
-## Why Not Pre-built?
+Just flash the firmware with default settings, then configure via Home Assistant.
 
-The pico-kvstore host tool has dependencies on specific mbedtls API versions that vary between Pico SDK releases. Building locally ensures compatibility with your environment.
+## Why This Incompatibility Exists
 
-## Alternative: Use Docker
-
-If you have build issues, you can use the included Docker environment which has all dependencies pre-configured. See `docker/README.md` for details.
+The pico-kvstore host tool uses mbedtls APIs that changed between Pico SDK versions. Patching the submodule violates git submodule integrity, so we don't provide patched builds.

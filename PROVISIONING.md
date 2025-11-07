@@ -2,77 +2,59 @@
 
 This directory contains tools to provision your PicoOpenTherm configuration to the device before flashing the firmware.
 
-## Quick Start (Pre-built Tools)
+## Quick Start (Recommended)
 
-**Easiest method - no compilation required!**
+**No kvstore-util needed!**
 
-**Note:** Pre-built `kvstore-util` is no longer included in releases due to compatibility issues with newer Pico SDK versions. You'll need to build it locally (see below).
+The easiest way to configure PicoOpenTherm is to edit the default values directly in the source code:
 
-1. **Download pre-built picotool from [GitHub Releases](https://github.com/snoophogg/PicoOpenTherm/releases/latest):**
-   - `picotool-linux-amd64-vX.X.X`
-
-2. **Place it in the bin/ folder:**
+1. **Edit default configuration:**
    ```bash
-   mkdir -p bin
-   mv ~/Downloads/picotool-linux-amd64-* bin/picotool
-   chmod +x bin/picotool
+   nano src/config.cpp
+   # Update WiFi SSID, password, MQTT broker, etc.
    ```
 
-3. **Build kvstore-util locally:**
+2. **Build firmware:**
    ```bash
    ./build-all.sh
-   # This builds both firmware and kvstore-util
-   # kvstore-util will be at: pico-kvstore/host/build/kvstore-util
    ```
 
-4. **Create your configuration file:**
+3. **Flash firmware:**
    ```bash
-   cp secrets.cfg.example secrets.cfg
-   nano secrets.cfg
+   # Put Pico in BOOTSEL mode, then:
+   picotool load build/picoopentherm.uf2
+   # Or drag-and-drop the UF2 file
    ```
 
-5. **Run the provisioning script:**
-   ```bash
-   ./provision-config.sh
-   ```
-
-6. **Flash your firmware** (download from releases or use what you just built)
+4. **Optional: Runtime configuration via Home Assistant**
+   - After first boot, configure settings via MQTT/Home Assistant entities
+   - Changes are saved to flash automatically
 
 ## Advanced: Build from Source
 
-If you prefer to build the tools yourself:
+If you want to build everything yourself:
 
-1. **Create your configuration file:**
+1. **Build firmware:**
    ```bash
-   cp secrets.cfg.example secrets.cfg
-   nano secrets.cfg
+   ./build-all.sh
    ```
 
-2. **Run the full provisioning script:**
-   ```bash
-   ./provision-config.sh
-   ```
-   This will build kvstore-util and picotool if needed.
-
-3. **Flash your firmware:**
+2. **Flash firmware:**
    ```bash
    picotool load build/picoopentherm.uf2
    ```
 
+**Note:** kvstore-util provisioning is not supported with Pico SDK 2.2.0. See "Quick Start" above for the recommended configuration method.
+
 ## What do the provisioning scripts do?
 
-### provision-simple.sh (Recommended)
-- Uses pre-built tools from the `bin/` folder
-- No compilation required
-- Reads your configuration from `secrets.cfg`
-- Creates a `settings.bin` file using `kvstore-util`
-- Flashes the configuration to the Pico W at the correct flash offset (last 256KB)
-- Configuration persists in flash memory
+### provision-simple.sh (Deprecated)
+This script is deprecated due to kvstore-util incompatibility with Pico SDK 2.2.0.
+Use the "Quick Start" method above instead (edit src/config.cpp directly).
 
-### provision-config.sh (Advanced)
-- Same functionality as provision-simple.sh
-- Additionally builds kvstore-util and picotool from source if not found
-- Useful for developers or if pre-built tools aren't available
+### provision-config.sh (Deprecated)
+This script is deprecated due to kvstore-util incompatibility with Pico SDK 2.2.0.
+Use the "Quick Start" method above instead (edit src/config.cpp directly).
 
 ## Configuration Keys
 
@@ -92,57 +74,16 @@ The following keys are supported in `secrets.cfg`:
 
 ## Requirements
 
-### Option 1: Pre-built Tools (Easiest)
+### Option 1: Edit Source Code (Easiest)
 
-Download picotool from [GitHub Releases](https://github.com/snoophogg/PicoOpenTherm/releases/latest):
-- `picotool-linux-amd64` - Tool for flashing Pico devices
+No special tools required:
+- Text editor (nano, vim, VS Code, etc.)
+- Pico SDK and build tools (for building firmware)
+- picotool (for flashing) - optional, can use drag-and-drop
 
-**Note:** `kvstore-util` must be built locally due to Pico SDK compatibility issues. See build instructions below.
+### Option 2: Use Older Pico SDK for kvstore-util
 
-Place picotool in the `bin/` folder and make it executable.
-
-### Option 2: Build from Source
-
-#### kvstore-util
-
-The `kvstore-util` tool is part of the pico-kvstore submodule. If not built, the script will attempt to build it automatically.
-
-To manually build:
-```bash
-export PICO_SDK_PATH=$(pwd)/pico-sdk
-cd pico-kvstore/host
-# Apply compatibility patches for Pico SDK 2.2.0+
-sed -i.bak '36,39s/^add_library/#add_library/' CMakeLists.txt
-sed -i.bak2 '/kvstore_securekvs/d' CMakeLists.txt
-sed -i.bak3 '/mbedcrypto/d' CMakeLists.txt
-mkdir -p build && cd build
-cmake ..
-make
-```
-
-**Note:** The sed commands patch the CMakeLists.txt for compatibility with Pico SDK 2.2.0+:
-- Removes library definitions that conflict with SDK host mode
-- Disables secure KVS (not needed for this project, incompatible with SDK 2.2.0 mbedtls)
-
-#### picotool
-
-Install picotool to flash the configuration. Picotool requires the Pico SDK to build:
-
-```bash
-# Set PICO_SDK_PATH to the pico-sdk submodule in this project
-export PICO_SDK_PATH=$(pwd)/pico-sdk
-
-# Build picotool
-cd picotool
-mkdir -p build && cd build
-cmake ..
-make
-
-# Optional: install system-wide
-sudo make install
-```
-
-**Note:** The `PICO_SDK_PATH` must point to a valid Pico SDK directory. This project includes the SDK as a submodule at `pico-sdk/`.
+If you need kvstore-util for advanced provisioning, see [KVSTORE-UTIL.md](KVSTORE-UTIL.md) for instructions on using an older SDK version.
 
 ## Workflow
 
@@ -213,75 +154,15 @@ Changes made via Home Assistant are saved to flash and trigger an automatic rest
 
 ## Troubleshooting
 
-**Tools not found:**
-
-Using pre-built tools:
-```bash
-# Download from releases and place in bin/
-mkdir -p bin
-# Download picotool-linux-amd64-* and kvstore-util-linux-amd64-*
-mv ~/Downloads/picotool-linux-amd64-* bin/picotool
-mv ~/Downloads/kvstore-util-linux-amd64-* bin/kvstore-util
-chmod +x bin/*
-```
-
-Building from source:
-```bash
-# kvstore-util (requires PICO_SDK_PATH and compatibility patches)
-export PICO_SDK_PATH=$(pwd)/pico-sdk
-cd pico-kvstore/host
-sed -i.bak '36,39s/^add_library/#add_library/' CMakeLists.txt
-sed -i.bak2 '/kvstore_securekvs/d' CMakeLists.txt
-sed -i.bak3 '/mbedcrypto/d' CMakeLists.txt
-mkdir -p build && cd build
-cmake ..
-make
-
-# picotool (requires PICO_SDK_PATH)
-export PICO_SDK_PATH=$(pwd)/pico-sdk
-cd picotool
-mkdir -p build && cd build
-cmake ..
-make
-sudo make install
-```
-
-**"PICO_SDK_PATH is not defined" error when building picotool:**
-
-Picotool requires the Pico SDK to build. Set the environment variable to point to the SDK submodule:
-
-```bash
-# From the project root directory
-export PICO_SDK_PATH=$(pwd)/pico-sdk
-
-# Then build picotool
-cd picotool
-mkdir -p build && cd build
-cmake ..
-make
-```
-
-Or set it permanently in your shell profile:
-```bash
-echo 'export PICO_SDK_PATH=/path/to/PicoOpenTherm/pico-sdk' >> ~/.bashrc
-source ~/.bashrc
-```
-
-**Pico not detected:**
-- Make sure Pico is in BOOTSEL mode (hold button while connecting USB)
-- Check USB connection
-- Try `lsusb` to see if device is recognized
-- On Linux, you may need udev rules for non-root access
+**kvstore-util build issues:**
+- kvstore-util is incompatible with Pico SDK 2.2.0
+- Use the "Quick Start" method (edit src/config.cpp directly)
+- Or see [KVSTORE-UTIL.md](KVSTORE-UTIL.md) for advanced options
 
 **Configuration not applied:**
-- Verify settings.bin was created
-- Check flash offset is correct (0x1FC0000 for 2MB flash)
-- Ensure you flash firmware after provisioning config
-
-**Permission denied when running tools:**
-```bash
-chmod +x bin/picotool bin/kvstore-util
-```
+- If you edited src/config.cpp, make sure you rebuilt the firmware
+- Flash the new firmware to your Pico W
+- Runtime configuration via Home Assistant also works
 
 ## Flash Layout
 

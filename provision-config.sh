@@ -47,30 +47,11 @@ fi
 # Check if kvstore-util exists and is built
 if [ ! -f "$KVSTORE_UTIL" ]; then
     echo -e "${YELLOW}Warning: kvstore-util not found at ${KVSTORE_UTIL}${NC}"
-    echo "Attempting to build kvstore-util..."
-    
-    if [ -d "${SCRIPT_DIR}/pico-kvstore/host" ]; then
-        export PICO_SDK_PATH="${SCRIPT_DIR}/pico-sdk"
-        cd "${SCRIPT_DIR}/pico-kvstore/host"
-        if [ -f "CMakeLists.txt" ]; then
-            # Patch: Comment out add_library calls that conflict with SDK's host libraries
-            sed -i.bak '36,39s/^add_library/#add_library/' CMakeLists.txt
-            # Patch: Remove kvstore_securekvs dependency (incompatible with SDK 2.2.0 mbedtls)
-            sed -i.bak2 '/kvstore_securekvs/d' CMakeLists.txt
-            sed -i.bak3 '/mbedcrypto/d' CMakeLists.txt
-            mkdir -p build
-            cd build
-            cmake ..
-            make
-            cd "${SCRIPT_DIR}"
-        else
-            echo -e "${RED}Error: Could not build kvstore-util${NC}"
-            exit 1
-        fi
-    else
-        echo -e "${RED}Error: pico-kvstore/host directory not found${NC}"
-        exit 1
-    fi
+    echo ""
+    echo "kvstore-util must be built separately due to Pico SDK compatibility issues."
+    echo "Please see KVSTORE-UTIL.md for build instructions."
+    echo ""
+    exit 1
 fi
 
 # Check if picotool is available

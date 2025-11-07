@@ -33,18 +33,8 @@ echo ""
 
 # Stage 2: Build host tools
 echo -e "${BLUE}Stage 2: Building host tools (kvstore-util)...${NC}"
-export PICO_SDK_PATH="${SCRIPT_DIR}/pico-sdk"
-cd "${SCRIPT_DIR}/pico-kvstore/host"
-# Apply compatibility patches for Pico SDK 2.2.0+
-sed -i.bak '36,39s/^add_library/#add_library/' CMakeLists.txt
-sed -i.bak2 '/kvstore_securekvs/d' CMakeLists.txt
-sed -i.bak3 '/mbedcrypto/d' CMakeLists.txt
-mkdir -p build
-cd build
-cmake ..
-make -j$(nproc)
-echo -e "${GREEN}✓ Host tools built successfully${NC}"
-echo "  - kvstore-util"
+echo -e "${YELLOW}Note: kvstore-util build skipped due to Pico SDK 2.2.0 incompatibility${NC}"
+echo -e "${YELLOW}See KVSTORE-UTIL.md for alternative build instructions${NC}"
 echo ""
 
 echo "================================================"
@@ -55,11 +45,10 @@ echo "Firmware outputs:"
 echo "  ${SCRIPT_DIR}/build/picoopentherm.uf2"
 echo "  ${SCRIPT_DIR}/build/picoopentherm_simulator.uf2"
 echo ""
-echo "Host tools:"
-echo "  ${SCRIPT_DIR}/pico-kvstore/host/build/kvstore-util"
+echo "Note: kvstore-util build was skipped."
+echo "See KVSTORE-UTIL.md for build instructions if needed."
 echo ""
 echo "Next steps:"
-echo "  1. Configure: cp secrets.cfg.example secrets.cfg && nano secrets.cfg"
-echo "  2. Provision: ./provision-config.sh"
-echo "  3. Flash: picotool load build/picoopentherm.uf2"
+echo "  1. Flash firmware: picotool load build/picoopentherm.uf2"
+echo "  2. For configuration provisioning, see KVSTORE-UTIL.md"
 echo ""
