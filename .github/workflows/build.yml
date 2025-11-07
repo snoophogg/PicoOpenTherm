@@ -25,22 +25,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential cmake
     
-    - name: Build kvstore-util
-      run: |
-        export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
-        cd pico-kvstore/host
-        # Patch 1: Comment out add_library calls that conflict with SDK's host libraries
-        # The Pico SDK 2.2.0+ provides these libraries, but pico-kvstore tries to create them
-        sed -i '36,39s/^add_library/#add_library/' CMakeLists.txt
-        # Patch 2: Remove kvstore_securekvs dependency (incompatible with SDK 2.2.0 mbedtls API)
-        # We don't use encryption, so this is safe to remove
-        sed -i '/kvstore_securekvs/d' CMakeLists.txt
-        sed -i '/mbedcrypto/d' CMakeLists.txt
-        mkdir -p build
-        cd build
-        cmake ..
-        make -j$(nproc)
-    
     - name: Build picotool
       run: |
         export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
@@ -81,7 +65,6 @@ jobs:
         name: picoopentherm-tools
         path: |
           picotool/build/picotool
-          pico-kvstore/host/build/kvstore-util
         retention-days: 30
     
     - name: Build summary
@@ -106,6 +89,5 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Tools" >> $GITHUB_STEP_SUMMARY
         echo "- \`picotool\` - Flash and manage Pico devices" >> $GITHUB_STEP_SUMMARY
-        echo "- \`kvstore-util\` - Configuration provisioning tool" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        ls -lh picotool/build/picotool pico-kvstore/host/build/kvstore-util >> $GITHUB_STEP_SUMMARY 2>/dev/null || true
+        ls -lh picotool/build/picotool >> $GITHUB_STEP_SUMMARY 2>/dev/null || true

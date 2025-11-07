@@ -27,22 +27,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential cmake
     
-    - name: Build kvstore-util
-      run: |
-        export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
-        cd pico-kvstore/host
-        # Patch 1: Comment out add_library calls that conflict with SDK's host libraries
-        # The Pico SDK 2.2.0+ provides these libraries, but pico-kvstore tries to create them
-        sed -i '36,39s/^add_library/#add_library/' CMakeLists.txt
-        # Patch 2: Remove kvstore_securekvs dependency (incompatible with SDK 2.2.0 mbedtls API)
-        # We don't use encryption, so this is safe to remove
-        sed -i '/kvstore_securekvs/d' CMakeLists.txt
-        sed -i '/mbedcrypto/d' CMakeLists.txt
-        mkdir -p build
-        cd build
-        cmake ..
-        make -j$(nproc)
-    
     - name: Build picotool
       run: |
         export PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk
@@ -74,9 +58,7 @@ jobs:
         cp build/picoopentherm_simulator.elf release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.elf
         cp build/picoopentherm_simulator.bin release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.bin
         cp picotool/build/picotool release/picotool-linux-amd64-${{ steps.get_version.outputs.VERSION }}
-        cp pico-kvstore/host/build/kvstore-util release/kvstore-util-linux-amd64-${{ steps.get_version.outputs.VERSION }}
         chmod +x release/picotool-linux-amd64-${{ steps.get_version.outputs.VERSION }}
-        chmod +x release/kvstore-util-linux-amd64-${{ steps.get_version.outputs.VERSION }}
         cd release
         sha256sum * > checksums.txt
     
@@ -91,7 +73,6 @@ jobs:
           release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.elf
           release/picoopentherm_simulator-${{ steps.get_version.outputs.VERSION }}.bin
           release/picotool-linux-amd64-${{ steps.get_version.outputs.VERSION }}
-          release/kvstore-util-linux-amd64-${{ steps.get_version.outputs.VERSION }}
           release/checksums.txt
         body: |
           ## PicoOpenTherm ${{ steps.get_version.outputs.VERSION }}
@@ -131,7 +112,9 @@ jobs:
           
           **Tools (Linux x64):**
           - **picotool-linux-amd64** - Flash and manage Pico devices from Linux
-          - **kvstore-util-linux-amd64** - Configuration provisioning utility
+          
+          **Note:** `kvstore-util` is not included in releases due to build compatibility issues with Pico SDK 2.2.0.  
+          Users should build it locally using `./build-all.sh` or use the `provision-simple.sh` script without auto-building.
           
           **Verification:**
           - **checksums.txt** - SHA256 checksums for verification

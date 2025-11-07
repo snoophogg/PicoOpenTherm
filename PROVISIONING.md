@@ -6,30 +6,37 @@ This directory contains tools to provision your PicoOpenTherm configuration to t
 
 **Easiest method - no compilation required!**
 
-1. **Download pre-built tools from [GitHub Releases](https://github.com/snoophogg/PicoOpenTherm/releases/latest):**
-   - `picotool-linux-amd64-vX.X.X`
-   - `kvstore-util-linux-amd64-vX.X.X`
+**Note:** Pre-built `kvstore-util` is no longer included in releases due to compatibility issues with newer Pico SDK versions. You'll need to build it locally (see below).
 
-2. **Place them in the bin/ folder:**
+1. **Download pre-built picotool from [GitHub Releases](https://github.com/snoophogg/PicoOpenTherm/releases/latest):**
+   - `picotool-linux-amd64-vX.X.X`
+
+2. **Place it in the bin/ folder:**
    ```bash
    mkdir -p bin
    mv ~/Downloads/picotool-linux-amd64-* bin/picotool
-   mv ~/Downloads/kvstore-util-linux-amd64-* bin/kvstore-util
-   chmod +x bin/picotool bin/kvstore-util
+   chmod +x bin/picotool
    ```
 
-3. **Create your configuration file:**
+3. **Build kvstore-util locally:**
+   ```bash
+   ./build-all.sh
+   # This builds both firmware and kvstore-util
+   # kvstore-util will be at: pico-kvstore/host/build/kvstore-util
+   ```
+
+4. **Create your configuration file:**
    ```bash
    cp secrets.cfg.example secrets.cfg
    nano secrets.cfg
    ```
 
-4. **Run the simple provisioning script:**
+5. **Run the provisioning script:**
    ```bash
-   ./provision-simple.sh
+   ./provision-config.sh
    ```
 
-5. **Flash your firmware** (download from releases or use drag-and-drop)
+6. **Flash your firmware** (download from releases or use what you just built)
 
 ## Advanced: Build from Source
 
@@ -87,11 +94,12 @@ The following keys are supported in `secrets.cfg`:
 
 ### Option 1: Pre-built Tools (Easiest)
 
-Download from [GitHub Releases](https://github.com/snoophogg/PicoOpenTherm/releases/latest):
+Download picotool from [GitHub Releases](https://github.com/snoophogg/PicoOpenTherm/releases/latest):
 - `picotool-linux-amd64` - Tool for flashing Pico devices
-- `kvstore-util-linux-amd64` - Configuration management tool
 
-Place them in the `bin/` folder and make them executable.
+**Note:** `kvstore-util` must be built locally due to Pico SDK compatibility issues. See build instructions below.
+
+Place picotool in the `bin/` folder and make it executable.
 
 ### Option 2: Build from Source
 
