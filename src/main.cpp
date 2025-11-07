@@ -32,11 +32,6 @@ static void on_reconnect()
 }
 
 int main()
-}
-}
-}
-
-int main()
 {
     stdio_init_all();
     sleep_ms(3000); // Wait for USB serial
