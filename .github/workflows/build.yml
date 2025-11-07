@@ -62,7 +62,7 @@ jobs:
         cd ..
         # Now we're in pico-kvstore/host/build
         export PICO_SDK_PATH=$PWD/sdk/pico-sdk
-        cmake -DPICO_PLATFORM=host ..
+        cmake ..
         make -j$(nproc)
     
     - name: Upload build artifacts
