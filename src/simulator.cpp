@@ -102,19 +102,71 @@ int main()
     printf("Initializing OpenTherm Simulator...\n");
     OpenTherm::Simulator::SimulatedInterface sim_ot;
 
-    // Configure Home Assistant interface
-    OpenTherm::HomeAssistant::Config ha_config = {
-        .device_name = device_name,
-        .device_id = device_id,
-        .mqtt_prefix = "homeassistant",
-        .state_topic_base = "opentherm/state",
-        .command_topic_base = "opentherm/cmd",
-        .auto_discovery = true,
-        .update_interval_ms = 10000};
-
-    // Note: We can't use HAInterface directly as it expects OpenTherm::Interface
-    // We need to create a wrapper or modify the interface
-    // For now, we'll publish data manually following the HA pattern
+    printf("Publishing Home Assistant discovery configurations...\n");
+    
+    // Publish discovery configs for simulated sensors
+    char topic[256];
+    char config[512];
+    
+    // Room temperature sensor
+    snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/room_temperature/config", device_id);
+    snprintf(config, sizeof(config), 
+        "{\"name\":\"%s Room Temperature\",\"unique_id\":\"%s_room_temp\","
+        "\"state_topic\":\"opentherm/state/%s/room_temperature\","
+        "\"unit_of_measurement\":\"°C\",\"device_class\":\"temperature\","
+        "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
+        device_name, device_id, device_id, device_id, device_name);
+    OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    
+    // Boiler temperature sensor
+    snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/boiler_temperature/config", device_id);
+    snprintf(config, sizeof(config),
+        "{\"name\":\"%s Boiler Temperature\",\"unique_id\":\"%s_boiler_temp\","
+        "\"state_topic\":\"opentherm/state/%s/boiler_temperature\","
+        "\"unit_of_measurement\":\"°C\",\"device_class\":\"temperature\","
+        "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
+        device_name, device_id, device_id, device_id, device_name);
+    OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    
+    // DHW temperature sensor
+    snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/dhw_temperature/config", device_id);
+    snprintf(config, sizeof(config),
+        "{\"name\":\"%s DHW Temperature\",\"unique_id\":\"%s_dhw_temp\","
+        "\"state_topic\":\"opentherm/state/%s/dhw_temperature\","
+        "\"unit_of_measurement\":\"°C\",\"device_class\":\"temperature\","
+        "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
+        device_name, device_id, device_id, device_id, device_name);
+    OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    
+    // Modulation sensor
+    snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/modulation/config", device_id);
+    snprintf(config, sizeof(config),
+        "{\"name\":\"%s Modulation\",\"unique_id\":\"%s_modulation\","
+        "\"state_topic\":\"opentherm/state/%s/modulation\","
+        "\"unit_of_measurement\":\"%%\","
+        "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
+        device_name, device_id, device_id, device_id, device_name);
+    OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    
+    // Pressure sensor
+    snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/pressure/config", device_id);
+    snprintf(config, sizeof(config),
+        "{\"name\":\"%s CH Pressure\",\"unique_id\":\"%s_pressure\","
+        "\"state_topic\":\"opentherm/state/%s/pressure\","
+        "\"unit_of_measurement\":\"bar\",\"device_class\":\"pressure\","
+        "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
+        device_name, device_id, device_id, device_id, device_name);
+    OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    
+    // Flame status binary sensor
+    snprintf(topic, sizeof(topic), "homeassistant/binary_sensor/%s/flame/config", device_id);
+    snprintf(config, sizeof(config),
+        "{\"name\":\"%s Flame Status\",\"unique_id\":\"%s_flame\","
+        "\"state_topic\":\"opentherm/state/%s/flame\","
+        "\"payload_on\":\"ON\",\"payload_off\":\"OFF\","
+        "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
+        device_name, device_id, device_id, device_id, device_name);
+    OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
 
     printf("Simulator ready! Publishing simulated data to Home Assistant...\n");
 
