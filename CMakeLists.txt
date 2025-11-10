@@ -29,6 +29,7 @@ add_executable(picoopentherm
     src/opentherm_ha.cpp
     src/config.cpp
     src/mqtt_common.cpp
+    src/mqtt_discovery.cpp
     src/led_blink.cpp
     src/kvs_init_custom.c
 )
@@ -74,6 +75,7 @@ add_executable(picoopentherm_simulator
     src/opentherm_ha.cpp
     src/config.cpp
     src/mqtt_common.cpp
+    src/mqtt_discovery.cpp
     src/led_blink.cpp
     src/kvs_init_custom.c
 )

@@ -5,6 +5,7 @@
 #include "opentherm_ha.hpp"
 #include "config.hpp"
 #include "mqtt_common.hpp"
+#include "mqtt_discovery.hpp"
 #include "led_blink.hpp"
 #include <string>
 
@@ -16,24 +17,6 @@ static uint16_t mqtt_server_port;
 static char mqtt_client_id[64];
 static char device_name[64];
 static char device_id[64];
-
-// Helper function to publish with retries for large discovery messages
-static bool publish_discovery_with_retry(const char *topic, const char *config, int max_retries = 5)
-{
-    for (int attempt = 0; attempt < max_retries; attempt++)
-    {
-        if (OpenTherm::Common::mqtt_publish_wrapper(topic, config, true))
-        {
-            return true;
-        }
-
-        // Exponential backoff: 500ms, 1s, 2s, 4s, 8s
-        uint32_t delay_ms = 500 * (1 << attempt);
-        printf("  Retry %d/%d in %lu ms...\n", attempt + 1, max_retries, delay_ms);
-        sleep_ms(delay_ms);
-    }
-    return false;
-}
 
 int main()
 {
@@ -120,82 +103,18 @@ int main()
     printf("Initializing OpenTherm Simulator...\n");
     OpenTherm::Simulator::SimulatedInterface sim_ot;
 
-    // Wait additional time before publishing discovery configs
-    // Discovery messages are large (512 bytes) and need extra buffer availability
-    printf("Waiting for MQTT client to be ready for discovery (2 seconds)...\n");
-    sleep_ms(2000);
-
+    // Publish Home Assistant discovery configurations using common library
     printf("Publishing Home Assistant discovery configurations...\n");
-
-    // Publish discovery configs for simulated sensors
-    char topic[256];
-    char config[512];
-
-    // Room temperature sensor
-    printf("Publishing room temperature sensor...\n");
-    snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/room_temperature/config", device_id);
-    snprintf(config, sizeof(config),
-             "{\"name\":\"%s Room Temperature\",\"unique_id\":\"%s_room_temp\","
-             "\"state_topic\":\"opentherm/state/%s/room_temperature\","
-             "\"unit_of_measurement\":\"°C\",\"device_class\":\"temperature\","
-             "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
-             device_name, device_id, device_id, device_id, device_name);
-    publish_discovery_with_retry(topic, config);
-
-    // Boiler temperature sensor
-    printf("Publishing boiler temperature sensor...\n");
-    snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/boiler_temperature/config", device_id);
-    snprintf(config, sizeof(config),
-             "{\"name\":\"%s Boiler Temperature\",\"unique_id\":\"%s_boiler_temp\","
-             "\"state_topic\":\"opentherm/state/%s/boiler_temperature\","
-             "\"unit_of_measurement\":\"°C\",\"device_class\":\"temperature\","
-             "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
-             device_name, device_id, device_id, device_id, device_name);
-    publish_discovery_with_retry(topic, config);
-
-    // DHW temperature sensor
-    printf("Publishing DHW temperature sensor...\n");
-    snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/dhw_temperature/config", device_id);
-    snprintf(config, sizeof(config),
-             "{\"name\":\"%s DHW Temperature\",\"unique_id\":\"%s_dhw_temp\","
-             "\"state_topic\":\"opentherm/state/%s/dhw_temperature\","
-             "\"unit_of_measurement\":\"°C\",\"device_class\":\"temperature\","
-             "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
-             device_name, device_id, device_id, device_id, device_name);
-    publish_discovery_with_retry(topic, config);
-
-    // Modulation sensor
-    printf("Publishing modulation sensor...\n");
-    snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/modulation/config", device_id);
-    snprintf(config, sizeof(config),
-             "{\"name\":\"%s Modulation\",\"unique_id\":\"%s_modulation\","
-             "\"state_topic\":\"opentherm/state/%s/modulation\","
-             "\"unit_of_measurement\":\"%%\","
-             "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
-             device_name, device_id, device_id, device_id, device_name);
-    publish_discovery_with_retry(topic, config);
-
-    // Pressure sensor
-    printf("Publishing pressure sensor...\n");
-    snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/pressure/config", device_id);
-    snprintf(config, sizeof(config),
-             "{\"name\":\"%s CH Pressure\",\"unique_id\":\"%s_pressure\","
-             "\"state_topic\":\"opentherm/state/%s/pressure\","
-             "\"unit_of_measurement\":\"bar\",\"device_class\":\"pressure\","
-             "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
-             device_name, device_id, device_id, device_id, device_name);
-    publish_discovery_with_retry(topic, config);
-
-    // Flame status binary sensor
-    printf("Publishing flame status sensor...\n");
-    snprintf(topic, sizeof(topic), "homeassistant/binary_sensor/%s/flame/config", device_id);
-    snprintf(config, sizeof(config),
-             "{\"name\":\"%s Flame Status\",\"unique_id\":\"%s_flame\","
-             "\"state_topic\":\"opentherm/state/%s/flame\","
-             "\"payload_on\":\"ON\",\"payload_off\":\"OFF\","
-             "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
-             device_name, device_id, device_id, device_id, device_name);
-    publish_discovery_with_retry(topic, config);
+    if (!OpenTherm::Discovery::publishSimulatorDiscovery(device_name, device_id))
+    {
+        printf("FATAL ERROR: Failed to publish discovery configurations after all retries\n");
+        printf("Cannot continue without Home Assistant discovery - halting execution\n");
+        OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_CONFIG_ERROR);
+        while (true)
+        {
+            sleep_ms(1000); // Halt execution
+        }
+    }
 
     printf("Discovery configuration complete!\n");
     printf("Simulator ready! Publishing simulated data to Home Assistant...\n");

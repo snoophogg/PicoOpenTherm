@@ -5,6 +5,7 @@
 #include "opentherm_ha.hpp"
 #include "config.hpp"
 #include "mqtt_common.hpp"
+#include "mqtt_discovery.hpp"
 #include "led_blink.hpp"
 #include <string>
 

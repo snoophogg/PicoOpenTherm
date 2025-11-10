@@ -1,5 +1,6 @@
 #include "opentherm_ha.hpp"
 #include "config.hpp"
+#include "mqtt_discovery.hpp"
 #include <cstdio>
 #include <cstring>
 #include <sstream>
@@ -110,11 +111,19 @@ namespace OpenTherm
             payload << "}";
 
             std::string topic = buildDiscoveryTopic(component, object_id);
-            mqtt_.publish(topic.c_str(), payload.str().c_str(), true);
+            // Use retry logic from discovery library for reliable publishing
+            if (!Discovery::publishWithRetry(topic.c_str(), payload.str().c_str()))
+            {
+                printf("WARNING: Failed to publish discovery config for %s/%s\n", component, object_id);
+            }
         }
 
         void HAInterface::publishDiscoveryConfigs()
         {
+            // Wait for MQTT client to be ready for large discovery messages
+            printf("Waiting for MQTT client to be ready for discovery (2 seconds)...\n");
+            sleep_ms(2000);
+
             printf("Publishing Home Assistant MQTT discovery configs...\n");
 
             // Status flags - Binary Sensors
