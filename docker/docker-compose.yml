@@ -3,6 +3,7 @@ name: picoopentherm
 volumes:
   mosquitto-data:
   mosquitto-log:
+  homeassistant-config:
 
 services:
   # Mosquitto MQTT Broker
@@ -27,7 +28,14 @@ services:
     ports:
       - "8123:8123"  # Home Assistant Web UI
     volumes:
-      - ./homeassistant:/config
+      - homeassistant-config:/config
+      - ./homeassistant/configuration.yaml:/config/configuration.yaml
+      - ./homeassistant/automations.yaml:/config/automations.yaml
+      - ./homeassistant/scenes.yaml:/config/scenes.yaml
+      - ./homeassistant/scripts.yaml:/config/scripts.yaml
+      - ./homeassistant/secrets.yaml:/config/secrets.yaml
+      - ./homeassistant/ui-lovelace.yaml:/config/ui-lovelace.yaml
+      - ./homeassistant/lovelace:/config/lovelace
       - /etc/localtime:/etc/localtime:ro
     environment:
       - TZ=Europe/London

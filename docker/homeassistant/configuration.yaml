@@ -1,6 +1,8 @@
 # Home Assistant Configuration for PicoOpenTherm
 # This is a minimal configuration to get started with MQTT integration
 
+secrets: !include secrets.yaml
+
 # Configure Home Assistant basics
 # Core Home Assistant configuration
 homeassistant:
@@ -11,7 +13,7 @@ homeassistant:
   unit_system: metric
   time_zone: Europe/London
   currency: GBP
-  
+
   # Internal URL
   internal_url: "http://localhost:8123"
   # Uncomment and set external_url in secrets.yaml for remote access:
@@ -105,13 +107,12 @@ scene: !include scenes.yaml
 # Text to speech
 tts:
   - platform: google_translate
-
 # Example automation to log when PicoOpenTherm connects
 # automation old:
 #   - alias: 'Log PicoOpenTherm Connection'
 #     trigger:
 #       - platform: mqtt
-#         topic: 'opentherm/state/+' 
+#         topic: 'opentherm/state/+'
 #     action:
 #       - service: system_log.write
 #         data:
