@@ -124,8 +124,9 @@ namespace OpenTherm
             // Successful publish - reset failure counter
             consecutive_publish_failures = 0;
 
-            // Small delay between publishes to prevent overwhelming the MQTT client
-            sleep_ms(5);
+            // Delay between publishes to allow lwIP buffers to be freed
+            // Critical for preventing ERR_MEM when publishing multiple messages
+            sleep_ms(50);
             return true;
         }
 
