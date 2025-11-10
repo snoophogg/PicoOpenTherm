@@ -102,6 +102,11 @@ int main()
     printf("Initializing OpenTherm Simulator...\n");
     OpenTherm::Simulator::SimulatedInterface sim_ot;
 
+    // Wait additional time before publishing discovery configs
+    // Discovery messages are large and need extra buffer availability
+    printf("Waiting for MQTT client to be ready for discovery...\n");
+    sleep_ms(1000);
+
     printf("Publishing Home Assistant discovery configurations...\n");
     
     // Publish discovery configs for simulated sensors
@@ -116,7 +121,12 @@ int main()
         "\"unit_of_measurement\":\"°C\",\"device_class\":\"temperature\","
         "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
         device_name, device_id, device_id, device_id, device_name);
-    OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    if (!OpenTherm::Common::mqtt_publish_wrapper(topic, config, true))
+    {
+        printf("Failed to publish room temperature discovery - retrying in 1s...\n");
+        sleep_ms(1000);
+        OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    }
     
     // Boiler temperature sensor
     snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/boiler_temperature/config", device_id);
@@ -126,7 +136,12 @@ int main()
         "\"unit_of_measurement\":\"°C\",\"device_class\":\"temperature\","
         "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
         device_name, device_id, device_id, device_id, device_name);
-    OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    if (!OpenTherm::Common::mqtt_publish_wrapper(topic, config, true))
+    {
+        printf("Failed to publish boiler temperature discovery - retrying in 1s...\n");
+        sleep_ms(1000);
+        OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    }
     
     // DHW temperature sensor
     snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/dhw_temperature/config", device_id);
@@ -136,7 +151,12 @@ int main()
         "\"unit_of_measurement\":\"°C\",\"device_class\":\"temperature\","
         "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
         device_name, device_id, device_id, device_id, device_name);
-    OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    if (!OpenTherm::Common::mqtt_publish_wrapper(topic, config, true))
+    {
+        printf("Failed to publish DHW temperature discovery - retrying in 1s...\n");
+        sleep_ms(1000);
+        OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    }
     
     // Modulation sensor
     snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/modulation/config", device_id);
@@ -146,7 +166,12 @@ int main()
         "\"unit_of_measurement\":\"%%\","
         "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
         device_name, device_id, device_id, device_id, device_name);
-    OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    if (!OpenTherm::Common::mqtt_publish_wrapper(topic, config, true))
+    {
+        printf("Failed to publish modulation discovery - retrying in 1s...\n");
+        sleep_ms(1000);
+        OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    }
     
     // Pressure sensor
     snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/pressure/config", device_id);
@@ -156,7 +181,12 @@ int main()
         "\"unit_of_measurement\":\"bar\",\"device_class\":\"pressure\","
         "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
         device_name, device_id, device_id, device_id, device_name);
-    OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    if (!OpenTherm::Common::mqtt_publish_wrapper(topic, config, true))
+    {
+        printf("Failed to publish pressure discovery - retrying in 1s...\n");
+        sleep_ms(1000);
+        OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    }
     
     // Flame status binary sensor
     snprintf(topic, sizeof(topic), "homeassistant/binary_sensor/%s/flame/config", device_id);
@@ -166,8 +196,14 @@ int main()
         "\"payload_on\":\"ON\",\"payload_off\":\"OFF\","
         "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
         device_name, device_id, device_id, device_id, device_name);
-    OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    if (!OpenTherm::Common::mqtt_publish_wrapper(topic, config, true))
+    {
+        printf("Failed to publish flame discovery - retrying in 1s...\n");
+        sleep_ms(1000);
+        OpenTherm::Common::mqtt_publish_wrapper(topic, config, true);
+    }
 
+    printf("Discovery configuration complete!\n");
     printf("Simulator ready! Publishing simulated data to Home Assistant...\n");
 
     uint32_t last_connection_check = 0;
