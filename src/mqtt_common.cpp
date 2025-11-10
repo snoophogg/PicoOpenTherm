@@ -114,6 +114,17 @@ namespace OpenTherm
         {
             printf("Connecting to MQTT broker...\n");
 
+            // Clean up any existing client first
+            if (g_mqtt_client)
+            {
+                printf("Cleaning up existing MQTT client...\n");
+                mqtt_disconnect(g_mqtt_client);
+                mqtt_client_free(g_mqtt_client);
+                g_mqtt_client = nullptr;
+                g_mqtt_connected = false;
+                sleep_ms(100); // Give lwIP time to clean up timers
+            }
+
             g_mqtt_client = mqtt_client_new();
             if (!g_mqtt_client)
             {
@@ -132,6 +143,8 @@ namespace OpenTherm
             if (!ipaddr_aton(server_ip, &mqtt_server))
             {
                 printf("Invalid MQTT server IP\n");
+                mqtt_client_free(g_mqtt_client);
+                g_mqtt_client = nullptr;
                 return false;
             }
 
@@ -141,6 +154,8 @@ namespace OpenTherm
             if (err != ERR_OK)
             {
                 printf("MQTT connect failed: %d\n", err);
+                mqtt_client_free(g_mqtt_client);
+                g_mqtt_client = nullptr;
                 return false;
             }
 
@@ -148,6 +163,14 @@ namespace OpenTherm
             for (int i = 0; i < 50 && !g_mqtt_connected; i++)
             {
                 sleep_ms(100);
+            }
+
+            if (!g_mqtt_connected)
+            {
+                printf("MQTT connection timeout\n");
+                mqtt_disconnect(g_mqtt_client);
+                mqtt_client_free(g_mqtt_client);
+                g_mqtt_client = nullptr;
             }
 
             return g_mqtt_connected;
@@ -179,12 +202,6 @@ namespace OpenTherm
 
             // Connect to MQTT
             g_mqtt_connected = false;
-
-            if (g_mqtt_client)
-            {
-                mqtt_client_free(g_mqtt_client);
-                g_mqtt_client = nullptr;
-            }
 
             int mqtt_attempt = 1;
             while (true)
@@ -235,12 +252,6 @@ namespace OpenTherm
                 OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_MQTT_ERROR);
 
                 g_mqtt_connected = false;
-
-                if (g_mqtt_client)
-                {
-                    mqtt_client_free(g_mqtt_client);
-                    g_mqtt_client = nullptr;
-                }
 
                 int mqtt_attempt = 1;
                 while (true)
