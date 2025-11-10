@@ -66,10 +66,11 @@ namespace OpenTherm
             snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/room_temperature/config", device_id);
             snprintf(config, sizeof(config),
                      "{\"name\":\"%s Room Temperature\",\"unique_id\":\"%s_room_temp\","
+                     "\"object_id\":\"%s_room_temp\","
                      "\"state_topic\":\"opentherm/state/%s/room_temperature\","
                      "\"unit_of_measurement\":\"°C\",\"device_class\":\"temperature\","
                      "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
-                     device_name, device_id, device_id, device_id, device_name);
+                     device_name, device_id, device_id, device_id, device_id, device_name);
             if (!publishWithRetry(topic, config))
             {
                 return false;
@@ -80,10 +81,11 @@ namespace OpenTherm
             snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/boiler_temperature/config", device_id);
             snprintf(config, sizeof(config),
                      "{\"name\":\"%s Boiler Temperature\",\"unique_id\":\"%s_boiler_temp\","
+                     "\"object_id\":\"%s_boiler_temp\","
                      "\"state_topic\":\"opentherm/state/%s/boiler_temperature\","
                      "\"unit_of_measurement\":\"°C\",\"device_class\":\"temperature\","
                      "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
-                     device_name, device_id, device_id, device_id, device_name);
+                     device_name, device_id, device_id, device_id, device_id, device_name);
             if (!publishWithRetry(topic, config))
             {
                 return false;
@@ -94,10 +96,11 @@ namespace OpenTherm
             snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/dhw_temperature/config", device_id);
             snprintf(config, sizeof(config),
                      "{\"name\":\"%s DHW Temperature\",\"unique_id\":\"%s_dhw_temp\","
+                     "\"object_id\":\"%s_dhw_temp\","
                      "\"state_topic\":\"opentherm/state/%s/dhw_temperature\","
                      "\"unit_of_measurement\":\"°C\",\"device_class\":\"temperature\","
                      "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
-                     device_name, device_id, device_id, device_id, device_name);
+                     device_name, device_id, device_id, device_id, device_id, device_name);
             if (!publishWithRetry(topic, config))
             {
                 return false;
@@ -108,10 +111,11 @@ namespace OpenTherm
             snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/modulation/config", device_id);
             snprintf(config, sizeof(config),
                      "{\"name\":\"%s Modulation\",\"unique_id\":\"%s_modulation\","
+                     "\"object_id\":\"%s_modulation\","
                      "\"state_topic\":\"opentherm/state/%s/modulation\","
                      "\"unit_of_measurement\":\"%%\","
                      "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
-                     device_name, device_id, device_id, device_id, device_name);
+                     device_name, device_id, device_id, device_id, device_id, device_name);
             if (!publishWithRetry(topic, config))
             {
                 return false;
@@ -122,10 +126,11 @@ namespace OpenTherm
             snprintf(topic, sizeof(topic), "homeassistant/sensor/%s/pressure/config", device_id);
             snprintf(config, sizeof(config),
                      "{\"name\":\"%s CH Pressure\",\"unique_id\":\"%s_pressure\","
+                     "\"object_id\":\"%s_pressure\","
                      "\"state_topic\":\"opentherm/state/%s/pressure\","
                      "\"unit_of_measurement\":\"bar\",\"device_class\":\"pressure\","
                      "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
-                     device_name, device_id, device_id, device_id, device_name);
+                     device_name, device_id, device_id, device_id, device_id, device_name);
             if (!publishWithRetry(topic, config))
             {
                 return false;
@@ -136,10 +141,11 @@ namespace OpenTherm
             snprintf(topic, sizeof(topic), "homeassistant/binary_sensor/%s/flame/config", device_id);
             snprintf(config, sizeof(config),
                      "{\"name\":\"%s Flame Status\",\"unique_id\":\"%s_flame\","
+                     "\"object_id\":\"%s_flame\","
                      "\"state_topic\":\"opentherm/state/%s/flame\","
                      "\"payload_on\":\"ON\",\"payload_off\":\"OFF\","
                      "\"device\":{\"identifiers\":[\"%s\"],\"name\":\"%s\",\"manufacturer\":\"PicoOpenTherm\",\"model\":\"Simulator\"}}",
-                     device_name, device_id, device_id, device_id, device_name);
+                     device_name, device_id, device_id, device_id, device_id, device_name);
             if (!publishWithRetry(topic, config))
             {
                 return false;
