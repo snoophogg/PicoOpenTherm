@@ -1,6 +1,7 @@
 #include "opentherm_ha.hpp"
 #include "config.hpp"
 #include "mqtt_discovery.hpp"
+#include "pico/cyw43_arch.h"
 #include <cstdio>
 #include <cstring>
 #include <sstream>
@@ -121,8 +122,14 @@ namespace OpenTherm
         void HAInterface::publishDiscoveryConfigs()
         {
             // Wait for MQTT client to be ready for large discovery messages
-            printf("Waiting for MQTT client to be ready for discovery (2 seconds)...\n");
-            sleep_ms(2000);
+            // Poll network actively to process any pending packets
+            // Extended wait (5s) to allow MQTT handshake and buffers to fully stabilize
+            printf("Waiting for MQTT client to be ready for discovery (5 seconds, polling network)...\n");
+            for (int i = 0; i < 500; i++)
+            {
+                cyw43_arch_poll();
+                sleep_ms(10);
+            }
 
             printf("Publishing Home Assistant MQTT discovery configs...\n");
 

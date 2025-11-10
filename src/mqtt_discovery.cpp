@@ -16,8 +16,8 @@ namespace OpenTherm
                 if (OpenTherm::Common::mqtt_publish_wrapper(topic, config, true))
                 {
                     // Success - give buffers time to clear before next publish
-                    // Poll network to process ACKs
-                    for (int i = 0; i < 20; i++)
+                    // Poll network aggressively to process ACKs (500ms)
+                    for (int i = 0; i < 50; i++)
                     {
                         cyw43_arch_poll();
                         sleep_ms(10);
@@ -29,7 +29,7 @@ namespace OpenTherm
                 // This allows lwIP to process ACKs and free buffers
                 uint32_t delay_ms = 500 * (1 << attempt);
                 printf("  Retry %d/%d in %lu ms (polling network)...\n", attempt + 1, max_retries, delay_ms);
-                
+
                 // Poll network actively during delay to process packets and free buffers
                 uint32_t iterations = delay_ms / 10;
                 for (uint32_t i = 0; i < iterations; i++)
@@ -47,8 +47,9 @@ namespace OpenTherm
         {
             // Wait for MQTT client to be ready for large discovery messages
             // Poll network actively to process any pending packets
-            printf("Waiting for MQTT client to be ready for discovery (2 seconds, polling network)...\n");
-            for (int i = 0; i < 200; i++)
+            // Extended wait (5s) to allow MQTT handshake and buffers to fully stabilize
+            printf("Waiting for MQTT client to be ready for discovery (5 seconds, polling network)...\n");
+            for (int i = 0; i < 500; i++)
             {
                 cyw43_arch_poll();
                 sleep_ms(10);
