@@ -18,13 +18,13 @@ views:
         show_header_toggle: false
         entities:
           - entity: climate.opentherm_thermostat
-          - entity: sensor.opentherm_gw_room_temperature
+          - entity: sensor.opentherm_gw_room_temp
             name: Room Temperature
-          - entity: sensor.opentherm_gw_boiler_water_temperature
+          - entity: sensor.opentherm_gw_boiler_temp
             name: Boiler Temperature
-          - entity: binary_sensor.opentherm_gw_ch_active
+          - entity: binary_sensor.opentherm_gw_ch_mode
             name: Heating Active
-          - entity: sensor.opentherm_gw_modulation_level
+          - entity: sensor.opentherm_gw_modulation
             name: Modulation Level
 
   # OpenTherm Dashboard
@@ -45,39 +45,39 @@ views:
       - type: glance
         title: Current Status
         entities:
-          - entity: binary_sensor.opentherm_gw_ch_active
+          - entity: binary_sensor.opentherm_gw_ch_mode
             name: CH
-          - entity: binary_sensor.opentherm_gw_dhw_active
+          - entity: binary_sensor.opentherm_gw_dhw_mode
             name: DHW
-          - entity: binary_sensor.opentherm_gw_flame_status
+          - entity: binary_sensor.opentherm_gw_flame
             name: Flame
-          - entity: sensor.opentherm_gw_modulation_level
+          - entity: sensor.opentherm_gw_modulation
             name: Modulation
-          - entity: sensor.opentherm_gw_ch_water_pressure
+          - entity: sensor.opentherm_gw_pressure
             name: Pressure
       
       # Temperatures
       - type: entities
         title: Temperatures
         entities:
-          - entity: sensor.opentherm_gw_room_temperature
+          - entity: sensor.opentherm_gw_room_temp
             name: Room Temperature
             icon: mdi:home-thermometer
           - entity: sensor.opentherm_gw_room_setpoint
             name: Room Setpoint
             icon: mdi:thermometer-lines
           - type: divider
-          - entity: sensor.opentherm_gw_boiler_water_temperature
+          - entity: sensor.opentherm_gw_boiler_temp
             name: Boiler Water
             icon: mdi:water-thermometer
-          - entity: sensor.opentherm_gw_return_water_temperature
+          - entity: sensor.opentherm_gw_return_temp
             name: Return Water
             icon: mdi:water-thermometer-outline
-          - entity: sensor.opentherm_gw_dhw_temperature
+          - entity: sensor.opentherm_gw_dhw_temp
             name: Hot Water
             icon: mdi:water-boiler
           - type: divider
-          - entity: sensor.opentherm_gw_outside_temperature
+          - entity: sensor.opentherm_gw_outside_temp
             name: Outside
             icon: mdi:thermometer
       
@@ -87,13 +87,13 @@ views:
         hours_to_show: 24
         refresh_interval: 60
         entities:
-          - entity: sensor.opentherm_gw_room_temperature
+          - entity: sensor.opentherm_gw_room_temp
             name: Room
           - entity: sensor.opentherm_gw_room_setpoint
             name: Setpoint
-          - entity: sensor.opentherm_gw_boiler_water_temperature
+          - entity: sensor.opentherm_gw_boiler_temp
             name: Boiler
-          - entity: sensor.opentherm_gw_return_water_temperature
+          - entity: sensor.opentherm_gw_return_temp
             name: Return
       
       # Boiler Activity
@@ -102,13 +102,13 @@ views:
         hours_to_show: 24
         refresh_interval: 60
         entities:
-          - entity: binary_sensor.opentherm_gw_ch_active
+          - entity: binary_sensor.opentherm_gw_ch_mode
             name: CH Active
-          - entity: binary_sensor.opentherm_gw_dhw_active
+          - entity: binary_sensor.opentherm_gw_dhw_mode
             name: DHW Active
-          - entity: binary_sensor.opentherm_gw_flame_status
+          - entity: binary_sensor.opentherm_gw_flame
             name: Flame
-          - entity: sensor.opentherm_gw_modulation_level
+          - entity: sensor.opentherm_gw_modulation
             name: Modulation
       
       # Gateway Configuration
@@ -170,5 +170,5 @@ views:
             label: System Info
           - entity: sensor.opentherm_gw_max_modulation_level
             name: Max Modulation Level
-          - entity: sensor.opentherm_gw_ch_water_pressure
+          - entity: sensor.opentherm_gw_pressure
             name: CH Water Pressure

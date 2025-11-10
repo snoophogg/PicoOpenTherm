@@ -31,19 +31,19 @@ opentherm_dashboard:
         - type: entities
           title: Current Temperatures
           entities:
-            - entity: sensor.opentherm_gw_room_temperature
+            - entity: sensor.opentherm_gw_room_temp
               name: Room Temperature
               icon: mdi:home-thermometer
             - entity: sensor.opentherm_gw_room_setpoint
               name: Room Setpoint
               icon: mdi:thermometer-lines
-            - entity: sensor.opentherm_gw_boiler_water_temperature
+            - entity: sensor.opentherm_gw_boiler_temp
               name: Boiler Water Temperature
               icon: mdi:water-thermometer
-            - entity: sensor.opentherm_gw_return_water_temperature
+            - entity: sensor.opentherm_gw_return_temp
               name: Return Water Temperature
               icon: mdi:water-thermometer-outline
-            - entity: sensor.opentherm_gw_dhw_temperature
+            - entity: sensor.opentherm_gw_dhw_temp
               name: Hot Water Temperature
               icon: mdi:water-boiler
         
@@ -51,19 +51,19 @@ opentherm_dashboard:
         - type: entities
           title: Boiler Status
           entities:
-            - entity: binary_sensor.opentherm_gw_ch_active
+            - entity: binary_sensor.opentherm_gw_ch_mode
               name: Central Heating
               icon: mdi:radiator
-            - entity: binary_sensor.opentherm_gw_dhw_active
+            - entity: binary_sensor.opentherm_gw_dhw_mode
               name: Hot Water
               icon: mdi:water-boiler
-            - entity: binary_sensor.opentherm_gw_flame_status
+            - entity: binary_sensor.opentherm_gw_flame
               name: Flame Status
               icon: mdi:fire
-            - entity: sensor.opentherm_gw_modulation_level
+            - entity: sensor.opentherm_gw_modulation
               name: Modulation Level
               icon: mdi:percent
-            - entity: sensor.opentherm_gw_ch_water_pressure
+            - entity: sensor.opentherm_gw_pressure
               name: Water Pressure
               icon: mdi:gauge
         
@@ -73,11 +73,11 @@ opentherm_dashboard:
           hours_to_show: 24
           refresh_interval: 60
           entities:
-            - entity: sensor.opentherm_gw_room_temperature
+            - entity: sensor.opentherm_gw_room_temp
               name: Room
             - entity: sensor.opentherm_gw_room_setpoint
               name: Setpoint
-            - entity: sensor.opentherm_gw_boiler_water_temperature
+            - entity: sensor.opentherm_gw_boiler_temp
               name: Boiler Water
         
         # Modulation Graph
@@ -86,11 +86,11 @@ opentherm_dashboard:
           hours_to_show: 24
           refresh_interval: 60
           entities:
-            - entity: sensor.opentherm_gw_modulation_level
+            - entity: sensor.opentherm_gw_modulation
               name: Modulation
-            - entity: binary_sensor.opentherm_gw_ch_active
+            - entity: binary_sensor.opentherm_gw_ch_mode
               name: CH Active
-            - entity: binary_sensor.opentherm_gw_flame_status
+            - entity: binary_sensor.opentherm_gw_flame
               name: Flame
         
         # Configuration (Runtime)
