@@ -59,6 +59,14 @@ namespace OpenTherm
                 return false;
             }
 
+            // Check if MQTT client is actually ready to publish
+            if (!mqtt_client_is_connected(g_mqtt_client))
+            {
+                printf("MQTT publish failed: client not connected\n");
+                g_mqtt_connected = false;
+                return false;
+            }
+
             u8_t qos = 0;
             u8_t retain_flag = retain ? 1 : 0;
 
@@ -68,6 +76,11 @@ namespace OpenTherm
             if (err != ERR_OK)
             {
                 printf("MQTT publish failed: %d\n", err);
+                if (err == ERR_CONN || err == ERR_CLSD)
+                {
+                    // Connection was lost
+                    g_mqtt_connected = false;
+                }
                 return false;
             }
 
@@ -171,6 +184,12 @@ namespace OpenTherm
                 mqtt_disconnect(g_mqtt_client);
                 mqtt_client_free(g_mqtt_client);
                 g_mqtt_client = nullptr;
+            }
+            else
+            {
+                // Give MQTT client time to stabilize before publishing
+                printf("MQTT connection established, waiting for client to stabilize...\n");
+                sleep_ms(500);
             }
 
             return g_mqtt_connected;
