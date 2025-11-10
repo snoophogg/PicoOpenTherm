@@ -17,22 +17,30 @@ namespace Config
 {
     bool init()
     {
+        printf("Initializing configuration system...\n");
+
         // Initialize kvstore
         if (!kvs_init())
         {
-            printf("Failed to initialize kvstore\n");
+            printf("ERROR: Failed to initialize kvstore\n");
             return false;
         }
 
-        printf("Configuration storage initialized\n");
+        printf("KVStore initialized successfully\n");
 
         // Check if this is first boot - if no WiFi SSID configured, set defaults
         char test_buffer[64];
         int rc = kvs_get_str(KEY_WIFI_SSID, test_buffer, sizeof(test_buffer));
+        printf("First boot check: kvs_get_str returned %d (%s)\n", rc, kvs_strerror(rc));
+
         if (rc != KVSTORE_SUCCESS)
         {
-            printf("First boot detected, initializing with default configuration\n");
+            printf("First boot detected or error reading config, initializing with default configuration\n");
             resetToDefaults();
+        }
+        else
+        {
+            printf("Found existing configuration: SSID='%s'\n", test_buffer);
         }
 
         return true;
@@ -214,21 +222,65 @@ namespace Config
         printf("Resetting configuration to defaults...\n");
 
         // WiFi defaults
-        setWiFiSSID(DEFAULT_WIFI_SSID);
-        setWiFiPassword(DEFAULT_WIFI_PASSWORD);
+        printf("  Setting WiFi SSID: %s\n", DEFAULT_WIFI_SSID);
+        if (!setWiFiSSID(DEFAULT_WIFI_SSID))
+        {
+            printf("  ERROR: Failed to set WiFi SSID\n");
+            return false;
+        }
+
+        printf("  Setting WiFi password\n");
+        if (!setWiFiPassword(DEFAULT_WIFI_PASSWORD))
+        {
+            printf("  ERROR: Failed to set WiFi password\n");
+            return false;
+        }
 
         // MQTT defaults
-        setMQTTServerIP(DEFAULT_MQTT_SERVER_IP);
-        setMQTTServerPort(DEFAULT_MQTT_SERVER_PORT);
-        setMQTTClientID(DEFAULT_MQTT_CLIENT_ID);
+        printf("  Setting MQTT server: %s:%u\n", DEFAULT_MQTT_SERVER_IP, DEFAULT_MQTT_SERVER_PORT);
+        if (!setMQTTServerIP(DEFAULT_MQTT_SERVER_IP))
+        {
+            printf("  ERROR: Failed to set MQTT server IP\n");
+            return false;
+        }
+
+        if (!setMQTTServerPort(DEFAULT_MQTT_SERVER_PORT))
+        {
+            printf("  ERROR: Failed to set MQTT server port\n");
+            return false;
+        }
+
+        if (!setMQTTClientID(DEFAULT_MQTT_CLIENT_ID))
+        {
+            printf("  ERROR: Failed to set MQTT client ID\n");
+            return false;
+        }
 
         // Device defaults
-        setDeviceName(DEFAULT_DEVICE_NAME);
-        setDeviceID(DEFAULT_DEVICE_ID);
+        if (!setDeviceName(DEFAULT_DEVICE_NAME))
+        {
+            printf("  ERROR: Failed to set device name\n");
+            return false;
+        }
+
+        if (!setDeviceID(DEFAULT_DEVICE_ID))
+        {
+            printf("  ERROR: Failed to set device ID\n");
+            return false;
+        }
 
         // OpenTherm defaults
-        setOpenThermTxPin(DEFAULT_OPENTHERM_TX_PIN);
-        setOpenThermRxPin(DEFAULT_OPENTHERM_RX_PIN);
+        if (!setOpenThermTxPin(DEFAULT_OPENTHERM_TX_PIN))
+        {
+            printf("  ERROR: Failed to set OpenTherm TX pin\n");
+            return false;
+        }
+
+        if (!setOpenThermRxPin(DEFAULT_OPENTHERM_RX_PIN))
+        {
+            printf("  ERROR: Failed to set OpenTherm RX pin\n");
+            return false;
+        }
 
         printf("Configuration reset complete\n");
         return true;

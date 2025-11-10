@@ -105,6 +105,18 @@ Configuration is automatically saved to flash memory and persists across reboots
 
 You can pre-configure your device before flashing the firmware using the included provisioning scripts. This allows you to set WiFi credentials, MQTT settings, and device configuration directly to flash memory.
 
+### Pico W Flash Layout
+
+The Pico W has 2MB of flash memory organized as follows:
+
+```
+0x10000000 - 0x101C0000 (1.75MB)  - Program space
+0x101C0000 - 0x101E0000 (128KB)   - KVStore configuration storage ← Flash config here
+0x101E0000 - 0x10200000 (128KB)   - Bluetooth flash bank
+```
+
+**Important**: When using `kvstore-util` or provisioning scripts, the configuration is flashed to address **0x101C0000** (offset 0x1C0000 from flash start).
+
 **Quick Start (No Build Required):**
 ```bash
 # 1. Download pre-built tools from GitHub releases to bin/ folder
@@ -115,7 +127,7 @@ mkdir -p bin
 cp secrets.cfg.example secrets.cfg
 nano secrets.cfg
 
-# 3. Flash configuration to Pico
+# 3. Flash configuration to Pico (address 0x101C0000)
 ./provision-simple.sh
 
 # 4. Flash firmware (download from releases)
@@ -135,7 +147,7 @@ nano secrets.cfg
 picotool load build/picoopentherm.uf2
 ```
 
-The provisioning scripts use `kvstore-util` to create a configuration binary and flash it to the correct location in the Pico's flash memory (last 256KB).
+The provisioning scripts use `kvstore-util` to create a configuration binary and flash it to the kvstore region at **0x101C0000** (128KB reserved space).
 
 📖 **See [PROVISIONING.md](PROVISIONING.md) for detailed instructions, pre-built tool download links, and troubleshooting.**
 

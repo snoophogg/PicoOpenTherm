@@ -18,9 +18,10 @@ SECRETS_FILE="${SCRIPT_DIR}/secrets.cfg"
 SETTINGS_BIN="${SCRIPT_DIR}/settings.bin"
 KVSTORE_UTIL="${SCRIPT_DIR}/pico-kvstore/host/build/kvstore-util"
 
-# Flash offset for kvstore (last 256KB of 2MB flash)
-FLASH_OFFSET=0x1FC0000
-KVSTORE_SIZE=262144  # 256KB
+# Flash offset for kvstore on Pico W (2MB flash)
+# Layout: 1.75MB program + 128KB kvstore + 128KB Bluetooth
+FLASH_OFFSET=0x1C0000   # 1.75MB offset for kvstore region
+KVSTORE_SIZE=131072     # 128KB
 
 # Colors for output
 RED='\033[0;31m'
