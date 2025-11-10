@@ -13,7 +13,9 @@ namespace OpenTherm
         {
             for (int attempt = 0; attempt < max_retries; attempt++)
             {
-                if (OpenTherm::Common::mqtt_publish_wrapper(topic, config, true))
+                // Try without retain flag to reduce memory pressure
+                // Discovery configs don't strictly need to be retained
+                if (OpenTherm::Common::mqtt_publish_wrapper(topic, config, false))
                 {
                     // Success - give buffers time to clear before next publish
                     // Poll network aggressively to process ACKs (500ms)
