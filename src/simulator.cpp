@@ -20,6 +20,7 @@ static char device_id[64];
 int main()
 {
     stdio_init_all();
+    sleep_ms(3000); // Wait for USB serial
 
     // Longer pause to allow UART connection for debugging
     printf("\n");
@@ -34,6 +35,8 @@ int main()
     printf("\n=== PicoOpenTherm SIMULATOR Mode ===\n");
     printf("This firmware simulates OpenTherm data without hardware\n\n");
 
+    // Initialize WiFi and enable station mode
+    printf("Initializing WiFi...\n");
     if (cyw43_arch_init())
     {
         printf("Failed to initialize cyw43\n");
@@ -43,7 +46,11 @@ int main()
         }
     }
 
-    // Starts with continuous blink until properly configured
+    // Enable station mode before using LED
+    cyw43_arch_enable_sta_mode();
+    sleep_ms(100); // Give WiFi chip time to stabilize
+
+    // Initialize LED state machine after WiFi is ready
     printf("Starting LED blink timer...\n");
     if (!OpenTherm::LED::init())
     {
@@ -81,9 +88,7 @@ int main()
     printf("Device ID:        %s\n", device_id);
     printf("===========================\n\n");
 
-    // Connect to WiFi and MQTT
-    cyw43_arch_enable_sta_mode();
-
+    // Connect to WiFi and MQTT (station mode already enabled)
     // Set pattern to WiFi error while attempting connection
     OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_WIFI_ERROR);
 

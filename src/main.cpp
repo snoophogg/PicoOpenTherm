@@ -37,7 +37,8 @@ int main()
 
     printf("\n=== PicoOpenTherm Home Assistant Gateway ===\n");
 
-    // Initialize WiFi
+    // Initialize WiFi and enable station mode
+    printf("Initializing WiFi...\n");
     if (cyw43_arch_init())
     {
         printf("Failed to initialize cyw43\n");
@@ -48,7 +49,11 @@ int main()
         }
     }
 
-    // Initialize LED state machine early
+    // Enable station mode before using LED
+    cyw43_arch_enable_sta_mode();
+    sleep_ms(100); // Give WiFi chip time to stabilize
+
+    // Initialize LED state machine after WiFi is ready
     printf("Initializing LED state machine...\n");
     if (!OpenTherm::LED::init())
     {
@@ -82,7 +87,6 @@ int main()
     Config::printConfig();
 
     // Connect to WiFi and MQTT with retry logic
-    cyw43_arch_enable_sta_mode();
     OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_WIFI_ERROR);
     OpenTherm::Common::connect_with_retry(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port, mqtt_client_id);
 
