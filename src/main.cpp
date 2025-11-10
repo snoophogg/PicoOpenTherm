@@ -38,7 +38,7 @@ int main()
     printf("\n=== PicoOpenTherm Home Assistant Gateway ===\n");
 
     // Initialize WiFi and enable station mode
-    printf("Initializing WiFi...\n");
+    printf("Initializing WiFi chip...\n");
     if (cyw43_arch_init())
     {
         printf("Failed to initialize cyw43\n");
@@ -49,9 +49,10 @@ int main()
         }
     }
 
-    // Enable station mode before using LED
+    // Enable station mode and give chip extra time to stabilize
+    printf("Enabling WiFi station mode...\n");
     cyw43_arch_enable_sta_mode();
-    sleep_ms(100); // Give WiFi chip time to stabilize
+    sleep_ms(500); // Increased delay to allow CYW43 chip to fully stabilize
 
     // Initialize LED state machine after WiFi is ready
     printf("Initializing LED state machine...\n");
