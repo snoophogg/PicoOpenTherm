@@ -126,7 +126,13 @@ namespace OpenTherm
 
             // Delay between publishes to allow lwIP buffers to be freed
             // Critical for preventing ERR_MEM when publishing multiple messages
-            sleep_ms(50);
+            // Needs to be long enough for TCP ACK and PBUF cleanup
+            // Also poll the network stack to process pending packets
+            for (int i = 0; i < 10; i++)
+            {
+                cyw43_arch_poll();
+                sleep_ms(10);
+            }
             return true;
         }
 
