@@ -41,6 +41,12 @@ The setup includes **pre-configured dashboards and automations** for PicoOpenThe
 - **Config**: `homeassistant/configuration.yaml`
 - **Data**: `homeassistant/` (persisted)
 
+### MQTT Explorer (Debugging Tool)
+- **Port**: 4000 (Web UI)
+- **Access**: http://localhost:4000
+- **Purpose**: View all MQTT messages in real-time
+- **Connection**: Pre-configured to connect to mosquitto:1883
+
 ## Configuration
 
 ### MQTT Auto-Discovery

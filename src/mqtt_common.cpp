@@ -11,6 +11,10 @@ namespace OpenTherm
         bool g_mqtt_connected = false;
         std::map<std::string, std::string> g_pending_messages;
 
+        // Track consecutive publish failures for LED indication
+        static int consecutive_publish_failures = 0;
+        static constexpr int PUBLISH_FAILURE_THRESHOLD = 5;
+
         // MQTT callbacks
         void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status)
         {
@@ -18,6 +22,7 @@ namespace OpenTherm
             {
                 printf("MQTT connected!\n");
                 g_mqtt_connected = true;
+                consecutive_publish_failures = 0; // Reset failure counter on successful connection
             }
             else
             {
@@ -75,15 +80,52 @@ namespace OpenTherm
 
             if (err != ERR_OK)
             {
-                printf("MQTT publish failed: %d\n", err);
-                if (err == ERR_CONN || err == ERR_CLSD)
+                const char *err_str = "unknown";
+                switch (err)
                 {
-                    // Connection was lost
+                case ERR_MEM:
+                    err_str = "out of memory (ERR_MEM)";
+                    break;
+                case ERR_BUF:
+                    err_str = "buffer error (ERR_BUF)";
+                    break;
+                case ERR_TIMEOUT:
+                    err_str = "timeout (ERR_TIMEOUT)";
+                    break;
+                case ERR_RTE:
+                    err_str = "routing problem (ERR_RTE)";
+                    break;
+                case ERR_CONN:
+                    err_str = "not connected (ERR_CONN)";
                     g_mqtt_connected = false;
+                    break;
+                case ERR_CLSD:
+                    err_str = "connection closed (ERR_CLSD)";
+                    g_mqtt_connected = false;
+                    break;
+                default:
+                    break;
                 }
+                printf("MQTT publish failed: %s (%d) - topic: %s\n", err_str, err, topic);
+
+                // Track consecutive failures and update LED pattern
+                consecutive_publish_failures++;
+                if (consecutive_publish_failures >= PUBLISH_FAILURE_THRESHOLD)
+                {
+                    printf("Multiple consecutive publish failures detected - setting MQTT error LED\n");
+                    OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_MQTT_ERROR);
+                }
+
+                // Add small delay on error to prevent flooding
+                sleep_ms(10);
                 return false;
             }
 
+            // Successful publish - reset failure counter
+            consecutive_publish_failures = 0;
+
+            // Small delay between publishes to prevent overwhelming the MQTT client
+            sleep_ms(5);
             return true;
         }
 
@@ -268,15 +310,15 @@ namespace OpenTherm
                     {
                         printf("WiFi connection lost during MQTT reconnect! Reconnecting WiFi...\n");
                         OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_WIFI_ERROR);
-                        
+
                         // Reconnect both WiFi and MQTT
                         connect_with_retry(ssid, password, server_ip, port, client_id);
-                        
+
                         if (on_reconnect_callback)
                         {
                             on_reconnect_callback();
                         }
-                        
+
                         return true;
                     }
 

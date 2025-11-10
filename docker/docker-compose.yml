@@ -36,6 +36,20 @@ services:
     depends_on:
       - mosquitto
 
+  # MQTT Explorer for debugging
+  mqtt-explorer:
+    image: smeagolworms4/mqtt-explorer
+    restart: unless-stopped
+    ports:
+      - "4000:4000"  # MQTT Explorer Web UI
+    environment:
+      - HTTP_PORT=4000
+      - CONFIG_PATH=/mqtt-explorer/config.json
+    networks:
+      - picoopentherm
+    depends_on:
+      - mosquitto
+
 networks:
   picoopentherm:
     driver: bridge
