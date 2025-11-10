@@ -54,6 +54,9 @@
 
 // MQTT settings
 #define LWIP_MQTT 1
+#define MQTT_OUTPUT_RINGBUF_SIZE 1024  // Increased from 256 for large discovery messages
+#define MQTT_REQ_MAX_IN_FLIGHT 8       // Increased from 4 to allow more pending publishes
+#define MQTT_VAR_HEADER_BUFFER_LEN 256 // Increased from 128 for longer topic names
 
 #ifndef NDEBUG
 #define LWIP_DEBUG 1
