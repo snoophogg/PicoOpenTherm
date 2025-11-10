@@ -159,32 +159,32 @@ int main()
             // Room temperature
             snprintf(topic, sizeof(topic), "opentherm/state/%s/room_temperature", device_id);
             snprintf(payload, sizeof(payload), "%.2f", sim_ot.readRoomTemperature());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, false);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
 
             // Boiler temperature
             snprintf(topic, sizeof(topic), "opentherm/state/%s/boiler_temperature", device_id);
             snprintf(payload, sizeof(payload), "%.2f", sim_ot.readBoilerTemperature());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, false);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
 
             // DHW temperature
             snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_temperature", device_id);
             snprintf(payload, sizeof(payload), "%.2f", sim_ot.readDHWTemperature());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, false);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
 
             // Modulation
             snprintf(topic, sizeof(topic), "opentherm/state/%s/modulation", device_id);
             snprintf(payload, sizeof(payload), "%.1f", sim_ot.readModulationLevel());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, false);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
 
             // Pressure
             snprintf(topic, sizeof(topic), "opentherm/state/%s/pressure", device_id);
             snprintf(payload, sizeof(payload), "%.2f", sim_ot.readCHWaterPressure());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, false);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
 
             // Flame status
             snprintf(topic, sizeof(topic), "opentherm/state/%s/flame", device_id);
             snprintf(payload, sizeof(payload), "%s", sim_ot.readFlameStatus() ? "ON" : "OFF");
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, false);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
 
             printf("[SIM] T_room=%.1f T_boiler=%.1f Mod=%.0f%% Flame=%s\n",
                    sim_ot.readRoomTemperature(),
