@@ -1,139 +1,139 @@
-# Pre-configured dashboards for PicoOpenTherm
-# These will be available immediately after starting Home Assistant
+# Pre-configured dashboard for PicoOpenTherm
+# This will be available immediately after starting Home Assistant
 
-opentherm_dashboard:
-  mode: yaml
-  title: OpenTherm Gateway
-  icon: mdi:radiator
-  show_in_sidebar: true
-  cards:
-    - type: vertical-stack
-      cards:
-        # Device Status Card
-        - type: entities
-          title: Gateway Status
-          entities:
-            - entity: sensor.opentherm_gw_status
-              name: Connection Status
-            - entity: sensor.opentherm_gw_uptime
-              name: Uptime
-            - entity: sensor.opentherm_gw_wifi_signal
-              name: WiFi Signal
-            - entity: sensor.opentherm_gw_ip_address
-              name: IP Address
-        
-        # Temperature Overview
-        - type: thermostat
-          entity: climate.opentherm_thermostat
-          name: Central Heating
-        
-        # Current Temperatures
-        - type: entities
-          title: Current Temperatures
-          entities:
-            - entity: sensor.opentherm_gw_room_temp
-              name: Room Temperature
-              icon: mdi:home-thermometer
-            - entity: sensor.opentherm_gw_room_setpoint
-              name: Room Setpoint
-              icon: mdi:thermometer-lines
-            - entity: sensor.opentherm_gw_boiler_temp
-              name: Boiler Water Temperature
-              icon: mdi:water-thermometer
-            - entity: sensor.opentherm_gw_return_temp
-              name: Return Water Temperature
-              icon: mdi:water-thermometer-outline
-            - entity: sensor.opentherm_gw_dhw_temp
-              name: Hot Water Temperature
-              icon: mdi:water-boiler
-        
-        # Boiler Status
-        - type: entities
-          title: Boiler Status
-          entities:
-            - entity: binary_sensor.opentherm_gw_ch_mode
-              name: Central Heating
-              icon: mdi:radiator
-            - entity: binary_sensor.opentherm_gw_dhw_mode
-              name: Hot Water
-              icon: mdi:water-boiler
-            - entity: binary_sensor.opentherm_gw_flame
-              name: Flame Status
-              icon: mdi:fire
-            - entity: sensor.opentherm_gw_modulation
-              name: Modulation Level
-              icon: mdi:percent
-            - entity: sensor.opentherm_gw_pressure
-              name: Water Pressure
-              icon: mdi:gauge
-        
-        # Temperature Graphs
-        - type: history-graph
-          title: Temperature History (24h)
-          hours_to_show: 24
-          refresh_interval: 60
-          entities:
-            - entity: sensor.opentherm_gw_room_temp
-              name: Room
-            - entity: sensor.opentherm_gw_room_setpoint
-              name: Setpoint
-            - entity: sensor.opentherm_gw_boiler_temp
-              name: Boiler Water
-        
-        # Modulation Graph
-        - type: history-graph
-          title: Modulation & Heating (24h)
-          hours_to_show: 24
-          refresh_interval: 60
-          entities:
-            - entity: sensor.opentherm_gw_modulation
-              name: Modulation
-            - entity: binary_sensor.opentherm_gw_ch_mode
-              name: CH Active
-            - entity: binary_sensor.opentherm_gw_flame
-              name: Flame
-        
-        # Configuration (Runtime)
-        - type: entities
-          title: Gateway Configuration
-          entities:
-            - entity: text.opentherm_gw_device_name
-              name: Device Name
-            - entity: text.opentherm_gw_device_id
-              name: Device ID
-            - entity: number.opentherm_gw_tx_pin
-              name: TX Pin (GPIO)
-            - entity: number.opentherm_gw_rx_pin
-              name: RX Pin (GPIO)
-          footer:
-            type: buttons
+title: OpenTherm Gateway
+views:
+  - title: Overview
+    path: overview
+    icon: mdi:radiator
+    cards:
+      - type: vertical-stack
+        cards:
+          # Device Status Card
+          - type: entities
+            title: Gateway Status
             entities:
-              - entity: button.opentherm_gw_restart
-                name: Restart Gateway
-                icon: mdi:restart
-                tap_action:
-                  action: call-service
-                  service: button.press
-                  target:
-                    entity_id: button.opentherm_gw_restart
-        
-        # Diagnostics
-        - type: entities
-          title: Diagnostics
-          entities:
-            - entity: sensor.opentherm_gw_oem_fault_code
-              name: Fault Code
-            - entity: sensor.opentherm_gw_oem_diagnostic_code
-              name: Diagnostic Code
-            - entity: sensor.opentherm_gw_burner_starts
-              name: Burner Starts
-            - entity: sensor.opentherm_gw_ch_pump_starts
-              name: CH Pump Starts
-            - entity: sensor.opentherm_gw_dhw_pump_starts
-              name: DHW Pump Starts
-            - entity: sensor.opentherm_gw_burner_hours
-              name: Burner Hours
-            - entity: sensor.opentherm_gw_ch_pump_hours
-              name: CH Pump Hours
-            - entity: sensor.opentherm_gw_dhw_pump_hours
-              name: DHW Pump Hours
+              - entity: sensor.opentherm_gw_status
+                name: Connection Status
+              - entity: sensor.opentherm_gw_uptime
+                name: Uptime
+              - entity: sensor.opentherm_gw_wifi_signal
+                name: WiFi Signal
+              - entity: sensor.opentherm_gw_ip_address
+                name: IP Address
+          
+          # Temperature Overview
+          - type: thermostat
+            entity: climate.opentherm_thermostat
+            name: Central Heating
+          
+          # Current Temperatures
+          - type: entities
+            title: Current Temperatures
+            entities:
+              - entity: sensor.opentherm_gw_room_temp
+                name: Room Temperature
+                icon: mdi:home-thermometer
+              - entity: sensor.opentherm_gw_room_setpoint
+                name: Room Setpoint
+                icon: mdi:thermometer-lines
+              - entity: sensor.opentherm_gw_boiler_temp
+                name: Boiler Water Temperature
+                icon: mdi:water-thermometer
+              - entity: sensor.opentherm_gw_return_temp
+                name: Return Water Temperature
+                icon: mdi:water-thermometer-outline
+              - entity: sensor.opentherm_gw_dhw_temp
+                name: Hot Water Temperature
+                icon: mdi:water-boiler
+          
+          # Boiler Status
+          - type: entities
+            title: Boiler Status
+            entities:
+              - entity: binary_sensor.opentherm_gw_ch_mode
+                name: Central Heating
+                icon: mdi:radiator
+              - entity: binary_sensor.opentherm_gw_dhw_mode
+                name: Hot Water
+                icon: mdi:water-boiler
+              - entity: binary_sensor.opentherm_gw_flame
+                name: Flame Status
+                icon: mdi:fire
+              - entity: sensor.opentherm_gw_modulation
+                name: Modulation Level
+                icon: mdi:percent
+              - entity: sensor.opentherm_gw_pressure
+                name: Water Pressure
+                icon: mdi:gauge
+          
+          # Temperature Graphs
+          - type: history-graph
+            title: Temperature History (24h)
+            hours_to_show: 24
+            refresh_interval: 60
+            entities:
+              - entity: sensor.opentherm_gw_room_temp
+                name: Room
+              - entity: sensor.opentherm_gw_room_setpoint
+                name: Setpoint
+              - entity: sensor.opentherm_gw_boiler_temp
+                name: Boiler Water
+          
+          # Modulation Graph
+          - type: history-graph
+            title: Modulation & Heating (24h)
+            hours_to_show: 24
+            refresh_interval: 60
+            entities:
+              - entity: sensor.opentherm_gw_modulation
+                name: Modulation
+              - entity: binary_sensor.opentherm_gw_ch_mode
+                name: CH Active
+              - entity: binary_sensor.opentherm_gw_flame
+                name: Flame
+          
+          # Configuration (Runtime)
+          - type: entities
+            title: Gateway Configuration
+            entities:
+              - entity: text.opentherm_gw_device_name
+                name: Device Name
+              - entity: text.opentherm_gw_device_id
+                name: Device ID
+              - entity: number.opentherm_gw_tx_pin
+                name: TX Pin (GPIO)
+              - entity: number.opentherm_gw_rx_pin
+                name: RX Pin (GPIO)
+            footer:
+              type: buttons
+              entities:
+                - entity: button.opentherm_gw_restart
+                  name: Restart Gateway
+                  icon: mdi:restart
+                  tap_action:
+                    action: call-service
+                    service: button.press
+                    target:
+                      entity_id: button.opentherm_gw_restart
+          
+          # Diagnostics
+          - type: entities
+            title: Diagnostics
+            entities:
+              - entity: sensor.opentherm_gw_oem_fault_code
+                name: Fault Code
+              - entity: sensor.opentherm_gw_oem_diagnostic_code
+                name: Diagnostic Code
+              - entity: sensor.opentherm_gw_burner_starts
+                name: Burner Starts
+              - entity: sensor.opentherm_gw_ch_pump_starts
+                name: CH Pump Starts
+              - entity: sensor.opentherm_gw_dhw_pump_starts
+                name: DHW Pump Starts
+              - entity: sensor.opentherm_gw_burner_hours
+                name: Burner Hours
+              - entity: sensor.opentherm_gw_ch_pump_hours
+                name: CH Pump Hours
+              - entity: sensor.opentherm_gw_dhw_pump_hours
+                name: DHW Pump Hours
