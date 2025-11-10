@@ -1,6 +1,7 @@
 #include "mqtt_discovery.hpp"
 #include "mqtt_common.hpp"
 #include "pico/stdlib.h"
+#include "pico/cyw43_arch.h"
 #include <cstdio>
 #include <cstring>
 
@@ -14,13 +15,28 @@ namespace OpenTherm
             {
                 if (OpenTherm::Common::mqtt_publish_wrapper(topic, config, true))
                 {
+                    // Success - give buffers time to clear before next publish
+                    // Poll network to process ACKs
+                    for (int i = 0; i < 20; i++)
+                    {
+                        cyw43_arch_poll();
+                        sleep_ms(10);
+                    }
                     return true;
                 }
 
-                // Exponential backoff: 500ms, 1s, 2s, 4s, 8s
+                // Exponential backoff with active network polling
+                // This allows lwIP to process ACKs and free buffers
                 uint32_t delay_ms = 500 * (1 << attempt);
-                printf("  Retry %d/%d in %lu ms...\n", attempt + 1, max_retries, delay_ms);
-                sleep_ms(delay_ms);
+                printf("  Retry %d/%d in %lu ms (polling network)...\n", attempt + 1, max_retries, delay_ms);
+                
+                // Poll network actively during delay to process packets and free buffers
+                uint32_t iterations = delay_ms / 10;
+                for (uint32_t i = 0; i < iterations; i++)
+                {
+                    cyw43_arch_poll();
+                    sleep_ms(10);
+                }
             }
 
             printf("  ERROR: Failed to publish after %d attempts\n", max_retries);
@@ -30,8 +46,13 @@ namespace OpenTherm
         bool publishSimulatorDiscovery(const char *device_name, const char *device_id)
         {
             // Wait for MQTT client to be ready for large discovery messages
-            printf("Waiting for MQTT client to be ready for discovery (2 seconds)...\n");
-            sleep_ms(2000);
+            // Poll network actively to process any pending packets
+            printf("Waiting for MQTT client to be ready for discovery (2 seconds, polling network)...\n");
+            for (int i = 0; i < 200; i++)
+            {
+                cyw43_arch_poll();
+                sleep_ms(10);
+            }
 
             printf("Publishing Home Assistant discovery configurations...\n");
 
