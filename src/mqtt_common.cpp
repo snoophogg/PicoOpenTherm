@@ -228,24 +228,9 @@ namespace OpenTherm
                                  const char *server_ip, uint16_t port, const char *client_id,
                                  void (*on_reconnect_callback)())
         {
-            // Check WiFi connection
-            int link_status = cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA);
-            if (link_status != CYW43_LINK_UP)
-            {
-                printf("WiFi connection lost! Reconnecting...\n");
-                OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_WIFI_ERROR);
-
-                connect_with_retry(ssid, password, server_ip, port, client_id);
-
-                if (on_reconnect_callback)
-                {
-                    on_reconnect_callback();
-                }
-
-                return true;
-            }
-
-            // Check MQTT connection
+            // Check MQTT connection first (more reliable than WiFi link status)
+            // Note: WiFi link status can be momentarily down during normal operation,
+            // so we only check WiFi if MQTT is actually failing.
             if (!g_mqtt_connected)
             {
                 printf("MQTT connection lost! Reconnecting...\n");
@@ -257,6 +242,24 @@ namespace OpenTherm
                 while (true)
                 {
                     printf("MQTT reconnection attempt %d\n", mqtt_attempt);
+
+                    // Check WiFi before attempting MQTT reconnect
+                    int link_status = cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA);
+                    if (link_status != CYW43_LINK_UP)
+                    {
+                        printf("WiFi connection lost during MQTT reconnect! Reconnecting WiFi...\n");
+                        OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_WIFI_ERROR);
+                        
+                        // Reconnect both WiFi and MQTT
+                        connect_with_retry(ssid, password, server_ip, port, client_id);
+                        
+                        if (on_reconnect_callback)
+                        {
+                            on_reconnect_callback();
+                        }
+                        
+                        return true;
+                    }
 
                     if (connect_mqtt(server_ip, port, client_id))
                     {
