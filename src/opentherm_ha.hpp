@@ -97,23 +97,8 @@ namespace OpenTherm
             bool status_valid_;
 
             // Helper functions for MQTT discovery
-            void publishDiscoveryConfig(const char *component, const char *object_id,
-                                        const char *name, const char *state_topic,
-                                        const char *device_class = nullptr,
-                                        const char *unit = nullptr,
-                                        const char *icon = nullptr,
-                                        const char *command_topic = nullptr,
-                                        const char *value_template = nullptr,
-                                        float min_value = 0.0f,
-                                        float max_value = 100.0f,
-                                        float step = 1.0f);
-
-            // Topic builders
-            std::string buildStateTopic(const char *suffix);
-            std::string buildCommandTopic(const char *suffix);
-            std::string buildDiscoveryTopic(const char *component, const char *object_id);
-
-            // Data publishing helpers
+            // Note: discovery helpers moved to OpenTherm::Discovery.
+            // Local publish helpers (delegate to Discovery) remain as member functions
             void publishSensor(const char *topic_suffix, float value);
             void publishSensor(const char *topic_suffix, int value);
             void publishSensor(const char *topic_suffix, const char *value);

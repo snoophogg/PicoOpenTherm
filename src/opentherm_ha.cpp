@@ -38,238 +38,30 @@ namespace OpenTherm
             mqtt_.subscribe((base_cmd + "/max_ch_setpoint").c_str());
         }
 
-        std::string HAInterface::buildStateTopic(const char *suffix)
-        {
-            return std::string(config_.state_topic_base) + "/" + suffix;
-        }
-
-        std::string HAInterface::buildCommandTopic(const char *suffix)
-        {
-            return std::string(config_.command_topic_base) + "/" + suffix;
-        }
-
-        std::string HAInterface::buildDiscoveryTopic(const char *component, const char *object_id)
-        {
-            return std::string(config_.mqtt_prefix) + "/" + component + "/" +
-                   config_.device_id + "/" + object_id + "/config";
-        }
-
-        void HAInterface::publishDiscoveryConfig(const char *component, const char *object_id,
-                                                 const char *name, const char *state_topic,
-                                                 const char *device_class, const char *unit,
-                                                 const char *icon, const char *command_topic,
-                                                 const char *value_template,
-                                                 float min_value, float max_value, float step)
-        {
-            std::ostringstream payload;
-            payload << "{";
-            payload << "\"name\":\"" << name << "\",";
-            payload << "\"unique_id\":\"" << config_.device_id << "_" << object_id << "\",";
-            payload << "\"state_topic\":\"" << state_topic << "\",";
-
-            if (command_topic)
-            {
-                payload << "\"command_topic\":\"" << command_topic << "\",";
-            }
-
-            if (device_class)
-            {
-                payload << "\"device_class\":\"" << device_class << "\",";
-            }
-
-            if (unit)
-            {
-                payload << "\"unit_of_measurement\":\"" << unit << "\",";
-            }
-
-            if (icon)
-            {
-                payload << "\"icon\":\"" << icon << "\",";
-            }
-
-            if (value_template)
-            {
-                payload << "\"value_template\":\"" << value_template << "\",";
-            }
-
-            // For number entities
-            if (strcmp(component, "number") == 0)
-            {
-                payload << "\"min\":" << min_value << ",";
-                payload << "\"max\":" << max_value << ",";
-                payload << "\"step\":" << step << ",";
-                payload << "\"mode\":\"box\",";
-            }
-
-            // Device info
-            payload << "\"device\":{";
-            payload << "\"identifiers\":[\"" << config_.device_id << "\"],";
-            payload << "\"name\":\"" << config_.device_name << "\",";
-            payload << "\"model\":\"OpenTherm Gateway\",";
-            payload << "\"manufacturer\":\"PicoOpenTherm\"";
-            payload << "}";
-
-            payload << "}";
-
-            std::string topic = buildDiscoveryTopic(component, object_id);
-            // Use retry logic from discovery library for reliable publishing
-            if (!Discovery::publishWithRetry(topic.c_str(), payload.str().c_str()))
-            {
-                printf("WARNING: Failed to publish discovery config for %s/%s\n", component, object_id);
-            }
-        }
-
         void HAInterface::publishDiscoveryConfigs()
         {
-            // Wait for MQTT client to be ready for large discovery messages
-            // Poll network actively to process any pending packets
-            // Extended wait (5s) to allow MQTT handshake and buffers to fully stabilize
-            printf("Waiting for MQTT client to be ready for discovery (5 seconds, polling network)...\n");
-            for (int i = 0; i < 500; i++)
-            {
-                cyw43_arch_poll();
-                sleep_ms(10);
-            }
-
-            printf("Publishing Home Assistant MQTT discovery configs...\n");
-
-            // Status flags - Binary Sensors
-            publishDiscoveryConfig("binary_sensor", "fault", "Fault",
-                                   buildStateTopic("fault").c_str(), "problem", nullptr, "mdi:alert-circle");
-            publishDiscoveryConfig("binary_sensor", "ch_mode", "Central Heating Mode",
-                                   buildStateTopic("ch_mode").c_str(), "heat", nullptr, "mdi:radiator");
-            publishDiscoveryConfig("binary_sensor", "dhw_mode", "Hot Water Mode",
-                                   buildStateTopic("dhw_mode").c_str(), "heat", nullptr, "mdi:water-boiler");
-            publishDiscoveryConfig("binary_sensor", "flame", "Flame Status",
-                                   buildStateTopic("flame").c_str(), "heat", nullptr, "mdi:fire");
-            publishDiscoveryConfig("binary_sensor", "cooling", "Cooling Active",
-                                   buildStateTopic("cooling").c_str(), "cold", nullptr, "mdi:snowflake");
-            publishDiscoveryConfig("binary_sensor", "diagnostic", "Diagnostic Mode",
-                                   buildStateTopic("diagnostic").c_str(), nullptr, nullptr, "mdi:wrench");
-
-            // Control switches
-            publishDiscoveryConfig("switch", "ch_enable", "Central Heating Enable",
-                                   buildStateTopic("ch_enable").c_str(), "switch", nullptr, "mdi:radiator",
-                                   buildCommandTopic("ch_enable").c_str());
-            publishDiscoveryConfig("switch", "dhw_enable", "Hot Water Enable",
-                                   buildStateTopic("dhw_enable").c_str(), "switch", nullptr, "mdi:water-boiler",
-                                   buildCommandTopic("dhw_enable").c_str());
-
-            // Temperature sensors
-            publishDiscoveryConfig("sensor", "boiler_temp", "Boiler Temperature",
-                                   buildStateTopic("boiler_temp").c_str(), "temperature", "°C", "mdi:thermometer");
-            publishDiscoveryConfig("sensor", "dhw_temp", "Hot Water Temperature",
-                                   buildStateTopic("dhw_temp").c_str(), "temperature", "°C", "mdi:thermometer");
-            publishDiscoveryConfig("sensor", "return_temp", "Return Water Temperature",
-                                   buildStateTopic("return_temp").c_str(), "temperature", "°C", "mdi:thermometer");
-            publishDiscoveryConfig("sensor", "outside_temp", "Outside Temperature",
-                                   buildStateTopic("outside_temp").c_str(), "temperature", "°C", "mdi:thermometer");
-            publishDiscoveryConfig("sensor", "room_temp", "Room Temperature",
-                                   buildStateTopic("room_temp").c_str(), "temperature", "°C", "mdi:home-thermometer");
-            publishDiscoveryConfig("sensor", "exhaust_temp", "Exhaust Temperature",
-                                   buildStateTopic("exhaust_temp").c_str(), "temperature", "°C", "mdi:thermometer");
-
-            // Setpoint numbers
-            publishDiscoveryConfig("number", "control_setpoint", "Control Setpoint",
-                                   buildStateTopic("control_setpoint").c_str(), nullptr, "°C", "mdi:thermometer-lines",
-                                   buildCommandTopic("control_setpoint").c_str(), nullptr, 0.0f, 100.0f, 0.5f);
-            publishDiscoveryConfig("number", "room_setpoint", "Room Setpoint",
-                                   buildStateTopic("room_setpoint").c_str(), nullptr, "°C", "mdi:home-thermometer-outline",
-                                   buildCommandTopic("room_setpoint").c_str(), nullptr, 5.0f, 30.0f, 0.5f);
-            publishDiscoveryConfig("number", "dhw_setpoint", "Hot Water Setpoint",
-                                   buildStateTopic("dhw_setpoint").c_str(), nullptr, "°C", "mdi:water-thermometer-outline",
-                                   buildCommandTopic("dhw_setpoint").c_str(), nullptr, 30.0f, 90.0f, 1.0f);
-            publishDiscoveryConfig("number", "max_ch_setpoint", "Max CH Setpoint",
-                                   buildStateTopic("max_ch_setpoint").c_str(), nullptr, "°C", "mdi:thermometer-high",
-                                   buildCommandTopic("max_ch_setpoint").c_str(), nullptr, 30.0f, 90.0f, 1.0f);
-
-            // Modulation sensor
-            publishDiscoveryConfig("sensor", "modulation", "Modulation Level",
-                                   buildStateTopic("modulation").c_str(), nullptr, "%", "mdi:percent");
-            publishDiscoveryConfig("sensor", "max_modulation", "Max Modulation Level",
-                                   buildStateTopic("max_modulation").c_str(), nullptr, "%", "mdi:percent");
-
-            // Pressure and flow sensors
-            publishDiscoveryConfig("sensor", "pressure", "CH Water Pressure",
-                                   buildStateTopic("pressure").c_str(), "pressure", "bar", "mdi:gauge");
-            publishDiscoveryConfig("sensor", "dhw_flow", "Hot Water Flow Rate",
-                                   buildStateTopic("dhw_flow").c_str(), nullptr, "l/min", "mdi:water-pump");
-
-            // Counter sensors
-            publishDiscoveryConfig("sensor", "burner_starts", "Burner Starts",
-                                   buildStateTopic("burner_starts").c_str(), nullptr, "starts", "mdi:counter");
-            publishDiscoveryConfig("sensor", "ch_pump_starts", "CH Pump Starts",
-                                   buildStateTopic("ch_pump_starts").c_str(), nullptr, "starts", "mdi:counter");
-            publishDiscoveryConfig("sensor", "dhw_pump_starts", "DHW Pump Starts",
-                                   buildStateTopic("dhw_pump_starts").c_str(), nullptr, "starts", "mdi:counter");
-            publishDiscoveryConfig("sensor", "burner_hours", "Burner Operating Hours",
-                                   buildStateTopic("burner_hours").c_str(), "duration", "h", "mdi:clock-outline");
-            publishDiscoveryConfig("sensor", "ch_pump_hours", "CH Pump Operating Hours",
-                                   buildStateTopic("ch_pump_hours").c_str(), "duration", "h", "mdi:clock-outline");
-            publishDiscoveryConfig("sensor", "dhw_pump_hours", "DHW Pump Operating Hours",
-                                   buildStateTopic("dhw_pump_hours").c_str(), "duration", "h", "mdi:clock-outline");
-
-            // Fault information
-            publishDiscoveryConfig("sensor", "fault_code", "Fault Code",
-                                   buildStateTopic("fault_code").c_str(), nullptr, nullptr, "mdi:alert-octagon");
-
-            // Configuration sensors
-            publishDiscoveryConfig("binary_sensor", "dhw_present", "DHW Present",
-                                   buildStateTopic("dhw_present").c_str(), nullptr, nullptr, "mdi:water-boiler");
-            publishDiscoveryConfig("binary_sensor", "cooling_supported", "Cooling Supported",
-                                   buildStateTopic("cooling_supported").c_str(), nullptr, nullptr, "mdi:snowflake");
-            publishDiscoveryConfig("binary_sensor", "ch2_present", "CH2 Present",
-                                   buildStateTopic("ch2_present").c_str(), nullptr, nullptr, "mdi:radiator");
-
-            // Version info
-            publishDiscoveryConfig("sensor", "opentherm_version", "OpenTherm Version",
-                                   buildStateTopic("opentherm_version").c_str(), nullptr, nullptr, "mdi:information");
-
-            // Device configuration (text entities)
-            publishDiscoveryConfig("text", "device_name", "Device Name",
-                                   buildStateTopic("device_name").c_str(), nullptr, nullptr, "mdi:tag-text",
-                                   buildCommandTopic("device_name").c_str());
-            publishDiscoveryConfig("text", "device_id", "Device ID",
-                                   buildStateTopic("device_id").c_str(), nullptr, nullptr, "mdi:identifier",
-                                   buildCommandTopic("device_id").c_str());
-
-            // OpenTherm GPIO configuration (number entities)
-            publishDiscoveryConfig("number", "opentherm_tx_pin", "OpenTherm TX Pin",
-                                   buildStateTopic("opentherm_tx_pin").c_str(), nullptr, nullptr, "mdi:pin",
-                                   buildCommandTopic("opentherm_tx_pin").c_str(), nullptr, 0.0f, 28.0f, 1.0f);
-            publishDiscoveryConfig("number", "opentherm_rx_pin", "OpenTherm RX Pin",
-                                   buildStateTopic("opentherm_rx_pin").c_str(), nullptr, nullptr, "mdi:pin",
-                                   buildCommandTopic("opentherm_rx_pin").c_str(), nullptr, 0.0f, 28.0f, 1.0f);
-
-            printf("Discovery configs published!\n");
+            // Delegate to Discovery namespace implementation
+            Discovery::publishDiscoveryConfigs(config_);
         }
 
         void HAInterface::publishSensor(const char *topic_suffix, float value)
         {
-            char payload[32];
-            snprintf(payload, sizeof(payload), "%.2f", value);
-            std::string topic = buildStateTopic(topic_suffix);
-            mqtt_.publish(topic.c_str(), payload, false);
+            Discovery::publishSensor(config_, topic_suffix, value);
         }
 
         void HAInterface::publishSensor(const char *topic_suffix, int value)
         {
-            char payload[32];
-            snprintf(payload, sizeof(payload), "%d", value);
-            std::string topic = buildStateTopic(topic_suffix);
-            mqtt_.publish(topic.c_str(), payload, false);
+            Discovery::publishSensor(config_, topic_suffix, value);
         }
 
         void HAInterface::publishSensor(const char *topic_suffix, const char *value)
         {
-            std::string topic = buildStateTopic(topic_suffix);
-            mqtt_.publish(topic.c_str(), value, false);
+            Discovery::publishSensor(config_, topic_suffix, value);
         }
 
         void HAInterface::publishBinarySensor(const char *topic_suffix, bool value)
         {
-            std::string topic = buildStateTopic(topic_suffix);
-            mqtt_.publish(topic.c_str(), value ? "ON" : "OFF", false);
+            Discovery::publishBinarySensor(config_, topic_suffix, value);
         }
 
         void HAInterface::publishStatus()
@@ -281,17 +73,17 @@ namespace OpenTherm
                 status_valid_ = true;
 
                 // Binary sensors
-                publishBinarySensor("fault", status.fault);
-                publishBinarySensor("ch_mode", status.ch_mode);
-                publishBinarySensor("dhw_mode", status.dhw_mode);
-                publishBinarySensor("flame", status.flame);
-                publishBinarySensor("cooling", status.cooling);
-                publishBinarySensor("ch2_mode", status.ch2_mode);
-                publishBinarySensor("diagnostic", status.diagnostic);
+                Discovery::publishBinarySensor(config_, "fault", status.fault);
+                Discovery::publishBinarySensor(config_, "ch_mode", status.ch_mode);
+                Discovery::publishBinarySensor(config_, "dhw_mode", status.dhw_mode);
+                Discovery::publishBinarySensor(config_, "flame", status.flame);
+                Discovery::publishBinarySensor(config_, "cooling", status.cooling);
+                Discovery::publishBinarySensor(config_, "ch2_mode", status.ch2_mode);
+                Discovery::publishBinarySensor(config_, "diagnostic", status.diagnostic);
 
                 // Switches (current state)
-                publishBinarySensor("ch_enable", status.ch_enable);
-                publishBinarySensor("dhw_enable", status.dhw_enable);
+                Discovery::publishBinarySensor(config_, "ch_enable", status.ch_enable);
+                Discovery::publishBinarySensor(config_, "dhw_enable", status.dhw_enable);
             }
         }
 
@@ -301,49 +93,49 @@ namespace OpenTherm
 
             if (ot_.readBoilerTemperature(&temp))
             {
-                publishSensor("boiler_temp", temp);
+                Discovery::publishSensor(config_, "boiler_temp", temp);
             }
 
             if (ot_.readDHWTemperature(&temp))
             {
-                publishSensor("dhw_temp", temp);
+                Discovery::publishSensor(config_, "dhw_temp", temp);
             }
 
             if (ot_.readReturnWaterTemperature(&temp))
             {
-                publishSensor("return_temp", temp);
+                Discovery::publishSensor(config_, "return_temp", temp);
             }
 
             if (ot_.readOutsideTemperature(&temp))
             {
-                publishSensor("outside_temp", temp);
+                Discovery::publishSensor(config_, "outside_temp", temp);
             }
 
             if (ot_.readRoomTemperature(&temp))
             {
-                publishSensor("room_temp", temp);
+                Discovery::publishSensor(config_, "room_temp", temp);
             }
 
             int16_t exhaust_temp;
             if (ot_.readExhaustTemperature(&exhaust_temp))
             {
-                publishSensor("exhaust_temp", (int)exhaust_temp);
+                Discovery::publishSensor(config_, "exhaust_temp", (int)exhaust_temp);
             }
 
             // Read setpoints
             if (ot_.readControlSetpoint(&temp))
             {
-                publishSensor("control_setpoint", temp);
+                Discovery::publishSensor(config_, "control_setpoint", temp);
             }
 
             if (ot_.readDHWSetpoint(&temp))
             {
-                publishSensor("dhw_setpoint", temp);
+                Discovery::publishSensor(config_, "dhw_setpoint", temp);
             }
 
             if (ot_.readMaxCHSetpoint(&temp))
             {
-                publishSensor("max_ch_setpoint", temp);
+                Discovery::publishSensor(config_, "max_ch_setpoint", temp);
             }
         }
 

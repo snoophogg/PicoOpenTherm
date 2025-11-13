@@ -105,7 +105,22 @@ int main()
 
     // Publish Home Assistant discovery configurations using common library
     printf("Publishing Home Assistant discovery configurations...\n");
-    if (!OpenTherm::Discovery::publishSimulatorDiscovery(device_name, device_id))
+
+    // Build a temporary HomeAssistant::Config for discovery
+    OpenTherm::HomeAssistant::Config ha_cfg;
+    ha_cfg.device_name = device_name;
+    ha_cfg.device_id = device_id;
+    ha_cfg.mqtt_prefix = "homeassistant";
+    // Simulator uses device-specific state topics like "opentherm/state/<device_id>/..."
+    // so include device_id in the base state topic to preserve behavior.
+    std::string state_base = std::string("opentherm/state/") + device_id;
+    std::string cmd_base = std::string("opentherm/cmd/") + device_id;
+    ha_cfg.state_topic_base = state_base.c_str();
+    ha_cfg.command_topic_base = cmd_base.c_str();
+    ha_cfg.auto_discovery = true;
+    ha_cfg.update_interval_ms = 60000;
+
+    if (!OpenTherm::Discovery::publishDiscoveryConfigs(ha_cfg))
     {
         printf("FATAL ERROR: Failed to publish discovery configurations after all retries\n");
         printf("Cannot continue without Home Assistant discovery - halting execution\n");

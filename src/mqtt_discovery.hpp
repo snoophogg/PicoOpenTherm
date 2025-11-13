@@ -2,19 +2,49 @@
 #define MQTT_DISCOVERY_HPP
 
 #include <cstdio>
+#include <string>
+
+// Forward declaration to avoid header dependency
+namespace OpenTherm
+{
+    namespace HomeAssistant
+    {
+        struct Config;
+    }
+}
 
 namespace OpenTherm
 {
     namespace Discovery
     {
-        /**
-         * Publish Home Assistant MQTT discovery configurations for simulator sensors
-         *
-         * @param device_name The friendly name of the device
-         * @param device_id The unique ID of the device (used in topics and entity IDs)
-         * @return true if all discovery messages published successfully, false otherwise
-         */
-        bool publishSimulatorDiscovery(const char *device_name, const char *device_id);
+        // NOTE: simulator-specific discovery helper removed — use publishDiscoveryConfigs
+
+        // Build topics based on Home Assistant config
+        std::string buildStateTopic(const OpenTherm::HomeAssistant::Config &cfg, const char *suffix);
+        std::string buildCommandTopic(const OpenTherm::HomeAssistant::Config &cfg, const char *suffix);
+        std::string buildDiscoveryTopic(const OpenTherm::HomeAssistant::Config &cfg, const char *component, const char *object_id);
+
+        // Publish a single discovery config (uses publishWithRetry)
+        bool publishDiscoveryConfig(const OpenTherm::HomeAssistant::Config &cfg,
+                        const char *component, const char *object_id,
+                        const char *name, const char *state_topic,
+                        const char *device_class = nullptr,
+                        const char *unit = nullptr,
+                        const char *icon = nullptr,
+                        const char *command_topic = nullptr,
+                        const char *value_template = nullptr,
+                        float min_value = 0.0f,
+                        float max_value = 100.0f,
+                        float step = 1.0f);
+
+        // Publish all discovery configs for a Home Assistant `Config`
+        bool publishDiscoveryConfigs(const OpenTherm::HomeAssistant::Config &cfg);
+
+        // Simple publish helpers that use the shared MQTT wrapper
+        void publishSensor(const OpenTherm::HomeAssistant::Config &cfg, const char *topic_suffix, float value);
+        void publishSensor(const OpenTherm::HomeAssistant::Config &cfg, const char *topic_suffix, int value);
+        void publishSensor(const OpenTherm::HomeAssistant::Config &cfg, const char *topic_suffix, const char *value);
+        void publishBinarySensor(const OpenTherm::HomeAssistant::Config &cfg, const char *topic_suffix, bool value);
 
         /**
          * Publish a single discovery message with retry logic and exponential backoff
