@@ -135,6 +135,19 @@ Examples:
 Auto-discovery configs are published to:
 `homeassistant/{component}/{device_id}/{object_id}/config`
 
+Note on behavior:
+- Discovery publishing is handled by the library's `OpenTherm::Discovery` helper. It publishes each entity's discovery
+  config to the Home Assistant discovery topic and uses a retry + exponential backoff strategy to improve reliability on
+  constrained networks. Discovery payloads include `unique_id`, `state_topic`, and device information so entities
+  are automatically associated with the "OpenTherm Gateway" device in Home Assistant.
+- For simulator usage the code embeds the `device_id` into the `state_topic_base` (for example
+  `opentherm/state/<device_id>/...`) so multiple simulated devices can coexist on the same broker. You can achieve
+  the same behavior for real devices by setting `state_topic_base` and `command_topic_base` in `HomeAssistant::Config`.
+
+If you need custom fields (for example a `default_entity_id` or a different `model` string) you can edit the discovery
+builder in `src/mqtt_discovery.cpp` or request an API extension; the library currently centralizes discovery logic in
+`OpenTherm::Discovery::publishDiscoveryConfigs`.
+
 ## Usage in Home Assistant
 
 ### Example Automation - Turn on Heating
