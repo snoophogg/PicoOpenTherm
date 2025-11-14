@@ -34,6 +34,8 @@
 # Build artifacts
 build/
 build_tests/
+build-host/
+build-host-native/
 *.elf
 *.bin
 *.hex
@@ -62,3 +64,17 @@ docker/homeassistant/*
 !docker/homeassistant/secrets.yaml.example
 !docker/homeassistant/lovelace/
 docker/homeassistant/secrets.yaml
+
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+tools/venv/
+**/venv/
+*/venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
