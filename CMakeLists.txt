@@ -68,6 +68,25 @@ pico_enable_stdio_uart(picoopentherm 0)
 # Create map/bin/hex/uf2 files
 pico_add_extra_outputs(picoopentherm)
 
+# Optional host-native simulator target
+option(BUILD_HOST_SIMULATOR "Build host-native simulator (requires libmosquitto)" OFF)
+if(BUILD_HOST_SIMULATOR)
+    add_executable(host_simulator
+        src/host_simulator.cpp
+        src/simulated_opentherm.cpp
+        src/opentherm_protocol.cpp
+    )
+
+    target_include_directories(host_simulator PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}/src
+    )
+
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(MOSQUITTO REQUIRED libmosquitto)
+    target_include_directories(host_simulator PRIVATE ${MOSQUITTO_INCLUDE_DIRS})
+    target_link_libraries(host_simulator ${MOSQUITTO_LIBRARIES} pthread)
+endif()
+
 # Add OpenTherm Simulator executable
 add_executable(picoopentherm_simulator
     src/simulator.cpp

@@ -97,12 +97,15 @@ int main(int argc, char **argv)
     }
 
     // Build and publish discovery payloads retained
-    std::map<std::string, std::vector<std::string>> expected_map = {
-        {"binary_sensor", {"fault", "ch_mode", "dhw_mode", "flame", "cooling", "diagnostic", "dhw_present", "cooling_supported", "ch2_present"}},
-        {"switch", {"ch_enable", "dhw_enable"}},
-        {"sensor", {"boiler_temp", "dhw_temp", "return_temp", "outside_temp", "room_temp", "exhaust_temp", "modulation", "max_modulation", "pressure", "dhw_flow", "burner_starts", "ch_pump_starts", "dhw_pump_starts", "burner_hours", "ch_pump_hours", "dhw_pump_hours", "fault_code", "diagnostic_code", "opentherm_version"}},
-        {"number", {"control_setpoint", "room_setpoint", "dhw_setpoint", "max_ch_setpoint", "opentherm_tx_pin", "opentherm_rx_pin"}},
-        {"text", {"device_name", "device_id"}}
+    // Use shared discovery list
+    using namespace OpenTherm::DiscoveryList;
+
+    std::map<std::string, const std::vector<std::string>*> expected_map = {
+        {"binary_sensor", &BINARY_SENSOR},
+        {"switch", &SWITCH},
+        {"sensor", &SENSOR},
+        {"number", &NUMBER},
+        {"text", &TEXT},
     };
 
     std::string base_state = std::string("opentherm/state/") + device_id;
