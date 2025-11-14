@@ -1,0 +1,23 @@
+name: Docker local test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docker-test:
+    name: Run docker-compose simulator validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and run docker-compose test
+        working-directory: ./tools/docker-test
+        run: |
+          docker compose up --build --abort-on-container-exit
