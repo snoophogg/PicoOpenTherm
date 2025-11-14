@@ -134,6 +134,45 @@ views:
           - entity: sensor.opentherm_gw_return_temp
           - entity: sensor.opentherm_gw_dhw_temp
 
+  # Charts Tab
+  - title: Charts
+    path: charts
+    icon: mdi:chart-areaspline
+    cards:
+      - type: history-graph
+        title: Modulation & Pressure
+        hours_to_show: 24
+        refresh_interval: 60
+        entities:
+          - entity: sensor.opentherm_gw_modulation
+            name: Modulation
+          - entity: sensor.opentherm_gw_pressure
+            name: Pressure
+
+      - type: history-graph
+        title: Temperature Comparison
+        hours_to_show: 24
+        refresh_interval: 60
+        entities:
+          - entity: sensor.opentherm_gw_boiler_temp
+            name: Boiler
+          - entity: sensor.opentherm_gw_return_temp
+            name: Return
+          - entity: sensor.opentherm_gw_room_temp
+            name: Room
+
+      - type: history-graph
+        title: Setpoints Over Time
+        hours_to_show: 24
+        refresh_interval: 60
+        entities:
+          - entity: number.opentherm_gw_control_setpoint
+            name: Control Setpoint
+          - entity: number.opentherm_gw_room_setpoint
+            name: Room Setpoint
+          - entity: number.opentherm_gw_dhw_setpoint
+            name: DHW Setpoint
+
   # Performance Tab
   - title: Performance
     path: performance

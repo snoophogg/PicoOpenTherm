@@ -49,6 +49,28 @@ cards:
       - entity: sensor.opentherm_gw_modulation
         name: Current Modulation
 
+  # Pressure Graph
+  - type: history-graph
+    title: CH Pressure
+    hours_to_show: 24
+    refresh_interval: 60
+    entities:
+      - entity: sensor.opentherm_gw_pressure
+        name: CH Pressure
+
+  # Setpoint Comparison
+  - type: history-graph
+    title: Setpoints
+    hours_to_show: 24
+    refresh_interval: 60
+    entities:
+      - entity: number.opentherm_gw_control_setpoint
+        name: Control Setpoint
+      - entity: number.opentherm_gw_room_setpoint
+        name: Room Setpoint
+      - entity: number.opentherm_gw_dhw_setpoint
+        name: DHW Setpoint
+
   # Apex Charts Alternative (requires apex-charts card from HACS)
   - type: custom:apexcharts-card
     header:
