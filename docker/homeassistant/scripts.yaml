@@ -87,17 +87,17 @@ check_system_health:
         message: |
           **Current Status:**
           - Connection: {{ states('sensor.opentherm_gw_status') }}
-          - Room Temp: {{ states('sensor.opentherm_gw_room_temperature') }}°C
-          - Boiler Temp: {{ states('sensor.opentherm_gw_boiler_water_temperature') }}°C
-          - Water Pressure: {{ states('sensor.opentherm_gw_ch_water_pressure') }} bar
-          - Modulation: {{ states('sensor.opentherm_gw_modulation_level') }}%
-          - Fault Code: {{ states('sensor.opentherm_gw_oem_fault_code') }}
+          - Room Temp: {{ states('sensor.opentherm_gw_room_temp') }}°C
+          - Boiler Temp: {{ states('sensor.opentherm_gw_boiler_temp') }}°C
+          - Water Pressure: {{ states('sensor.opentherm_gw_pressure') }} bar
+          - Modulation: {{ states('sensor.opentherm_gw_modulation') }}%
+          - Fault Code: {{ states('sensor.opentherm_gw_fault_code') }}
           
           **Warnings:**
-          {% if states('sensor.opentherm_gw_ch_water_pressure') | float < 1.0 %}
+          {% if states('sensor.opentherm_gw_pressure') | float < 1.0 %}
           ⚠️ Low water pressure
           {% endif %}
-          {% if states('sensor.opentherm_gw_oem_fault_code') | int > 0 %}
+          {% if states('sensor.opentherm_gw_fault_code') | int > 0 %}
           ⚠️ Fault code active
           {% endif %}
           {% if states('sensor.opentherm_gw_status') == 'unavailable' %}
@@ -116,7 +116,7 @@ schedule_maintenance_check:
         message: |
           Time for your weekly heating system check:
           
-          1. Check water pressure: {{ states('sensor.opentherm_gw_ch_water_pressure') }} bar (should be 1.0-2.0)
+          1. Check water pressure: {{ states('sensor.opentherm_gw_pressure') }} bar (should be 1.0-2.0)
           2. Check for leaks around radiators
           3. Verify all radiators heat evenly
           4. Listen for unusual noises from boiler

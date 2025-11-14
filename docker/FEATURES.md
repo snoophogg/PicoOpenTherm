@@ -70,17 +70,17 @@ All automations are **disabled by default** - enable as needed.
 - `sensor.opentherm_gw_uptime` - Device uptime
 - `sensor.opentherm_gw_wifi_signal` - WiFi RSSI
 - `sensor.opentherm_gw_ip_address` - Device IP
-- `sensor.opentherm_gw_room_temperature` - Current room temperature
+- `sensor.opentherm_gw_room_temp` - Current room temperature
 - `sensor.opentherm_gw_room_setpoint` - Room setpoint
-- `sensor.opentherm_gw_boiler_water_temperature` - Boiler water temp
-- `sensor.opentherm_gw_return_water_temperature` - Return water temp
-- `sensor.opentherm_gw_dhw_temperature` - Domestic hot water temp
-- `sensor.opentherm_gw_outside_temperature` - Outside temp (if available)
-- `sensor.opentherm_gw_modulation_level` - Current modulation %
-- `sensor.opentherm_gw_ch_water_pressure` - Central heating pressure
-- `sensor.opentherm_gw_max_modulation_level` - Max modulation %
-- `sensor.opentherm_gw_oem_fault_code` - Boiler fault code
-- `sensor.opentherm_gw_oem_diagnostic_code` - Diagnostic code
+- `sensor.opentherm_gw_boiler_temp` - Boiler water temp
+- `sensor.opentherm_gw_return_temp` - Return water temp
+- `sensor.opentherm_gw_dhw_temp` - Domestic hot water temp
+- `sensor.opentherm_gw_outside_temp` - Outside temp (if available)
+- `sensor.opentherm_gw_modulation` - Current modulation %
+- `sensor.opentherm_gw_pressure` - Central heating pressure
+- `sensor.opentherm_gw_max_modulation` - Max modulation %
+- `sensor.opentherm_gw_fault_code` - Boiler fault code
+- `sensor.opentherm_gw_diagnostic_code` - Diagnostic code
 - `sensor.opentherm_gw_burner_starts` - Burner start count
 - `sensor.opentherm_gw_ch_pump_starts` - CH pump start count
 - `sensor.opentherm_gw_dhw_pump_starts` - DHW pump start count
@@ -91,7 +91,7 @@ All automations are **disabled by default** - enable as needed.
 ### Binary Sensors
 - `binary_sensor.opentherm_gw_ch_active` - Central heating active
 - `binary_sensor.opentherm_gw_dhw_active` - Hot water active
-- `binary_sensor.opentherm_gw_flame_status` - Flame on/off
+- `binary_sensor.opentherm_gw_flame` - Flame on/off
 
 ### Configuration Entities
 - `text.opentherm_gw_device_name` - Device name (writable)

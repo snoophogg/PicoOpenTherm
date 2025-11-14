@@ -121,9 +121,9 @@ views:
           - type: entities
             title: Diagnostics
             entities:
-              - entity: sensor.opentherm_gw_oem_fault_code
+              - entity: sensor.opentherm_gw_fault_code
                 name: Fault Code
-              - entity: sensor.opentherm_gw_oem_diagnostic_code
+              - entity: sensor.opentherm_gw_diagnostic_code
                 name: Diagnostic Code
               - entity: sensor.opentherm_gw_burner_starts
                 name: Burner Starts

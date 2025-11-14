@@ -7,7 +7,7 @@
   description: Alert when CH water pressure is too low
   trigger:
     - platform: numeric_state
-      entity_id: sensor.opentherm_gw_ch_water_pressure
+      entity_id: sensor.opentherm_gw_pressure
       below: 1.0
       for:
         minutes: 5
@@ -17,7 +17,7 @@
       data:
         title: Low Boiler Pressure
         message: >
-          Central heating water pressure is {{ states('sensor.opentherm_gw_ch_water_pressure') }} bar.
+          Central heating water pressure is {{ states('sensor.opentherm_gw_pressure') }} bar.
           Normal pressure should be between 1.0 and 2.0 bar. Please check your heating system.
         notification_id: opentherm_low_pressure
   mode: single
@@ -28,7 +28,7 @@
   description: Alert when boiler water temperature is unusually high
   trigger:
     - platform: numeric_state
-      entity_id: sensor.opentherm_gw_boiler_water_temperature
+      entity_id: sensor.opentherm_gw_boiler_temp
       above: 80
       for:
         minutes: 5
@@ -38,7 +38,7 @@
       data:
         title: High Boiler Temperature
         message: >
-          Boiler water temperature is {{ states('sensor.opentherm_gw_boiler_water_temperature') }}°C.
+          Boiler water temperature is {{ states('sensor.opentherm_gw_boiler_temp') }}°C.
           This is unusually high. Please check your heating system.
         notification_id: opentherm_high_temp
   mode: single
@@ -70,7 +70,7 @@
   description: Notify when boiler reports a fault code
   trigger:
     - platform: state
-      entity_id: sensor.opentherm_gw_oem_fault_code
+      entity_id: sensor.opentherm_gw_fault_code
   condition:
     - condition: template
       value_template: "{{ trigger.to_state.state not in ['0', 'unknown', 'unavailable'] }}"
@@ -79,8 +79,8 @@
       data:
         title: Boiler Fault Detected
         message: >
-          Boiler fault code: {{ states('sensor.opentherm_gw_oem_fault_code') }}
-          Diagnostic code: {{ states('sensor.opentherm_gw_oem_diagnostic_code') }}
+          Boiler fault code: {{ states('sensor.opentherm_gw_fault_code') }}
+          Diagnostic code: {{ states('sensor.opentherm_gw_diagnostic_code') }}
           Please check your boiler manual for details.
         notification_id: opentherm_fault
   mode: single
@@ -155,8 +155,8 @@
         message: >
           Today's heating statistics:
           - Burner starts: {{ states('sensor.opentherm_gw_burner_starts') }}
-          - Average room temp: {{ states('sensor.opentherm_gw_room_temperature') }}°C
-          - Max boiler temp: {{ state_attr('sensor.opentherm_gw_boiler_water_temperature', 'max_value') | default('N/A') }}°C
-          - Current pressure: {{ states('sensor.opentherm_gw_ch_water_pressure') }} bar
+          - Average room temp: {{ states('sensor.opentherm_gw_room_temp') }}°C
+          - Max boiler temp: {{ state_attr('sensor.opentherm_gw_boiler_temp', 'max_value') | default('N/A') }}°C
+          - Current pressure: {{ states('sensor.opentherm_gw_pressure') }} bar
         notification_id: opentherm_daily_summary
   mode: single

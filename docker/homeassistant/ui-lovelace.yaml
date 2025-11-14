@@ -146,9 +146,9 @@ views:
       - type: entities
         title: Diagnostics & Statistics
         entities:
-          - entity: sensor.opentherm_gw_oem_fault_code
+          - entity: sensor.opentherm_gw_fault_code
             name: Fault Code
-          - entity: sensor.opentherm_gw_oem_diagnostic_code
+          - entity: sensor.opentherm_gw_diagnostic_code
             name: Diagnostic Code
           - type: section
             label: Burner Statistics
@@ -168,7 +168,7 @@ views:
             name: DHW Pump Hours
           - type: section
             label: System Info
-          - entity: sensor.opentherm_gw_max_modulation_level
+          - entity: sensor.opentherm_gw_max_modulation
             name: Max Modulation Level
           - entity: sensor.opentherm_gw_pressure
             name: CH Water Pressure
