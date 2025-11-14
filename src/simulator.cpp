@@ -171,34 +171,131 @@ int main()
             char topic[128];
             char payload[64];
 
-            // Room temperature
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/room_temperature", device_id);
+            // Publish all simulator entities to match discovery
+            // Temperatures
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/room_temp", device_id);
             snprintf(payload, sizeof(payload), "%.2f", sim_ot.readRoomTemperature());
             OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
 
-            // Boiler temperature
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/boiler_temperature", device_id);
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/boiler_temp", device_id);
             snprintf(payload, sizeof(payload), "%.2f", sim_ot.readBoilerTemperature());
             OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
 
-            // DHW temperature
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_temperature", device_id);
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_temp", device_id);
             snprintf(payload, sizeof(payload), "%.2f", sim_ot.readDHWTemperature());
             OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
 
-            // Modulation
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/return_temp", device_id);
+            snprintf(payload, sizeof(payload), "%.2f", sim_ot.readReturnWaterTemperature());
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/outside_temp", device_id);
+            snprintf(payload, sizeof(payload), "%.2f", sim_ot.readOutsideTemperature());
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            // Modulation / pressure
             snprintf(topic, sizeof(topic), "opentherm/state/%s/modulation", device_id);
             snprintf(payload, sizeof(payload), "%.1f", sim_ot.readModulationLevel());
             OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
 
-            // Pressure
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/max_modulation", device_id);
+            snprintf(payload, sizeof(payload), "%.1f", sim_ot.readMaxModulationLevel());
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
             snprintf(topic, sizeof(topic), "opentherm/state/%s/pressure", device_id);
             snprintf(payload, sizeof(payload), "%.2f", sim_ot.readCHWaterPressure());
             OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
 
-            // Flame status
+            // Binary/status sensors
             snprintf(topic, sizeof(topic), "opentherm/state/%s/flame", device_id);
             snprintf(payload, sizeof(payload), "%s", sim_ot.readFlameStatus() ? "ON" : "OFF");
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/ch_mode", device_id);
+            snprintf(payload, sizeof(payload), "%s", sim_ot.readCHActive() ? "ON" : "OFF");
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_mode", device_id);
+            snprintf(payload, sizeof(payload), "%s", sim_ot.readDHWActive() ? "ON" : "OFF");
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/ch_enable", device_id);
+            snprintf(payload, sizeof(payload), "%s", sim_ot.readCHEnabled() ? "ON" : "OFF");
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_enable", device_id);
+            snprintf(payload, sizeof(payload), "%s", sim_ot.readDHWEnabled() ? "ON" : "OFF");
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/cooling", device_id);
+            snprintf(payload, sizeof(payload), "%s", sim_ot.readCoolingEnabled() ? "ON" : "OFF");
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            // Setpoints
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/control_setpoint", device_id);
+            snprintf(payload, sizeof(payload), "%.2f", sim_ot.readRoomSetpoint());
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/room_setpoint", device_id);
+            snprintf(payload, sizeof(payload), "%.2f", sim_ot.readRoomSetpoint());
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_setpoint", device_id);
+            snprintf(payload, sizeof(payload), "%.2f", sim_ot.readDHWSetpoint());
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            // Max CH setpoint - simulator doesn't model explicitly, publish a fixed value
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/max_ch_setpoint", device_id);
+            snprintf(payload, sizeof(payload), "%.2f", 90.0f);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            // Counters / statistics
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/burner_starts", device_id);
+            snprintf(payload, sizeof(payload), "%u", sim_ot.readBurnerStarts());
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/burner_hours", device_id);
+            snprintf(payload, sizeof(payload), "%u", sim_ot.readBurnerHours());
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            // Pump starts are not modeled by simulator - publish zero
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/ch_pump_starts", device_id);
+            snprintf(payload, sizeof(payload), "%u", 0u);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_pump_starts", device_id);
+            snprintf(payload, sizeof(payload), "%u", 0u);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/ch_pump_hours", device_id);
+            snprintf(payload, sizeof(payload), "%u", sim_ot.readCHPumpHours());
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_pump_hours", device_id);
+            snprintf(payload, sizeof(payload), "%u", sim_ot.readDHWPumpHours());
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            // Fault / diagnostic codes
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/fault_code", device_id);
+            snprintf(payload, sizeof(payload), "%u", sim_ot.readOEMFaultCode());
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/diagnostic_code", device_id);
+            snprintf(payload, sizeof(payload), "%u", sim_ot.readOEMDiagnosticCode());
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            // Device configuration and metadata
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/device_name", device_id);
+            snprintf(payload, sizeof(payload), "%s", device_name);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/device_id", device_id);
+            snprintf(payload, sizeof(payload), "%s", device_id);
+            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+
+            // OpenTherm version - simulator placeholder
+            snprintf(topic, sizeof(topic), "opentherm/state/%s/opentherm_version", device_id);
+            snprintf(payload, sizeof(payload), "1.0");
             OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
 
             printf("[SIM] T_room=%.1f T_boiler=%.1f Mod=%.0f%% Flame=%s\n",
