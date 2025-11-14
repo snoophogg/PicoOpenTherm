@@ -1,6 +1,7 @@
 #include "opentherm_ha.hpp"
 #include "config.hpp"
 #include "mqtt_discovery.hpp"
+#include "mqtt_topics.hpp"
 #include "pico/cyw43_arch.h"
 #include <cstdio>
 #include <cstring>
@@ -29,13 +30,14 @@ namespace OpenTherm
             }
 
             // Subscribe to command topics
+            using namespace OpenTherm::MQTTTopics;
             std::string base_cmd = config_.command_topic_base;
-            mqtt_.subscribe((base_cmd + "/ch_enable").c_str());
-            mqtt_.subscribe((base_cmd + "/dhw_enable").c_str());
-            mqtt_.subscribe((base_cmd + "/control_setpoint").c_str());
-            mqtt_.subscribe((base_cmd + "/room_setpoint").c_str());
-            mqtt_.subscribe((base_cmd + "/dhw_setpoint").c_str());
-            mqtt_.subscribe((base_cmd + "/max_ch_setpoint").c_str());
+            mqtt_.subscribe((base_cmd + "/" + CH_ENABLE).c_str());
+            mqtt_.subscribe((base_cmd + "/" + DHW_ENABLE).c_str());
+            mqtt_.subscribe((base_cmd + "/" + CONTROL_SETPOINT).c_str());
+            mqtt_.subscribe((base_cmd + "/" + ROOM_SETPOINT).c_str());
+            mqtt_.subscribe((base_cmd + "/" + DHW_SETPOINT).c_str());
+            mqtt_.subscribe((base_cmd + "/" + MAX_CH_SETPOINT).c_str());
         }
 
         void HAInterface::publishDiscoveryConfigs()
@@ -72,18 +74,19 @@ namespace OpenTherm
                 last_status_ = status;
                 status_valid_ = true;
 
+                using namespace OpenTherm::MQTTTopics;
                 // Binary sensors
-                Discovery::publishBinarySensor(config_, "fault", status.fault);
-                Discovery::publishBinarySensor(config_, "ch_mode", status.ch_mode);
-                Discovery::publishBinarySensor(config_, "dhw_mode", status.dhw_mode);
-                Discovery::publishBinarySensor(config_, "flame", status.flame);
-                Discovery::publishBinarySensor(config_, "cooling", status.cooling);
-                Discovery::publishBinarySensor(config_, "ch2_mode", status.ch2_mode);
-                Discovery::publishBinarySensor(config_, "diagnostic", status.diagnostic);
+                Discovery::publishBinarySensor(config_, FAULT, status.fault);
+                Discovery::publishBinarySensor(config_, CH_MODE, status.ch_mode);
+                Discovery::publishBinarySensor(config_, DHW_MODE, status.dhw_mode);
+                Discovery::publishBinarySensor(config_, FLAME, status.flame);
+                Discovery::publishBinarySensor(config_, COOLING, status.cooling);
+                Discovery::publishBinarySensor(config_, CH2_PRESENT, status.ch2_mode);
+                Discovery::publishBinarySensor(config_, DIAGNOSTIC, status.diagnostic);
 
                 // Switches (current state)
-                Discovery::publishBinarySensor(config_, "ch_enable", status.ch_enable);
-                Discovery::publishBinarySensor(config_, "dhw_enable", status.dhw_enable);
+                Discovery::publishBinarySensor(config_, CH_ENABLE, status.ch_enable);
+                Discovery::publishBinarySensor(config_, DHW_ENABLE, status.dhw_enable);
             }
         }
 
@@ -93,49 +96,49 @@ namespace OpenTherm
 
             if (ot_.readBoilerTemperature(&temp))
             {
-                Discovery::publishSensor(config_, "boiler_temp", temp);
+                Discovery::publishSensor(config_, MQTTTopics::BOILER_TEMP, temp);
             }
 
             if (ot_.readDHWTemperature(&temp))
             {
-                Discovery::publishSensor(config_, "dhw_temp", temp);
+                Discovery::publishSensor(config_, MQTTTopics::DHW_TEMP, temp);
             }
 
             if (ot_.readReturnWaterTemperature(&temp))
             {
-                Discovery::publishSensor(config_, "return_temp", temp);
+                Discovery::publishSensor(config_, MQTTTopics::RETURN_TEMP, temp);
             }
 
             if (ot_.readOutsideTemperature(&temp))
             {
-                Discovery::publishSensor(config_, "outside_temp", temp);
+                Discovery::publishSensor(config_, MQTTTopics::OUTSIDE_TEMP, temp);
             }
 
             if (ot_.readRoomTemperature(&temp))
             {
-                Discovery::publishSensor(config_, "room_temp", temp);
+                Discovery::publishSensor(config_, MQTTTopics::ROOM_TEMP, temp);
             }
 
             int16_t exhaust_temp;
             if (ot_.readExhaustTemperature(&exhaust_temp))
             {
-                Discovery::publishSensor(config_, "exhaust_temp", (int)exhaust_temp);
+                Discovery::publishSensor(config_, MQTTTopics::EXHAUST_TEMP, (int)exhaust_temp);
             }
 
             // Read setpoints
             if (ot_.readControlSetpoint(&temp))
             {
-                Discovery::publishSensor(config_, "control_setpoint", temp);
+                Discovery::publishSensor(config_, MQTTTopics::CONTROL_SETPOINT, temp);
             }
 
             if (ot_.readDHWSetpoint(&temp))
             {
-                Discovery::publishSensor(config_, "dhw_setpoint", temp);
+                Discovery::publishSensor(config_, MQTTTopics::DHW_SETPOINT, temp);
             }
 
             if (ot_.readMaxCHSetpoint(&temp))
             {
-                Discovery::publishSensor(config_, "max_ch_setpoint", temp);
+                Discovery::publishSensor(config_, MQTTTopics::MAX_CH_SETPOINT, temp);
             }
         }
 
@@ -145,12 +148,12 @@ namespace OpenTherm
 
             if (ot_.readCHWaterPressure(&value))
             {
-                publishSensor("pressure", value);
+                publishSensor(MQTTTopics::PRESSURE, value);
             }
 
             if (ot_.readDHWFlowRate(&value))
             {
-                publishSensor("dhw_flow", value);
+                publishSensor(MQTTTopics::DHW_FLOW, value);
             }
         }
 
@@ -160,7 +163,7 @@ namespace OpenTherm
 
             if (ot_.readModulationLevel(&level))
             {
-                publishSensor("modulation", level);
+                publishSensor(MQTTTopics::MODULATION, level);
             }
 
             // Read max modulation
@@ -169,7 +172,7 @@ namespace OpenTherm
             if (ot_.sendAndReceive(request, &response))
             {
                 float max_mod = opentherm_get_f8_8(response);
-                publishSensor("max_modulation", max_mod);
+                publishSensor(MQTTTopics::MAX_MODULATION, max_mod);
             }
         }
 
@@ -179,32 +182,32 @@ namespace OpenTherm
 
             if (ot_.readBurnerStarts(&count))
             {
-                publishSensor("burner_starts", (int)count);
+                publishSensor(MQTTTopics::BURNER_STARTS, (int)count);
             }
 
             if (ot_.readCHPumpStarts(&count))
             {
-                publishSensor("ch_pump_starts", (int)count);
+                publishSensor(MQTTTopics::CH_PUMP_STARTS, (int)count);
             }
 
             if (ot_.readDHWPumpStarts(&count))
             {
-                publishSensor("dhw_pump_starts", (int)count);
+                publishSensor(MQTTTopics::DHW_PUMP_STARTS, (int)count);
             }
 
             if (ot_.readBurnerHours(&count))
             {
-                publishSensor("burner_hours", (int)count);
+                publishSensor(MQTTTopics::BURNER_HOURS, (int)count);
             }
 
             if (ot_.readCHPumpHours(&count))
             {
-                publishSensor("ch_pump_hours", (int)count);
+                publishSensor(MQTTTopics::CH_PUMP_HOURS, (int)count);
             }
 
             if (ot_.readDHWPumpHours(&count))
             {
-                publishSensor("dhw_pump_hours", (int)count);
+                publishSensor(MQTTTopics::DHW_PUMP_HOURS, (int)count);
             }
         }
 
@@ -222,7 +225,7 @@ namespace OpenTherm
             float version;
             if (ot_.readOpenThermVersion(&version))
             {
-                publishSensor("opentherm_version", version);
+                publishSensor(MQTTTopics::OPENTHERM_VERSION, version);
             }
         }
 
@@ -231,7 +234,7 @@ namespace OpenTherm
             opentherm_fault_t fault;
             if (ot_.readFaultFlags(&fault))
             {
-                publishSensor("fault_code", (int)fault.code);
+                publishSensor(MQTTTopics::FAULT_CODE, (int)fault.code);
             }
         }
 
@@ -242,18 +245,18 @@ namespace OpenTherm
             // Publish device name
             if (::Config::getDeviceName(buffer, sizeof(buffer)))
             {
-                publishSensor("device_name", buffer);
+                publishSensor(MQTTTopics::DEVICE_NAME, buffer);
             }
 
             // Publish device ID
             if (::Config::getDeviceID(buffer, sizeof(buffer)))
             {
-                publishSensor("device_id", buffer);
+                publishSensor(MQTTTopics::DEVICE_ID, buffer);
             }
 
             // Publish OpenTherm GPIO pins
-            publishSensor("opentherm_tx_pin", (int)::Config::getOpenThermTxPin());
-            publishSensor("opentherm_rx_pin", (int)::Config::getOpenThermRxPin());
+            publishSensor(MQTTTopics::OPENTHERM_TX_PIN, (int)::Config::getOpenThermTxPin());
+            publishSensor(MQTTTopics::OPENTHERM_RX_PIN, (int)::Config::getOpenThermRxPin());
         }
 
         void HAInterface::update()
@@ -345,7 +348,7 @@ namespace OpenTherm
         {
             if (ot_.writeControlSetpoint(temperature))
             {
-                publishSensor("control_setpoint", temperature);
+                publishSensor(MQTTTopics::CONTROL_SETPOINT, temperature);
                 return true;
             }
             return false;
@@ -355,7 +358,7 @@ namespace OpenTherm
         {
             if (ot_.writeRoomSetpoint(temperature))
             {
-                publishSensor("room_setpoint", temperature);
+                publishSensor(MQTTTopics::ROOM_SETPOINT, temperature);
                 return true;
             }
             return false;
@@ -365,7 +368,7 @@ namespace OpenTherm
         {
             if (ot_.writeDHWSetpoint(temperature))
             {
-                publishSensor("dhw_setpoint", temperature);
+                publishSensor(MQTTTopics::DHW_SETPOINT, temperature);
                 return true;
             }
             return false;
@@ -375,7 +378,7 @@ namespace OpenTherm
         {
             if (ot_.writeMaxCHSetpoint(temperature))
             {
-                publishSensor("max_ch_setpoint", temperature);
+                publishSensor(MQTTTopics::MAX_CH_SETPOINT, temperature);
                 return true;
             }
             return false;
@@ -427,7 +430,7 @@ namespace OpenTherm
         {
             if (::Config::setDeviceName(name))
             {
-                publishSensor("device_name", name);
+                publishSensor(MQTTTopics::DEVICE_NAME, name);
                 printf("Device name updated to: %s - restarting in 2 seconds...\n", name);
                 sleep_ms(2000);
                 watchdog_reboot(0, 0, 0);
@@ -440,7 +443,7 @@ namespace OpenTherm
         {
             if (::Config::setDeviceID(id))
             {
-                publishSensor("device_id", id);
+                publishSensor(MQTTTopics::DEVICE_ID, id);
                 printf("Device ID updated to: %s - restarting in 2 seconds...\n", id);
                 sleep_ms(2000);
                 watchdog_reboot(0, 0, 0);
@@ -453,7 +456,7 @@ namespace OpenTherm
         {
             if (::Config::setOpenThermTxPin(pin))
             {
-                publishSensor("opentherm_tx_pin", (int)pin);
+                publishSensor(MQTTTopics::OPENTHERM_TX_PIN, (int)pin);
                 printf("OpenTherm TX pin updated to: GPIO%u - restarting in 2 seconds...\n", pin);
                 sleep_ms(2000);
                 watchdog_reboot(0, 0, 0);
@@ -466,7 +469,7 @@ namespace OpenTherm
         {
             if (::Config::setOpenThermRxPin(pin))
             {
-                publishSensor("opentherm_rx_pin", (int)pin);
+                publishSensor(MQTTTopics::OPENTHERM_RX_PIN, (int)pin);
                 printf("OpenTherm RX pin updated to: GPIO%u - restarting in 2 seconds...\n", pin);
                 sleep_ms(2000);
                 watchdog_reboot(0, 0, 0);

@@ -6,6 +6,7 @@
 #include "config.hpp"
 #include "mqtt_common.hpp"
 #include "mqtt_discovery.hpp"
+#include "mqtt_topics.hpp"
 #include "led_blink.hpp"
 #include <string>
 
@@ -171,132 +172,53 @@ int main()
             char topic[128];
             char payload[64];
 
-            // Publish all simulator entities to match discovery
+            using namespace OpenTherm::Discovery;
+            using namespace OpenTherm::MQTTTopics;
+
             // Temperatures
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/room_temp", device_id);
-            snprintf(payload, sizeof(payload), "%.2f", sim_ot.readRoomTemperature());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/boiler_temp", device_id);
-            snprintf(payload, sizeof(payload), "%.2f", sim_ot.readBoilerTemperature());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_temp", device_id);
-            snprintf(payload, sizeof(payload), "%.2f", sim_ot.readDHWTemperature());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/return_temp", device_id);
-            snprintf(payload, sizeof(payload), "%.2f", sim_ot.readReturnWaterTemperature());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/outside_temp", device_id);
-            snprintf(payload, sizeof(payload), "%.2f", sim_ot.readOutsideTemperature());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+            publishSensor(ha_cfg, ROOM_TEMP, sim_ot.readRoomTemperature());
+            publishSensor(ha_cfg, BOILER_TEMP, sim_ot.readBoilerTemperature());
+            publishSensor(ha_cfg, DHW_TEMP, sim_ot.readDHWTemperature());
+            publishSensor(ha_cfg, RETURN_TEMP, sim_ot.readReturnWaterTemperature());
+            publishSensor(ha_cfg, OUTSIDE_TEMP, sim_ot.readOutsideTemperature());
 
             // Modulation / pressure
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/modulation", device_id);
-            snprintf(payload, sizeof(payload), "%.1f", sim_ot.readModulationLevel());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/max_modulation", device_id);
-            snprintf(payload, sizeof(payload), "%.1f", sim_ot.readMaxModulationLevel());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/pressure", device_id);
-            snprintf(payload, sizeof(payload), "%.2f", sim_ot.readCHWaterPressure());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+            publishSensor(ha_cfg, MODULATION, sim_ot.readModulationLevel());
+            publishSensor(ha_cfg, MAX_MODULATION, sim_ot.readMaxModulationLevel());
+            publishSensor(ha_cfg, PRESSURE, sim_ot.readCHWaterPressure());
 
             // Binary/status sensors
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/flame", device_id);
-            snprintf(payload, sizeof(payload), "%s", sim_ot.readFlameStatus() ? "ON" : "OFF");
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/ch_mode", device_id);
-            snprintf(payload, sizeof(payload), "%s", sim_ot.readCHActive() ? "ON" : "OFF");
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_mode", device_id);
-            snprintf(payload, sizeof(payload), "%s", sim_ot.readDHWActive() ? "ON" : "OFF");
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/ch_enable", device_id);
-            snprintf(payload, sizeof(payload), "%s", sim_ot.readCHEnabled() ? "ON" : "OFF");
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_enable", device_id);
-            snprintf(payload, sizeof(payload), "%s", sim_ot.readDHWEnabled() ? "ON" : "OFF");
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/cooling", device_id);
-            snprintf(payload, sizeof(payload), "%s", sim_ot.readCoolingEnabled() ? "ON" : "OFF");
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+            publishBinarySensor(ha_cfg, FLAME, sim_ot.readFlameStatus());
+            publishBinarySensor(ha_cfg, CH_MODE, sim_ot.readCHActive());
+            publishBinarySensor(ha_cfg, DHW_MODE, sim_ot.readDHWActive());
+            publishBinarySensor(ha_cfg, CH_ENABLE, sim_ot.readCHEnabled());
+            publishBinarySensor(ha_cfg, DHW_ENABLE, sim_ot.readDHWEnabled());
+            publishBinarySensor(ha_cfg, COOLING, sim_ot.readCoolingEnabled());
 
             // Setpoints
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/control_setpoint", device_id);
-            snprintf(payload, sizeof(payload), "%.2f", sim_ot.readRoomSetpoint());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/room_setpoint", device_id);
-            snprintf(payload, sizeof(payload), "%.2f", sim_ot.readRoomSetpoint());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_setpoint", device_id);
-            snprintf(payload, sizeof(payload), "%.2f", sim_ot.readDHWSetpoint());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            // Max CH setpoint - simulator doesn't model explicitly, publish a fixed value
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/max_ch_setpoint", device_id);
-            snprintf(payload, sizeof(payload), "%.2f", 90.0f);
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+            publishSensor(ha_cfg, CONTROL_SETPOINT, sim_ot.readRoomSetpoint());
+            publishSensor(ha_cfg, ROOM_SETPOINT, sim_ot.readRoomSetpoint());
+            publishSensor(ha_cfg, DHW_SETPOINT, sim_ot.readDHWSetpoint());
+            publishSensor(ha_cfg, MAX_CH_SETPOINT, 90.0f);
 
             // Counters / statistics
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/burner_starts", device_id);
-            snprintf(payload, sizeof(payload), "%u", sim_ot.readBurnerStarts());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/burner_hours", device_id);
-            snprintf(payload, sizeof(payload), "%u", sim_ot.readBurnerHours());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            // Pump starts are not modeled by simulator - publish zero
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/ch_pump_starts", device_id);
-            snprintf(payload, sizeof(payload), "%u", 0u);
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_pump_starts", device_id);
-            snprintf(payload, sizeof(payload), "%u", 0u);
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/ch_pump_hours", device_id);
-            snprintf(payload, sizeof(payload), "%u", sim_ot.readCHPumpHours());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/dhw_pump_hours", device_id);
-            snprintf(payload, sizeof(payload), "%u", sim_ot.readDHWPumpHours());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+            publishSensor(ha_cfg, BURNER_STARTS, (int)sim_ot.readBurnerStarts());
+            publishSensor(ha_cfg, BURNER_HOURS, (int)sim_ot.readBurnerHours());
+            publishSensor(ha_cfg, CH_PUMP_STARTS, 0);
+            publishSensor(ha_cfg, DHW_PUMP_STARTS, 0);
+            publishSensor(ha_cfg, CH_PUMP_HOURS, (int)sim_ot.readCHPumpHours());
+            publishSensor(ha_cfg, DHW_PUMP_HOURS, (int)sim_ot.readDHWPumpHours());
 
             // Fault / diagnostic codes
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/fault_code", device_id);
-            snprintf(payload, sizeof(payload), "%u", sim_ot.readOEMFaultCode());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/diagnostic_code", device_id);
-            snprintf(payload, sizeof(payload), "%u", sim_ot.readOEMDiagnosticCode());
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+            publishSensor(ha_cfg, FAULT_CODE, (int)sim_ot.readOEMFaultCode());
+            publishSensor(ha_cfg, DIAGNOSTIC_CODE, (int)sim_ot.readOEMDiagnosticCode());
 
             // Device configuration and metadata
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/device_name", device_id);
-            snprintf(payload, sizeof(payload), "%s", device_name);
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
-
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/device_id", device_id);
-            snprintf(payload, sizeof(payload), "%s", device_id);
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+            publishSensor(ha_cfg, DEVICE_NAME, device_name);
+            publishSensor(ha_cfg, DEVICE_ID, device_id);
 
             // OpenTherm version - simulator placeholder
-            snprintf(topic, sizeof(topic), "opentherm/state/%s/opentherm_version", device_id);
-            snprintf(payload, sizeof(payload), "1.0");
-            OpenTherm::Common::mqtt_publish_wrapper(topic, payload, true);
+            publishSensor(ha_cfg, OPENTHERM_VERSION, "1.0");
 
             printf("[SIM] T_room=%.1f T_boiler=%.1f Mod=%.0f%% Flame=%s\n",
                    sim_ot.readRoomTemperature(),
