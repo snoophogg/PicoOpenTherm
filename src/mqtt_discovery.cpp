@@ -4,6 +4,7 @@
 #include "mqtt_topics.hpp"
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
+#include "mqtt_publish.hpp"
 #include <cstdio>
 #include <cstring>
 #include <sstream>
@@ -260,68 +261,26 @@ namespace OpenTherm
 
         void publishSensor(const OpenTherm::HomeAssistant::Config &cfg, const char *topic_suffix, float value)
         {
-            static std::unordered_map<std::string, std::string> last_published;
-            char payload[32];
-            snprintf(payload, sizeof(payload), "%.2f", value);
             std::string topic = buildStateTopic(cfg, topic_suffix);
-            auto it = last_published.find(topic);
-            if (it != last_published.end() && it->second == payload)
-            {
-                return; // No change
-            }
-            if (OpenTherm::Common::mqtt_publish_wrapper(topic.c_str(), payload, false))
-            {
-                last_published[topic] = payload;
-            }
+            OpenTherm::Publish::publishFloatIfChanged(topic, value, 2, false);
         }
 
         void publishSensor(const OpenTherm::HomeAssistant::Config &cfg, const char *topic_suffix, int value)
         {
-            static std::unordered_map<std::string, std::string> last_published;
-            char payload[32];
-            snprintf(payload, sizeof(payload), "%d", value);
             std::string topic = buildStateTopic(cfg, topic_suffix);
-            auto it = last_published.find(topic);
-            if (it != last_published.end() && it->second == payload)
-            {
-                return; // No change
-            }
-            if (OpenTherm::Common::mqtt_publish_wrapper(topic.c_str(), payload, false))
-            {
-                last_published[topic] = payload;
-            }
+            OpenTherm::Publish::publishIntIfChanged(topic, value, false);
         }
 
         void publishSensor(const OpenTherm::HomeAssistant::Config &cfg, const char *topic_suffix, const char *value)
         {
-            static std::unordered_map<std::string, std::string> last_published;
             std::string topic = buildStateTopic(cfg, topic_suffix);
-            std::string payload(value ? value : "");
-            auto it = last_published.find(topic);
-            if (it != last_published.end() && it->second == payload)
-            {
-                return; // No change
-            }
-            if (OpenTherm::Common::mqtt_publish_wrapper(topic.c_str(), payload.c_str(), false))
-            {
-                last_published[topic] = payload;
-            }
+            OpenTherm::Publish::publishStringIfChanged(topic, value ? std::string(value) : std::string(), false);
         }
 
         void publishBinarySensor(const OpenTherm::HomeAssistant::Config &cfg, const char *topic_suffix, bool value)
         {
-            static std::unordered_map<std::string, std::string> last_published;
             std::string topic = buildStateTopic(cfg, topic_suffix);
-            const char *payload = value ? "ON" : "OFF";
-            auto it = last_published.find(topic);
-            if (it != last_published.end() && it->second == payload)
-            {
-                return; // No change
-            }
-            if (OpenTherm::Common::mqtt_publish_wrapper(topic.c_str(), payload, false))
-            {
-                last_published[topic] = payload;
-            }
+            OpenTherm::Publish::publishBinaryIfChanged(topic, value, false);
         }
 
     } // namespace Discovery
