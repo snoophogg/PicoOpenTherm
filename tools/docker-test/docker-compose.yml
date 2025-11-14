@@ -1,17 +1,19 @@
 version: '3.8'
 services:
   mosquitto:
-    image: eclipse-mosquitto:2.0
+    image: eclipse-mosquitto:2.0.18
+    restart: unless-stopped
     ports:
       - "1883:1883"
     volumes:
+      - ../../docker/mosquitto/config:/mosquitto/config
       - mosquitto_data:/mosquitto/data
       - mosquitto_log:/mosquitto/log
 
   test-runner:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: tools/docker-test/Dockerfile
     depends_on:
       - mosquitto
     environment:

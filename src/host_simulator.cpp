@@ -11,6 +11,7 @@
 
 #include "simulated_opentherm.hpp"
 #include "mqtt_topics.hpp"
+#include "generated/discovery_list.hpp"
 
 using namespace OpenTherm;
 using namespace OpenTherm::Simulator;
@@ -115,7 +116,7 @@ int main(int argc, char **argv)
     for (auto &kv : expected_map)
     {
         const std::string &component = kv.first;
-        for (const auto &oid : kv.second)
+        for (const auto &oid : *kv.second)
         {
             std::string state_topic = base_state + "/" + oid;
             std::string cmd_topic = (component == "switch" || component == "number" || component == "text") ? (base_cmd + "/" + oid) : std::string();

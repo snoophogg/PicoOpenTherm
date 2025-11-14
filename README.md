@@ -344,6 +344,36 @@ Access the pre-configured environment at **http://localhost:8123** after startin
 
 The simulator shares 90% of its codebase with the main firmware, ensuring consistent behavior and easy maintenance.
 
+### Host-native Simulator & Shared Discovery
+
+We also provide a host-native simulator and a shared discovery list to make local testing and CI easier.
+
+- Single source of truth for discovery entities: `tools/discovery_list.json`. Run `python3 tools/generate_discovery.py` to regenerate the C++ header (`src/generated/discovery_list.hpp`) and the Python module (`tools/discovery_list.py`) used by the validator.
+
+- Host-native simulator: `src/host_simulator.cpp` publishes the same Home Assistant discovery and state topics using `libmosquitto` and subscribes to command topics. This is useful for CI or local testing without the Pico.
+
+Build the host simulator with CMake (requires `libmosquitto-dev` and `pkg-config`):
+
+```bash
+mkdir -p build-host && cd build-host
+cmake -DBUILD_HOST_SIMULATOR=ON ..
+cmake --build . --target host_simulator -j
+```
+
+Run the host simulator:
+
+```bash
+./host_simulator <broker-host> <broker-port> [device_id]
+```
+
+- Docker test: `tools/docker-test` builds the host simulator inside a container and runs the Python validator. See `tools/docker-test/docker-compose.yml` and run:
+
+```bash
+cd tools/docker-test
+docker compose up --build --abort-on-container-exit
+```
+
+
 ## Library Usage Example
 
 For standalone library usage without Home Assistant:

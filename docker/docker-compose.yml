@@ -1,22 +1,22 @@
 name: picoopentherm
 
 volumes:
-  mosquitto-data:
-  mosquitto-log:
+  mosquitto_data:
+  mosquitto_log:
   homeassistant-config:
 
 services:
   # Mosquitto MQTT Broker
   mosquitto:
-    image: eclipse-mosquitto:latest
+    image: eclipse-mosquitto:2.0.18
     restart: unless-stopped
     ports:
       - "1883:1883"  # MQTT
       - "9001:9001"  # WebSocket
     volumes:
       - ./mosquitto/config:/mosquitto/config
-      - mosquitto-data:/mosquitto/data
-      - mosquitto-log:/mosquitto/log
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
     networks:
       - picoopentherm
 

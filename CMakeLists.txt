@@ -71,20 +71,34 @@ pico_add_extra_outputs(picoopentherm)
 # Optional host-native simulator target
 option(BUILD_HOST_SIMULATOR "Build host-native simulator (requires libmosquitto)" OFF)
 if(BUILD_HOST_SIMULATOR)
-    add_executable(host_simulator
-        src/host_simulator.cpp
-        src/simulated_opentherm.cpp
-        src/opentherm_protocol.cpp
+    include(ExternalProject)
+
+    # Prefer system host compilers for the external host build
+    find_program(HOST_GCC NAMES gcc)
+    find_program(HOST_GXX NAMES g++)
+    if(NOT HOST_GCC)
+        set(HOST_GCC "")
+    endif()
+    if(NOT HOST_GXX)
+        set(HOST_GXX "")
+    endif()
+
+    # Prepare optional host configure args if native compilers were found
+    if(HOST_GCC AND HOST_GXX)
+        set(HOST_CONFIGURE_ARGS -DCMAKE_C_COMPILER=${HOST_GCC} -DCMAKE_CXX_COMPILER=${HOST_GXX})
+    else()
+        set(HOST_CONFIGURE_ARGS)
+    endif()
+
+    ExternalProject_Add(host_simulator_ep
+        SOURCE_DIR ${CMAKE_SOURCE_DIR}/host
+        BINARY_DIR ${CMAKE_BINARY_DIR}/host-external
+        CONFIGURE_COMMAND ${CMAKE_COMMAND} -S ${CMAKE_SOURCE_DIR}/host -B <BINARY_DIR> -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} ${HOST_CONFIGURE_ARGS}
+        BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --target host_simulator -- -j
+        INSTALL_COMMAND ""
     )
 
-    target_include_directories(host_simulator PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}/src
-    )
-
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(MOSQUITTO REQUIRED libmosquitto)
-    target_include_directories(host_simulator PRIVATE ${MOSQUITTO_INCLUDE_DIRS})
-    target_link_libraries(host_simulator ${MOSQUITTO_LIBRARIES} pthread)
+    add_custom_target(host_simulator DEPENDS host_simulator_ep)
 endif()
 
 # Add OpenTherm Simulator executable

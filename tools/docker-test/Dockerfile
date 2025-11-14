@@ -12,11 +12,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         netcat \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy sources and tools
-COPY ../../src/host_simulator.cpp /app/host_simulator.cpp
-COPY ../requirements.txt /app/requirements.txt
-COPY ../subscribe_simulator.py /app/subscribe_simulator.py
-COPY run_test.sh /app/run_test.sh
+# Copy sources and tools (build context is repository root)
+COPY src/host_simulator.cpp /app/host_simulator.cpp
+COPY tools/requirements.txt /app/requirements.txt
+COPY tools/subscribe_simulator.py /app/subscribe_simulator.py
+COPY tools/docker-test/run_test.sh /app/run_test.sh
 
 # Build host simulator
 RUN g++ -std=c++17 host_simulator.cpp -o host_simulator -lmosquitto -lpthread
