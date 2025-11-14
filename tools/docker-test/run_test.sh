@@ -13,12 +13,16 @@ for i in {1..30}; do
   sleep 1
 done
 
-echo "Publishing discovery/state messages..."
-python3 /app/publisher.py --host ${host} --port ${port}
+echo "Starting host-native simulator..."
+/app/host_simulator ${host} ${port} &
+SIM_PID=$!
 
 echo "Running validator..."
 python3 /app/subscribe_simulator.py --host ${host} --port ${port} --verify --test --timeout 15
 
 EXIT_CODE=$?
 echo "Validator exited with ${EXIT_CODE}"
+
+# Kill simulator
+kill ${SIM_PID} || true
 exit ${EXIT_CODE}
