@@ -30,12 +30,14 @@ python3 tools/subscribe_simulator.py --host mqtt.local --test
 Options
 - `--host` — MQTT broker hostname (default: `localhost`)
 - `--port` — MQTT broker port (default: `1883`)
-- `--test` — publish a test `room_setpoint` command to `opentherm/cmd/<device>/room_setpoint`
-- `--device` — device id used in the command topic (default: `opentherm_gw`)
+ - `--test` — publish a test `room_setpoint` command to `opentherm/cmd/<device>/room_setpoint`
+ - `--device` — device id used in the command topic (default: `opentherm_gw`)
+ - `--verify` — automatically verify expected Home Assistant discovery topics are published (default: off)
+ - `--timeout` — timeout in seconds for verification and test round-trip (default: 15)
 
 Notes
 - The validator is intentionally small and interactive — it prints incoming discovery and state messages so you can inspect them while the simulator or device is running.
-- For automated checks, the script can be extended to assert that a list of expected discovery topics arrives within a timeout (I can add that if you want).
+- For automated checks, use `--verify` to have the script wait for the expected discovery topics and fail if some are missing within the timeout. Use `--test` together with `--verify` to also exercise a setpoint command and verify the simulator publishes the resulting state update.
 
 Build and run simulator (local)
 - To build the firmware and simulator (on the development machine):
