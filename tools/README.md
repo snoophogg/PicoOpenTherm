@@ -48,5 +48,31 @@ Build and run simulator (local)
 
 - The simulator binary `picoopentherm_simulator.uf2` and `picoopentherm_simulator.dis` will be produced in `build/`.
 
+Host-native simulator and Docker test
+
+- A host-native simulator is available (`src/host_simulator.cpp`) which builds to a native Linux binary and publishes the same Home Assistant discovery and state topics via `libmosquitto`.
+- To build the host simulator via CMake, enable the option `BUILD_HOST_SIMULATOR`:
+
+```bash
+mkdir -p build-host && cd build-host
+cmake -DBUILD_HOST_SIMULATOR=ON ..
+cmake --build . --target host_simulator -j
+```
+
+This target requires `libmosquitto-dev` and `pkg-config` to be installed on the host.
+
+- A Docker-based test runner builds and runs the host simulator inside the container and runs the Python validator. To run locally:
+
+```bash
+cd tools/docker-test
+docker compose up --build --abort-on-container-exit
+```
+
+The test-runner compiles `host_simulator`, publishes retained discovery/state messages, and runs the validator (`tools/subscribe_simulator.py --verify --test`).
+
+- For a quick local single-command run, see `scripts/run-host-test.sh` at the repository root. It builds the host simulator, starts a Mosquitto container using the repo config, runs the simulator, and runs the validator.
+
+Also see `docs/HOST_SIMULATOR.md` for full instructions and troubleshooting.
+
 Support
 - If you want automated verification added to the tool (wait for a list of discovery topics, verify payload formats), tell me which topics/payloads to assert and I'll implement it.
