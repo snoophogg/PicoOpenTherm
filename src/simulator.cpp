@@ -1,6 +1,7 @@
 #include <cstdio>
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
+#include "hardware/watchdog.h"
 #include "simulated_opentherm.hpp"
 #include "opentherm_ha.hpp"
 #include "config.hpp"
@@ -37,6 +38,10 @@ int main()
     printf("\n=== PicoOpenTherm SIMULATOR Mode ===\n");
     printf("This firmware simulates OpenTherm data without hardware\n\n");
 
+    // Enable watchdog so the LED code can feed it; if the simulator gets stuck
+    // in a continuous-blink fault mode, LED will stop feeding and allow reset.
+    watchdog_enable(8000, false);
+
     // Initialize WiFi and enable station mode
     printf("Initializing WiFi chip...\n");
     if (cyw43_arch_init())
@@ -51,6 +56,7 @@ int main()
     // Enable station mode and give chip extra time to stabilize
     printf("Enabling WiFi station mode...\n");
     cyw43_arch_enable_sta_mode();
+
     sleep_ms(500); // Increased delay to allow CYW43 chip to fully stabilize
 
     // Initialize LED state machine after WiFi is ready
@@ -82,19 +88,9 @@ int main()
 
     Config::printConfig();
 
-    printf("\n=== Connection Settings ===\n");
-    printf("WiFi SSID:        %s\n", wifi_ssid);
-    printf("WiFi Password:    %s\n", strlen(wifi_password) > 0 ? "********" : "(not set)");
-    printf("MQTT Server:      %s:%d\n", mqtt_server_ip, mqtt_server_port);
-    printf("MQTT Client ID:   %s\n", mqtt_client_id);
-    printf("Device Name:      %s\n", device_name);
-    printf("Device ID:        %s\n", device_id);
-    printf("===========================\n\n");
-
     // Connect to WiFi and MQTT (station mode already enabled)
     // Set pattern to WiFi error while attempting connection
     OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_WIFI_ERROR);
-
     OpenTherm::Common::connect_with_retry(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port, mqtt_client_id);
 
     // Connection successful - set to normal blink pattern
@@ -164,7 +160,7 @@ int main()
         }
 
         // Update simulator and publish data
-        if (now - last_update >= 10000) // Every 10 seconds
+        if (now - last_update >= ha_cfg.update_interval_ms)
         {
             sim_ot.update();
 

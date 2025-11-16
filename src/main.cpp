@@ -1,6 +1,7 @@
 #include <cstdio>
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
+#include "hardware/watchdog.h"
 #include "opentherm.hpp"
 #include "opentherm_ha.hpp"
 #include "config.hpp"
@@ -36,7 +37,24 @@ int main()
     stdio_init_all();
     sleep_ms(3000); // Wait for USB serial
 
+    // Longer pause to allow UART connection for debugging
+    printf("\n");
+    printf("Waiting for UART connection...\n");
+    for (int i = 5; i > 0; i--)
+    {
+        printf("%d...\n", i);
+        sleep_ms(1000);
+    }
+    printf("\n");
+
     printf("\n=== PicoOpenTherm Home Assistant Gateway ===\n");
+
+    // Enable watchdog to ensure system resets if main loop stalls.
+    // The LED state machine will call `watchdog_update()` periodically while
+    // the system is operating normally. If the LED enters a continuous-blink
+    // fault state for longer than the allowed grace period, it will stop
+    // feeding the watchdog to allow a reset.
+    watchdog_enable(8000, false); // 8s timeout
 
     // Initialize WiFi and enable station mode
     printf("Initializing WiFi chip...\n");
@@ -133,10 +151,24 @@ int main()
 
         if (now - last_connection_check >= OpenTherm::Common::CONNECTION_CHECK_DELAY_MS)
         {
+            bool was_connected = OpenTherm::Common::g_mqtt_connected;
+
             OpenTherm::Common::check_and_reconnect(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port,
                                                    mqtt_client_id, on_reconnect);
+            
+            // Update LED pattern based on connection status
+            if (OpenTherm::Common::g_mqtt_connected && !was_connected)
+            {
+                // Just reconnected - set to normal pattern
+                OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_NORMAL);
+            }
+            
             last_connection_check = now;
         }
+
+        // Update Home Assistant (reads sensors and publishes to MQTT)
+        // Only updates every configured interval
+        ha.update();
 
         // Process any pending MQTT messages
         if (!OpenTherm::Common::g_pending_messages.empty())
@@ -147,9 +179,6 @@ int main()
             }
             OpenTherm::Common::g_pending_messages.clear();
         }
-
-        // Update Home Assistant (reads sensors and publishes to MQTT)
-        ha.update();
 
         // Small delay
         sleep_ms(100);

@@ -10,6 +10,7 @@ namespace OpenTherm
         // LED blink patterns
         constexpr uint8_t BLINK_CONTINUOUS = 0;   // Continuous fast blink (fatal error)
         constexpr uint8_t BLINK_NORMAL = 1;       // 1 blink per second (normal operation)
+        constexpr uint8_t BLINK_OK = 1;          // 1 blink per second (normal operation)
         constexpr uint8_t BLINK_WIFI_ERROR = 2;   // 2 blinks per second (WiFi error)
         constexpr uint8_t BLINK_MQTT_ERROR = 3;   // 3 blinks per second (MQTT error)
         constexpr uint8_t BLINK_CONFIG_ERROR = 4; // 4 blinks per second (config error)
