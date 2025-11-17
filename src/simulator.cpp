@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <ctime>
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
 #include "hardware/watchdog.h"
@@ -9,6 +10,8 @@
 #include "mqtt_discovery.hpp"
 #include "mqtt_topics.hpp"
 #include "led_blink.hpp"
+#include "lwip/netif.h"
+#include "lwip/ip4_addr.h"
 #include <string>
 
 // Global configuration buffers
@@ -216,11 +219,93 @@ int main()
             // OpenTherm version - simulator placeholder
             publishSensor(ha_cfg, OPENTHERM_VERSION, "1.0");
 
-            printf("[SIM] T_room=%.1f T_boiler=%.1f Mod=%.0f%% Flame=%s\n",
+            // Time/Date - simulate current system time
+            auto time_now = time(nullptr);
+            struct tm *tm_now = localtime(&time_now);
+            if (tm_now)
+            {
+                // Day of week (1=Monday, 7=Sunday)
+                const char *day_names[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+                publishSensor(ha_cfg, DAY_OF_WEEK, day_names[tm_now->tm_wday]);
+
+                // Time of day (HH:MM)
+                snprintf(payload, sizeof(payload), "%02d:%02d", tm_now->tm_hour, tm_now->tm_min);
+                publishSensor(ha_cfg, TIME_OF_DAY, payload);
+
+                // Date (MM/DD)
+                snprintf(payload, sizeof(payload), "%02d/%02d", tm_now->tm_mon + 1, tm_now->tm_mday);
+                publishSensor(ha_cfg, DATE, payload);
+
+                // Year
+                publishSensor(ha_cfg, YEAR, tm_now->tm_year + 1900);
+            }
+
+            // Temperature bounds - simulate typical boiler limits
+            publishSensor(ha_cfg, DHW_SETPOINT_MIN, 40);  // 40°C min DHW
+            publishSensor(ha_cfg, DHW_SETPOINT_MAX, 65);  // 65°C max DHW
+            publishSensor(ha_cfg, CH_SETPOINT_MIN, 30);   // 30°C min CH
+            publishSensor(ha_cfg, CH_SETPOINT_MAX, 90);   // 90°C max CH
+
+            // WiFi statistics - real data from CYW43 chip
+            int32_t rssi = 0;
+            if (cyw43_wifi_get_rssi(&cyw43_state, &rssi) == 0)
+            {
+                publishSensor(ha_cfg, WIFI_RSSI, (int)rssi);
+            }
+
+            // WiFi link status
+            int link_status = cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA);
+            const char *status_str = "unknown";
+            switch (link_status)
+            {
+            case CYW43_LINK_DOWN:
+                status_str = "down";
+                break;
+            case CYW43_LINK_JOIN:
+                status_str = "joining";
+                break;
+            case CYW43_LINK_NOIP:
+                status_str = "no_ip";
+                break;
+            case CYW43_LINK_UP:
+                status_str = "connected";
+                break;
+            case CYW43_LINK_FAIL:
+                status_str = "failed";
+                break;
+            case CYW43_LINK_NONET:
+                status_str = "no_network";
+                break;
+            case CYW43_LINK_BADAUTH:
+                status_str = "bad_auth";
+                break;
+            }
+            publishSensor(ha_cfg, WIFI_LINK_STATUS, status_str);
+
+            // IP address
+            if (netif_list)
+            {
+                const char *ip_addr = ip4addr_ntoa(netif_ip4_addr(netif_list));
+                publishSensor(ha_cfg, IP_ADDRESS, ip_addr);
+            }
+
+            // WiFi SSID
+            publishSensor(ha_cfg, WIFI_SSID, wifi_ssid);
+
+            // Uptime in seconds
+            uint64_t uptime_us = time_us_64();
+            uint32_t uptime_seconds = (uint32_t)(uptime_us / 1000000ULL);
+            publishSensor(ha_cfg, UPTIME, (int)uptime_seconds);
+
+            // Free heap memory (placeholder)
+            publishSensor(ha_cfg, FREE_HEAP, 0);
+
+            printf("[SIM] T_room=%.1f T_boiler=%.1f Mod=%.0f%% Flame=%s RSSI=%ddBm\n",
                    sim_ot.readRoomTemperature(),
                    sim_ot.readBoilerTemperature(),
                    sim_ot.readModulationLevel(),
-                   sim_ot.readFlameStatus() ? "ON" : "OFF");
+                   sim_ot.readFlameStatus() ? "ON" : "OFF",
+                   (int)rssi);
 
             last_update = now;
         }
