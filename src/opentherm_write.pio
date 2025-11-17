@@ -58,15 +58,11 @@ static inline void opentherm_tx_program_init(PIO pio, uint sm, uint offset, uint
     pio_sm_set_pins_with_mask(pio, sm, 0, (1u << pin));
     
     // Configure clock divider for proper timing
-    // We need each instruction with [31] delay to take 500us
-    // 32 cycles at the PIO clock should equal 500us
-    // PIO clock = 125MHz / divider
-    // We want: 32 / (125MHz / divider) = 500us
-    // So: divider = 32 / (500us * 125MHz) = 32 / 62.5 = 0.512
-    // But we need to account for the instruction itself (1 cycle)
-    // So 32 delay cycles + 1 instruction = 33 cycles for 500us
-    // divider = 33 / 62.5 = 0.528, let's use a bit higher for safety
-    float div = clock_get_hz(clk_sys) / (66000.0f);  // ~66kHz PIO clock for 500us per 33 cycles
+    // Target: 500µs per half-bit (1ms per full bit)
+    // Each instruction with [31] delay = 32 cycles total (31 delay + 1 instruction)
+    // For 500µs per half-bit: 32 cycles / 500µs = 64kHz PIO clock
+    // At 125MHz system clock: divider = 125MHz / 64kHz = 1953.125
+    float div = clock_get_hz(clk_sys) / (64000.0f);  // 64kHz PIO clock for exact 500µs timing
     sm_config_set_clkdiv(&c, div);
     
     // Shift out bits MSB first

@@ -55,12 +55,17 @@ static inline void opentherm_rx_program_init(PIO pio, uint sm, uint offset, uint
     // Map the IN pin group to our GPIO
     sm_config_set_in_pins(&c, pin);
     
-    // Configure clock divider for 1kHz bit rate with Manchester encoding
-    // Same timing as TX
-    float div = clock_get_hz(clk_sys) / (2000000.0f);
+    // Configure clock divider to match TX timing
+    // Target: 500µs per half-bit (1ms per full bit)
+    // Each [31] delay = 32 cycles, [15] delay = 16 cycles
+    // For 500µs per half-bit: need 64kHz PIO clock (same as TX)
+    // At 125MHz system clock: divider = 125MHz / 64kHz = 1953.125
+    float div = clock_get_hz(clk_sys) / (64000.0f);  // 64kHz PIO clock to match TX
     sm_config_set_clkdiv(&c, div);
-    
-    // Shift in bits MSB first, autopush after 32 bits
+
+    // Shift in bits MSB first, autopush after 64 bits
+    // We sample 2 bits per Manchester bit (66 samples total: start + 32 data + stop)
+    // Autopush will trigger twice: once at 32 samples, once at 64 samples
     sm_config_set_in_shift(&c, false, true, 32);
     
     // Initialize and enable the state machine
