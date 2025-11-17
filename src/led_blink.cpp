@@ -43,7 +43,7 @@ namespace OpenTherm
         // How long to wait with continuous blinking before stopping watchdog feeds (grace period)
         static const uint32_t CONTINUOUS_FAULT_GRACE_MS = 60000; // 60s
         // Watchdog timeout (how long until hardware reset after we stop feeding)
-        static const uint32_t WDT_TIMEOUT_MS = 120000; // 120s
+        static const uint32_t WDT_TIMEOUT_MS = 8000; // 8s
 
         // State machine - runs autonomously every 10ms
         static bool led_state_machine(repeating_timer_t *rt)
@@ -152,7 +152,7 @@ namespace OpenTherm
             state.led_state = false;
             state.state_timer = to_ms_since_boot(get_absolute_time());
             state.cycle_timer = state.state_timer;
-            state.wdt_enabled = false;
+            state.wdt_enabled = true;
             state.wdt_feeding = true;
             state.continuous_start = 0;
 
