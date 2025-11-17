@@ -193,6 +193,12 @@ namespace OpenTherm
                    fault.gas_flame_fault, fault.air_pressure_fault, fault.water_overtemp);
             break;
         }
+        case OT_DATA_ID_OEM_DIAGNOSTIC_CODE:
+        {
+            uint16_t diag_code = frame.data_value;
+            printf("    -> OEM Diagnostic Code: %u\n", diag_code);
+            break;
+        }
         case OT_DATA_ID_REMOTE_PARAMS:
         {
             opentherm_remote_params_t params;
@@ -326,6 +332,18 @@ namespace OpenTherm
         }
         uint16_t value = opentherm_get_u16(response);
         opentherm_decode_fault(value, fault);
+        return true;
+    }
+
+    bool Interface::readOemDiagnosticCode(uint16_t *diag_code)
+    {
+        uint32_t request = opentherm_read_oem_diagnostic_code();
+        uint32_t response;
+        if (!sendAndReceive(request, &response))
+        {
+            return false;
+        }
+        *diag_code = opentherm_get_u16(response);
         return true;
     }
 

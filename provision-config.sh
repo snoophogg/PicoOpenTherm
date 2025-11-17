@@ -70,14 +70,14 @@ if [ ! -f "$KVSTORE_UTIL" ]; then
     echo "Configuring kvstore-util build..."
     cmake .. || {
         echo -e "${RED}Error: CMake configuration failed${NC}"
-        echo "Please see KVSTORE-UTIL.md for alternative configuration options."
+        echo "Please see docs/KVSTORE-UTIL.md for alternative configuration options."
         exit 1
     }
-    
+
     echo "Building kvstore-util..."
     make || {
         echo -e "${RED}Error: Build failed${NC}"
-        echo "Please see KVSTORE-UTIL.md for alternative configuration options."
+        echo "Please see docs/KVSTORE-UTIL.md for alternative configuration options."
         exit 1
     }
     

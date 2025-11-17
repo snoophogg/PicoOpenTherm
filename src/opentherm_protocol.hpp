@@ -58,6 +58,7 @@ typedef struct
 #define OT_DATA_ID_REMOTE_PARAMS 6
 #define OT_DATA_ID_COOLING_CONTROL 7
 #define OT_DATA_ID_CONTROL_SETPOINT_2 8
+#define OT_DATA_ID_OEM_DIAGNOSTIC_CODE 115
 
 // Class 2: Configuration Information
 #define OT_DATA_ID_REMOTE_OVERRIDE 9
@@ -275,6 +276,7 @@ namespace OpenTherm
         uint32_t read_master_config();
         uint32_t read_slave_config();
         uint32_t read_fault_flags();
+        uint32_t read_oem_diagnostic_code();
         uint32_t read_remote_params();
         uint32_t read_max_rel_mod();
         uint32_t read_max_capacity();
@@ -361,6 +363,7 @@ inline uint32_t opentherm_read_control_setpoint() { return OpenTherm::Protocol::
 inline uint32_t opentherm_read_master_config() { return OpenTherm::Protocol::read_master_config(); }
 inline uint32_t opentherm_read_slave_config() { return OpenTherm::Protocol::read_slave_config(); }
 inline uint32_t opentherm_read_fault_flags() { return OpenTherm::Protocol::read_fault_flags(); }
+inline uint32_t opentherm_read_oem_diagnostic_code() { return OpenTherm::Protocol::read_oem_diagnostic_code(); }
 inline uint32_t opentherm_read_remote_params() { return OpenTherm::Protocol::read_remote_params(); }
 inline uint32_t opentherm_read_max_rel_mod() { return OpenTherm::Protocol::read_max_rel_mod(); }
 inline uint32_t opentherm_read_max_capacity() { return OpenTherm::Protocol::read_max_capacity(); }

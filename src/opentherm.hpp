@@ -44,6 +44,7 @@ namespace OpenTherm
         bool readStatus(opentherm_status_t *status);
         bool readSlaveConfig(opentherm_config_t *config);
         bool readFaultFlags(opentherm_fault_t *fault);
+        bool readOemDiagnosticCode(uint16_t *diag_code);
 
         // Temperature sensor reads (returns temperature in °C)
         bool readBoilerTemperature(float *temp);

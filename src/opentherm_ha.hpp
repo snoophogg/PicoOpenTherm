@@ -70,6 +70,8 @@ namespace OpenTherm
             void publishCounters();
             void publishConfiguration();
             void publishFaults();
+            void publishTimeDate();
+            void publishTemperatureBounds();
 
             // Control functions
             bool setControlSetpoint(float temperature);
@@ -78,6 +80,10 @@ namespace OpenTherm
             bool setMaxCHSetpoint(float temperature);
             bool setCHEnable(bool enable);
             bool setDHWEnable(bool enable);
+
+            // Time/Date synchronization - sync time to boiler from ISO 8601 format or epoch
+            bool syncTimeToBoiler(const char *iso8601_time);
+            bool syncTimeToBoiler(uint32_t unix_timestamp);
 
             // Configuration functions
             bool setDeviceName(const char *name);

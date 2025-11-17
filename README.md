@@ -2,6 +2,16 @@
 
 A complete OpenTherm v2.2 protocol implementation for Raspberry Pi Pico W with Home Assistant MQTT integration. Uses PIO (Programmable I/O) state machines for hardware-accelerated Manchester encoding/decoding.
 
+## Documentation
+
+📚 **[Complete Documentation](docs/README.md)** - All guides, examples, and references
+
+**Quick Links:**
+- [Home Assistant Integration](docs/HOME_ASSISTANT.md) - MQTT setup, 55 entities, time sync
+- [Configuration Guide](docs/PROVISIONING.md) - WiFi and MQTT provisioning
+- [Automation Examples](docs/HOME_ASSISTANT_EXAMPLES.md) - Ready-to-use YAML
+- [Simulator](docs/SIMULATOR.md) - Test without hardware
+
 ## Features
 
 ### OpenTherm Protocol
@@ -15,11 +25,15 @@ A complete OpenTherm v2.2 protocol implementation for Raspberry Pi Pico W with H
 
 ### Home Assistant Integration
 - **MQTT Auto-Discovery**: Automatic entity registration with Home Assistant
-- **60+ Entities**: Complete coverage of OpenTherm data as sensors, binary sensors, switches, and numbers
+- **55 Entities**: Complete coverage of OpenTherm data as sensors, binary sensors, switches, and numbers
+- **Time Synchronization**: Sync boiler clock from Home Assistant
+- **Temperature Bounds**: Monitor boiler-reported min/max setpoint limits
 - **Two-Way Control**: Read sensor data and control boiler settings from Home Assistant
 - **WiFi Connectivity**: Built-in WiFi support with automatic reconnection
 - **Robust Connection Handling**: Infinite retry logic with LED error indication
 - **Ready-to-Use Dashboards**: Included YAML examples for HA dashboards, cards, and automations
+
+📖 **See [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md) for complete integration guide**
 
 ### System Reliability
 - **Automatic Reconnection**: Intelligent WiFi and MQTT connection monitoring
@@ -149,7 +163,7 @@ picotool load build/picoopentherm.uf2
 
 The provisioning scripts use `kvstore-util` to create a configuration binary and flash it to the kvstore region at **0x101C0000** (128KB reserved space).
 
-📖 **See [PROVISIONING.md](PROVISIONING.md) for detailed instructions, pre-built tool download links, and troubleshooting.**
+📖 **See [docs/PROVISIONING.md](docs/PROVISIONING.md) for detailed instructions, pre-built tool download links, and troubleshooting.**
 
 ### LED Status Indicator
 
@@ -334,7 +348,7 @@ Access the pre-configured environment at **http://localhost:8123** after startin
 4. Start Docker environment: `cd docker && docker-compose up -d`
 5. Watch realistic data flow into Home Assistant!
 
-📖 **See [SIMULATOR.md](SIMULATOR.md) for complete documentation including:**
+📖 **See [docs/SIMULATOR.md](docs/SIMULATOR.md) for complete documentation including:**
 - Detailed flashing instructions
 - Docker environment setup guide
 - Simulated data behavior and characteristics

@@ -292,3 +292,186 @@
           CH Pump Hours: {{ states('sensor.opentherm_gw_ch_pump_hours') }}h
           Average Boiler Temp: {{ states('sensor.opentherm_gw_boiler_temp') }}°C
           Current Pressure: {{ states('sensor.opentherm_gw_pressure') }} bar
+
+---
+
+# === TIME SYNCHRONIZATION ===
+
+# Daily time sync at 3 AM
+- id: opentherm_daily_time_sync
+  alias: "OpenTherm: Daily Time Sync"
+  description: "Sync boiler time daily at 3 AM"
+  trigger:
+    - platform: time
+      at: "03:00:00"
+  action:
+    - service: mqtt.publish
+      data:
+        topic: "opentherm/cmd/sync_time"
+        payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
+    - service: logbook.log
+      data:
+        name: OpenTherm Time Sync
+        message: "Boiler time synchronized at {{ now().strftime('%H:%M:%S') }}"
+
+---
+
+# Sync time on Home Assistant startup
+- id: opentherm_time_sync_on_startup
+  alias: "OpenTherm: Time Sync on HA Startup"
+  description: "Sync boiler time when Home Assistant starts"
+  trigger:
+    - platform: homeassistant
+      event: start
+  action:
+    - delay: "00:01:00"  # Wait for MQTT connection
+    - service: mqtt.publish
+      data:
+        topic: "opentherm/cmd/sync_time"
+        payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
+    - service: logbook.log
+      data:
+        name: OpenTherm Time Sync
+        message: "Boiler time synchronized on HA startup"
+
+---
+
+# Sync time on button press (manual trigger)
+- id: opentherm_time_sync_button
+  alias: "OpenTherm: Sync Time Button"
+  description: "Sync boiler time when button is pressed"
+  trigger:
+    - platform: state
+      entity_id: button.opentherm_gw_sync_time
+  action:
+    - service: mqtt.publish
+      data:
+        topic: "opentherm/cmd/sync_time"
+        payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
+    - service: persistent_notification.create
+      data:
+        title: "⏰ Time Sync Requested"
+        message: |
+          Syncing current time to boiler:
+          {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+          Day of week: {{ now().strftime('%A') }}
+        notification_id: opentherm_time_sync
+
+---
+
+# Sync time after DST changes (spring forward)
+- id: opentherm_time_sync_dst_spring
+  alias: "OpenTherm: Time Sync DST Spring"
+  description: "Sync boiler time after daylight saving time changes (spring)"
+  trigger:
+    - platform: time
+      at: "02:30:00"
+  condition:
+    # Last Sunday in March for Europe, second Sunday in March for US
+    - condition: template
+      value_template: >
+        {% set today = now() %}
+        {{ today.month == 3 and today.weekday() == 6 and
+           (today.day >= 25 or (today.day >= 8 and today.day <= 14)) }}
+  action:
+    - service: mqtt.publish
+      data:
+        topic: "opentherm/cmd/sync_time"
+        payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
+    - service: persistent_notification.create
+      data:
+        title: "⏰ DST Time Sync"
+        message: "Boiler time synchronized after spring DST change"
+
+---
+
+# Sync time after DST changes (fall back)
+- id: opentherm_time_sync_dst_fall
+  alias: "OpenTherm: Time Sync DST Fall"
+  description: "Sync boiler time after daylight saving time changes (fall)"
+  trigger:
+    - platform: time
+      at: "02:30:00"
+  condition:
+    # Last Sunday in October for Europe, first Sunday in November for US
+    - condition: template
+      value_template: >
+        {% set today = now() %}
+        {{ (today.month == 10 and today.weekday() == 6 and today.day >= 25) or
+           (today.month == 11 and today.weekday() == 6 and today.day <= 7) }}
+  action:
+    - service: mqtt.publish
+      data:
+        topic: "opentherm/cmd/sync_time"
+        payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
+    - service: persistent_notification.create
+      data:
+        title: "⏰ DST Time Sync"
+        message: "Boiler time synchronized after fall DST change"
+
+---
+
+# === TIME/DATE MONITORING ===
+
+# Alert when boiler time drifts significantly
+- id: opentherm_time_drift_alert
+  alias: "OpenTherm: Time Drift Alert"
+  description: "Alert when boiler time differs significantly from system time"
+  trigger:
+    - platform: time_pattern
+      hours: "*"
+      minutes: "*/30"
+  condition:
+    # Check if time_of_day sensor exists and has a value
+    - condition: template
+      value_template: "{{ states('sensor.opentherm_gw_time_of_day') not in ['unknown', 'unavailable'] }}"
+  action:
+    - service: script.check_boiler_time_drift
+      # This script would need to be created separately
+      # It would parse the boiler time and compare it to system time
+
+---
+
+# === TEMPERATURE BOUNDS MONITORING ===
+
+# Alert if setpoint exceeds bounds
+- id: opentherm_setpoint_bounds_check
+  alias: "OpenTherm: Setpoint Bounds Check"
+  description: "Alert if requested setpoint exceeds boiler bounds"
+  trigger:
+    - platform: state
+      entity_id:
+        - number.opentherm_gw_dhw_setpoint
+        - number.opentherm_gw_max_ch_setpoint
+  condition:
+    - condition: template
+      value_template: >
+        {% set entity = trigger.entity_id %}
+        {% set value = trigger.to_state.state | float %}
+        {% if 'dhw' in entity %}
+          {% set min = states('sensor.opentherm_gw_dhw_setpoint_min') | float %}
+          {% set max = states('sensor.opentherm_gw_dhw_setpoint_max') | float %}
+        {% else %}
+          {% set min = states('sensor.opentherm_gw_ch_setpoint_min') | float %}
+          {% set max = states('sensor.opentherm_gw_ch_setpoint_max') | float %}
+        {% endif %}
+        {{ value < min or value > max }}
+  action:
+    - service: persistent_notification.create
+      data:
+        title: "⚠️ Setpoint Out of Bounds"
+        message: >
+          {% set entity = trigger.entity_id %}
+          {% set value = trigger.to_state.state | float %}
+          {% set name = state_attr(entity, 'friendly_name') %}
+          {% if 'dhw' in entity %}
+            {% set min = states('sensor.opentherm_gw_dhw_setpoint_min') | float %}
+            {% set max = states('sensor.opentherm_gw_dhw_setpoint_max') | float %}
+          {% else %}
+            {% set min = states('sensor.opentherm_gw_ch_setpoint_min') | float %}
+            {% set max = states('sensor.opentherm_gw_ch_setpoint_max') | float %}
+          {% endif %}
+          {{ name }}: {{ value }}°C
+          Valid range: {{ min }}°C - {{ max }}°C
+
+          The boiler may reject this setpoint.

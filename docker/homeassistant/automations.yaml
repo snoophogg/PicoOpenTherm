@@ -160,3 +160,98 @@
           - Current pressure: {{ states('sensor.opentherm_gw_pressure') }} bar
         notification_id: opentherm_daily_summary
   mode: single
+
+# Time Synchronization - Daily Sync
+- id: opentherm_daily_time_sync
+  alias: OpenTherm - Daily Time Sync
+  description: Synchronize boiler time daily at 3 AM
+  trigger:
+    - platform: time
+      at: "03:00:00"
+  condition: []
+  action:
+    - service: mqtt.publish
+      data:
+        topic: opentherm/cmd/sync_time
+        payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
+  mode: single
+
+# Time Synchronization - On HA Restart
+- id: opentherm_time_sync_startup
+  alias: OpenTherm - Time Sync on Startup
+  description: Sync boiler time when Home Assistant restarts
+  trigger:
+    - platform: homeassistant
+      event: start
+  condition: []
+  action:
+    - delay: "00:01:00"
+    - service: mqtt.publish
+      data:
+        topic: opentherm/cmd/sync_time
+        payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
+  mode: single
+
+# Time Synchronization - Manual Button
+- id: opentherm_time_sync_button
+  alias: OpenTherm - Manual Time Sync
+  description: Sync time when sync button is pressed
+  trigger:
+    - platform: state
+      entity_id: button.opentherm_gw_sync_time
+  condition: []
+  action:
+    - service: mqtt.publish
+      data:
+        topic: opentherm/cmd/sync_time
+        payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
+    - service: persistent_notification.create
+      data:
+        title: Time Sync Complete
+        message: >
+          Boiler time synchronized to: {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+        notification_id: opentherm_time_sync
+  mode: single
+
+# Temperature Bounds Check
+- id: opentherm_bounds_check
+  alias: OpenTherm - Temperature Bounds Validation
+  description: Alert when setpoint exceeds boiler-reported bounds
+  trigger:
+    - platform: state
+      entity_id:
+        - number.opentherm_gw_dhw_setpoint
+        - number.opentherm_gw_max_ch_setpoint
+  condition:
+    - condition: template
+      value_template: >
+        {% set entity = trigger.entity_id %}
+        {% set value = trigger.to_state.state | float(0) %}
+        {% if 'dhw' in entity %}
+          {% set min = states('sensor.opentherm_gw_dhw_setpoint_min') | float(30) %}
+          {% set max = states('sensor.opentherm_gw_dhw_setpoint_max') | float(90) %}
+        {% else %}
+          {% set min = states('sensor.opentherm_gw_ch_setpoint_min') | float(30) %}
+          {% set max = states('sensor.opentherm_gw_ch_setpoint_max') | float(90) %}
+        {% endif %}
+        {{ value < min or value > max }}
+  action:
+    - service: persistent_notification.create
+      data:
+        title: Setpoint Out of Bounds
+        message: >
+          {% set entity = trigger.entity_id %}
+          {% set value = trigger.to_state.state | float(0) %}
+          {% set name = state_attr(entity, 'friendly_name') | default('Setpoint') %}
+          {% if 'dhw' in entity %}
+            {% set min = states('sensor.opentherm_gw_dhw_setpoint_min') | float(30) %}
+            {% set max = states('sensor.opentherm_gw_dhw_setpoint_max') | float(90) %}
+          {% else %}
+            {% set min = states('sensor.opentherm_gw_ch_setpoint_min') | float(30) %}
+            {% set max = states('sensor.opentherm_gw_ch_setpoint_max') | float(90) %}
+          {% endif %}
+          Warning: {{ name }} set to {{ value }}°C
+          Boiler valid range: {{ min }}°C - {{ max }}°C
+          The boiler may reject this value.
+        notification_id: opentherm_bounds_warning
+  mode: queued

@@ -255,6 +255,31 @@ namespace OpenTherm
                                    buildStateTopic(cfg, OPENTHERM_RX_PIN).c_str(), nullptr, nullptr, "mdi:pin",
                                    buildCommandTopic(cfg, OPENTHERM_RX_PIN).c_str(), nullptr, 0.0f, 28.0f, 1.0f);
 
+            // Time/Date sensors (read-only from boiler)
+            publishDiscoveryConfig(cfg, "sensor", DAY_OF_WEEK, "Day of Week",
+                                   buildStateTopic(cfg, DAY_OF_WEEK).c_str(), nullptr, nullptr, "mdi:calendar");
+            publishDiscoveryConfig(cfg, "sensor", TIME_OF_DAY, "Time of Day",
+                                   buildStateTopic(cfg, TIME_OF_DAY).c_str(), nullptr, nullptr, "mdi:clock-outline");
+            publishDiscoveryConfig(cfg, "sensor", DATE, "Date",
+                                   buildStateTopic(cfg, DATE).c_str(), nullptr, nullptr, "mdi:calendar-today");
+            publishDiscoveryConfig(cfg, "sensor", YEAR, "Year",
+                                   buildStateTopic(cfg, YEAR).c_str(), nullptr, nullptr, "mdi:calendar");
+
+            // Time sync button - pressing this will sync time from HA to boiler
+            publishDiscoveryConfig(cfg, "button", SYNC_TIME, "Sync Time to Boiler",
+                                   buildStateTopic(cfg, SYNC_TIME).c_str(), nullptr, nullptr, "mdi:clock-sync",
+                                   buildCommandTopic(cfg, SYNC_TIME).c_str());
+
+            // Temperature bounds (read-only from boiler)
+            publishDiscoveryConfig(cfg, "sensor", DHW_SETPOINT_MIN, "DHW Setpoint Min",
+                                   buildStateTopic(cfg, DHW_SETPOINT_MIN).c_str(), "temperature", "°C", "mdi:thermometer-low");
+            publishDiscoveryConfig(cfg, "sensor", DHW_SETPOINT_MAX, "DHW Setpoint Max",
+                                   buildStateTopic(cfg, DHW_SETPOINT_MAX).c_str(), "temperature", "°C", "mdi:thermometer-high");
+            publishDiscoveryConfig(cfg, "sensor", CH_SETPOINT_MIN, "CH Setpoint Min",
+                                   buildStateTopic(cfg, CH_SETPOINT_MIN).c_str(), "temperature", "°C", "mdi:thermometer-low");
+            publishDiscoveryConfig(cfg, "sensor", CH_SETPOINT_MAX, "CH Setpoint Max",
+                                   buildStateTopic(cfg, CH_SETPOINT_MAX).c_str(), "temperature", "°C", "mdi:thermometer-high");
+
             printf("Discovery configs published!\n");
             return true;
         }

@@ -61,6 +61,19 @@ namespace OpenTherm
         constexpr const char *DEVICE_ID = "device_id";
         constexpr const char *OPENTHERM_TX_PIN = "opentherm_tx_pin";
         constexpr const char *OPENTHERM_RX_PIN = "opentherm_rx_pin";
+
+        // Time/Date synchronization
+        constexpr const char *DAY_OF_WEEK = "day_of_week";
+        constexpr const char *TIME_OF_DAY = "time_of_day";
+        constexpr const char *DATE = "date";
+        constexpr const char *YEAR = "year";
+        constexpr const char *SYNC_TIME = "sync_time"; // Command topic for time sync
+
+        // Temperature bounds
+        constexpr const char *DHW_SETPOINT_MIN = "dhw_setpoint_min";
+        constexpr const char *DHW_SETPOINT_MAX = "dhw_setpoint_max";
+        constexpr const char *CH_SETPOINT_MIN = "ch_setpoint_min";
+        constexpr const char *CH_SETPOINT_MAX = "ch_setpoint_max";
     }
 }
 

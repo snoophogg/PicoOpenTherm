@@ -415,6 +415,11 @@ namespace OpenTherm
             return build_read_request(OT_DATA_ID_FAULT_FLAGS);
         }
 
+        uint32_t read_oem_diagnostic_code()
+        {
+            return build_read_request(OT_DATA_ID_OEM_DIAGNOSTIC_CODE);
+        }
+
         uint32_t read_remote_params()
         {
             return build_read_request(OT_DATA_ID_REMOTE_PARAMS);

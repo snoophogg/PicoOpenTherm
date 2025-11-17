@@ -375,9 +375,10 @@ To modify simulator behavior:
 
 ## See Also
 
-- [Main README](README.md) - Project overview and hardware setup
-- [Home Assistant README](README_HA.md) - HA integration details
-- [Docker README](docker/README.md) - Docker environment documentation
+- [Main README](../README.md) - Project overview and hardware setup
+- [Home Assistant Integration](HOME_ASSISTANT.md) - HA integration details
+- [Home Assistant Examples](HOME_ASSISTANT_EXAMPLES.md) - Dashboard and automation examples
+- [Docker README](../docker/README.md) - Docker environment documentation
 - [Provisioning Guide](PROVISIONING.md) - Configuration management
 
 ## Support

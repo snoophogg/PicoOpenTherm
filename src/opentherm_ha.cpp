@@ -38,6 +38,7 @@ namespace OpenTherm
             mqtt_.subscribe((base_cmd + "/" + ROOM_SETPOINT).c_str());
             mqtt_.subscribe((base_cmd + "/" + DHW_SETPOINT).c_str());
             mqtt_.subscribe((base_cmd + "/" + MAX_CH_SETPOINT).c_str());
+            mqtt_.subscribe((base_cmd + "/" + SYNC_TIME).c_str());
         }
 
         void HAInterface::publishDiscoveryConfigs()
@@ -236,6 +237,287 @@ namespace OpenTherm
             {
                 publishSensor(MQTTTopics::FAULT_CODE, (int)fault.code);
             }
+
+            uint16_t diag_code;
+            if (ot_.readOemDiagnosticCode(&diag_code))
+            {
+                publishSensor(MQTTTopics::DIAGNOSTIC_CODE, (int)diag_code);
+            }
+        }
+
+        void HAInterface::publishTimeDate()
+        {
+            // Read time/date from boiler (if supported)
+            uint32_t request, response;
+
+            // Day and time (ID 20)
+            request = opentherm_read_day_time();
+            if (ot_.sendAndReceive(request, &response))
+            {
+                opentherm_time_t time;
+                uint16_t value = opentherm_get_u16(response);
+                opentherm_decode_time(value, &time);
+
+                // Day of week (1=Monday, 7=Sunday, 0=unknown)
+                const char *day_names[] = {"Unknown", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+                if (time.day_of_week <= 7)
+                {
+                    publishSensor(MQTTTopics::DAY_OF_WEEK, day_names[time.day_of_week]);
+                }
+
+                // Time of day (HH:MM format)
+                char time_str[16];
+                snprintf(time_str, sizeof(time_str), "%02u:%02u", time.hours, time.minutes);
+                publishSensor(MQTTTopics::TIME_OF_DAY, time_str);
+            }
+
+            // Date (ID 21)
+            request = opentherm_read_date();
+            if (ot_.sendAndReceive(request, &response))
+            {
+                opentherm_date_t date;
+                uint16_t value = opentherm_get_u16(response);
+                opentherm_decode_date(value, &date);
+
+                // Date (MM/DD format)
+                char date_str[16];
+                snprintf(date_str, sizeof(date_str), "%02u/%02u", date.month, date.day);
+                publishSensor(MQTTTopics::DATE, date_str);
+            }
+
+            // Year (ID 22)
+            request = opentherm_read_year();
+            if (ot_.sendAndReceive(request, &response))
+            {
+                uint16_t year = opentherm_get_u16(response);
+                publishSensor(MQTTTopics::YEAR, (int)year);
+            }
+        }
+
+        void HAInterface::publishTemperatureBounds()
+        {
+            uint32_t request, response;
+
+            // DHW bounds (ID 48)
+            request = opentherm_read_dhw_bounds();
+            if (ot_.sendAndReceive(request, &response))
+            {
+                uint8_t max_val, min_val;
+                opentherm_get_u8_u8(response, &max_val, &min_val);
+                publishSensor(MQTTTopics::DHW_SETPOINT_MIN, (int)min_val);
+                publishSensor(MQTTTopics::DHW_SETPOINT_MAX, (int)max_val);
+            }
+
+            // CH bounds (ID 49)
+            request = opentherm_read_ch_bounds();
+            if (ot_.sendAndReceive(request, &response))
+            {
+                uint8_t max_val, min_val;
+                opentherm_get_u8_u8(response, &max_val, &min_val);
+                publishSensor(MQTTTopics::CH_SETPOINT_MIN, (int)min_val);
+                publishSensor(MQTTTopics::CH_SETPOINT_MAX, (int)max_val);
+            }
+        }
+
+        // Parse ISO 8601 datetime string (e.g., "2025-01-17T14:30:00Z" or "2025-01-17T14:30:00+00:00")
+        bool HAInterface::syncTimeToBoiler(const char *iso8601_time)
+        {
+            if (!iso8601_time || strlen(iso8601_time) < 19)
+            {
+                printf("ERROR: Invalid ISO 8601 time string\n");
+                return false;
+            }
+
+            // Parse ISO 8601 format: YYYY-MM-DDTHH:MM:SS
+            int year, month, day, hour, minute, second;
+            int parsed = sscanf(iso8601_time, "%d-%d-%dT%d:%d:%d",
+                                &year, &month, &day, &hour, &minute, &second);
+
+            if (parsed != 6)
+            {
+                printf("ERROR: Failed to parse ISO 8601 time: %s\n", iso8601_time);
+                return false;
+            }
+
+            printf("Syncing time to boiler: %04d-%02d-%02d %02d:%02d:%02d\n",
+                   year, month, day, hour, minute, second);
+
+            // Calculate day of week (using Zeller's congruence for Gregorian calendar)
+            int adj_month = month;
+            int adj_year = year;
+            if (month < 3)
+            {
+                adj_month += 12;
+                adj_year -= 1;
+            }
+            int century = adj_year / 100;
+            int year_of_century = adj_year % 100;
+            int dow_zeller = (day + (13 * (adj_month + 1)) / 5 + year_of_century +
+                              year_of_century / 4 + century / 4 - 2 * century) %
+                             7;
+            // Convert Zeller (0=Saturday) to OpenTherm (1=Monday, 7=Sunday)
+            uint8_t day_of_week = ((dow_zeller + 5) % 7) + 1;
+
+            uint32_t request, response;
+            bool success = true;
+
+            // Sync day/time to boiler (ID 20)
+            request = opentherm_write_day_time(day_of_week, (uint8_t)hour, (uint8_t)minute);
+            if (!ot_.sendAndReceive(request, &response))
+            {
+                printf("WARNING: Failed to sync day/time to boiler\n");
+                success = false;
+            }
+            else
+            {
+                printf("  Day/time synced successfully\n");
+            }
+
+            // Sync date to boiler (ID 21)
+            request = opentherm_write_date((uint8_t)month, (uint8_t)day);
+            if (!ot_.sendAndReceive(request, &response))
+            {
+                printf("WARNING: Failed to sync date to boiler\n");
+                success = false;
+            }
+            else
+            {
+                printf("  Date synced successfully\n");
+            }
+
+            // Sync year to boiler (ID 22)
+            request = opentherm_write_year((uint16_t)year);
+            if (!ot_.sendAndReceive(request, &response))
+            {
+                printf("WARNING: Failed to sync year to boiler\n");
+                success = false;
+            }
+            else
+            {
+                printf("  Year synced successfully\n");
+            }
+
+            if (success)
+            {
+                printf("Time synchronized to boiler successfully!\n");
+            }
+            else
+            {
+                printf("Time sync completed with warnings (boiler may not support all fields)\n");
+            }
+
+            return success;
+        }
+
+        // Parse Unix timestamp
+        bool HAInterface::syncTimeToBoiler(uint32_t unix_timestamp)
+        {
+            // Convert Unix timestamp to datetime components
+            // Unix epoch: 1970-01-01 00:00:00 UTC
+            const uint32_t SECONDS_PER_DAY = 86400;
+            const uint32_t SECONDS_PER_HOUR = 3600;
+            const uint32_t SECONDS_PER_MINUTE = 60;
+
+            // Days since epoch
+            uint32_t days = unix_timestamp / SECONDS_PER_DAY;
+            uint32_t remaining_seconds = unix_timestamp % SECONDS_PER_DAY;
+
+            // Time components
+            uint8_t hour = remaining_seconds / SECONDS_PER_HOUR;
+            remaining_seconds %= SECONDS_PER_HOUR;
+            uint8_t minute = remaining_seconds / SECONDS_PER_MINUTE;
+
+            // Calculate date (simplified algorithm)
+            // Start from 1970-01-01
+            uint16_t year = 1970;
+            uint8_t month = 1;
+            uint8_t day = 1;
+
+            // Days in each month (non-leap year)
+            const uint8_t days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+            // Add days
+            while (days > 0)
+            {
+                bool is_leap = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+                uint16_t days_in_year = is_leap ? 366 : 365;
+
+                if (days >= days_in_year)
+                {
+                    days -= days_in_year;
+                    year++;
+                }
+                else
+                {
+                    // Add months
+                    while (days > 0)
+                    {
+                        uint8_t month_days = days_in_month[month - 1];
+                        if (month == 2 && is_leap)
+                            month_days = 29;
+
+                        if (days >= month_days)
+                        {
+                            days -= month_days;
+                            month++;
+                            if (month > 12)
+                            {
+                                month = 1;
+                                year++;
+                            }
+                        }
+                        else
+                        {
+                            day += days;
+                            days = 0;
+                        }
+                    }
+                }
+            }
+
+            printf("Syncing time to boiler from timestamp %lu: %04d-%02d-%02d %02d:%02d\n",
+                   unix_timestamp, year, month, day, hour, minute);
+
+            // Calculate day of week (1970-01-01 was Thursday = 4)
+            uint32_t total_days = (unix_timestamp / SECONDS_PER_DAY);
+            uint8_t day_of_week = ((total_days + 4) % 7); // 0=Sunday
+            if (day_of_week == 0)
+                day_of_week = 7; // OpenTherm: 7=Sunday
+            // else OpenTherm: 1=Monday matches (day_of_week from calculation)
+
+            uint32_t request, response;
+            bool success = true;
+
+            // Sync day/time to boiler
+            request = opentherm_write_day_time(day_of_week, hour, minute);
+            if (!ot_.sendAndReceive(request, &response))
+            {
+                printf("WARNING: Failed to sync day/time to boiler\n");
+                success = false;
+            }
+
+            // Sync date to boiler
+            request = opentherm_write_date(month, day);
+            if (!ot_.sendAndReceive(request, &response))
+            {
+                printf("WARNING: Failed to sync date to boiler\n");
+                success = false;
+            }
+
+            // Sync year to boiler
+            request = opentherm_write_year(year);
+            if (!ot_.sendAndReceive(request, &response))
+            {
+                printf("WARNING: Failed to sync year to boiler\n");
+                success = false;
+            }
+
+            if (success)
+            {
+                printf("Time synchronized to boiler successfully!\n");
+            }
+
+            return success;
         }
 
         void HAInterface::publishDeviceConfiguration()
@@ -276,6 +558,8 @@ namespace OpenTherm
                 publishCounters();
                 publishConfiguration();
                 publishFaults();
+                publishTimeDate();
+                publishTemperatureBounds();
                 publishDeviceConfiguration();
             }
         }
@@ -341,6 +625,47 @@ namespace OpenTherm
             {
                 uint8_t pin = (uint8_t)atoi(payload);
                 setOpenThermRxPin(pin);
+            }
+            // Time sync command
+            else if (strcmp(topic, (cmd_base + "/sync_time").c_str()) == 0)
+            {
+                // Payload format can be:
+                // 1. ISO 8601: "2025-01-17T14:30:00Z"
+                // 2. Unix timestamp: "1737121800"
+                // 3. "PRESS" from HA button (we'll use current system time if available)
+
+                if (payload && strlen(payload) > 0)
+                {
+                    // Check if it's a Unix timestamp (all digits)
+                    bool is_timestamp = true;
+                    for (size_t i = 0; i < strlen(payload); i++)
+                    {
+                        if (!isdigit(payload[i]))
+                        {
+                            is_timestamp = false;
+                            break;
+                        }
+                    }
+
+                    if (is_timestamp && strlen(payload) >= 10)
+                    {
+                        // Unix timestamp
+                        uint32_t timestamp = (uint32_t)strtoul(payload, NULL, 10);
+                        printf("Received time sync request with timestamp: %lu\n", timestamp);
+                        syncTimeToBoiler(timestamp);
+                    }
+                    else if (strchr(payload, 'T') != nullptr)
+                    {
+                        // ISO 8601 format
+                        printf("Received time sync request with ISO 8601: %s\n", payload);
+                        syncTimeToBoiler(payload);
+                    }
+                    else
+                    {
+                        printf("Time sync requested but format not recognized: %s\n", payload);
+                        printf("Expected ISO 8601 (YYYY-MM-DDTHH:MM:SS) or Unix timestamp\n");
+                    }
+                }
             }
         }
 

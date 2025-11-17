@@ -216,7 +216,7 @@ docker exec -it picoopentherm-homeassistant bash
 - **FEATURES.md** - Full entity and feature reference
 - **STRUCTURE.md** - File structure overview
 - **[Main README](../README.md)** - PicoOpenTherm project docs
-- **[PROVISIONING.md](../PROVISIONING.md)** - Device configuration guide
+- **[PROVISIONING.md](../docs/PROVISIONING.md)** - Device configuration guide
 
 ## Getting Help
 

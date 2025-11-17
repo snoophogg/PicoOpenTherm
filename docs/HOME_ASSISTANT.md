@@ -4,12 +4,15 @@ This library provides a complete Home Assistant integration for the OpenTherm ga
 
 ## Features
 
-- **Automatic MQTT Discovery**: All entities are automatically discovered by Home Assistant
+- **Automatic MQTT Discovery**: All 55 entities are automatically discovered by Home Assistant
 - **Comprehensive Sensor Coverage**: Temperature, pressure, flow, modulation, and status sensors
 - **Binary Sensors**: Fault, flame, CH mode, DHW mode, cooling status
 - **Control Switches**: Enable/disable central heating and hot water
 - **Number Entities**: Adjustable setpoints for control, room, DHW, and max CH temperatures
 - **Counter Sensors**: Burner starts, pump starts, and operating hours
+- **Time Synchronization** (NEW!): Sync boiler clock from Home Assistant via button or automation
+- **Time/Date Monitoring** (NEW!): Read boiler's current day, time, date, and year
+- **Temperature Bounds** (NEW!): Monitor boiler-reported min/max limits for setpoints
 - **Configuration Sensors**: System capabilities and version information
 
 ## Exposed Entities
@@ -58,6 +61,21 @@ This library provides a complete Home Assistant integration for the OpenTherm ga
 - `sensor.opentherm_gw_burner_hours` - Burner operating hours
 - `sensor.opentherm_gw_ch_pump_hours` - CH pump operating hours
 - `sensor.opentherm_gw_dhw_pump_hours` - DHW pump operating hours
+
+### Time/Date Sensors (NEW!)
+- `sensor.opentherm_gw_day_of_week` - Current day from boiler clock
+- `sensor.opentherm_gw_time_of_day` - Current time from boiler (HH:MM format)
+- `sensor.opentherm_gw_date` - Current date from boiler (MM/DD format)
+- `sensor.opentherm_gw_year` - Current year from boiler
+
+### Temperature Bounds Sensors (NEW!)
+- `sensor.opentherm_gw_dhw_setpoint_min` - Minimum DHW setpoint allowed by boiler (°C)
+- `sensor.opentherm_gw_dhw_setpoint_max` - Maximum DHW setpoint allowed by boiler (°C)
+- `sensor.opentherm_gw_ch_setpoint_min` - Minimum CH setpoint allowed by boiler (°C)
+- `sensor.opentherm_gw_ch_setpoint_max` - Maximum CH setpoint allowed by boiler (°C)
+
+### Action Buttons (NEW!)
+- `button.opentherm_gw_sync_time` - Sync current time from Home Assistant to boiler
 
 ## Setup
 
@@ -296,6 +314,191 @@ The example uses the Pico SDK's lwIP MQTT client with threadsafe background proc
 - **MQTT QoS**: 0 (fire and forget) for sensor data
 - **MQTT Retain**: Discovery configs are retained, sensor data is not
 - **Network Overhead**: ~1-2KB per update cycle
+
+## Time Synchronization (NEW!)
+
+The gateway can synchronize your boiler's clock from Home Assistant, keeping it accurate and automatically adjusting for DST changes.
+
+### How It Works
+
+The gateway:
+1. Reads the boiler's current time/date (OpenTherm Data IDs 20-22)
+2. Publishes it to Home Assistant sensors
+3. Accepts time sync commands from Home Assistant
+4. Writes the synchronized time back to the boiler
+
+### Using Time Sync
+
+#### Method 1: Press the Button
+
+In Home Assistant, go to your OpenTherm Gateway device and press the **Sync Time to Boiler** button. The current Home Assistant time will be sent to the boiler.
+
+#### Method 2: Automated Daily Sync
+
+Add this automation to `automations.yaml`:
+
+```yaml
+- id: opentherm_daily_time_sync
+  alias: "OpenTherm: Daily Time Sync"
+  description: "Sync boiler time daily at 3 AM"
+  trigger:
+    - platform: time
+      at: "03:00:00"
+  action:
+    - service: mqtt.publish
+      data:
+        topic: "opentherm/cmd/sync_time"
+        payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
+```
+
+#### Method 3: Sync on Home Assistant Startup
+
+```yaml
+- id: opentherm_time_sync_on_startup
+  alias: "OpenTherm: Time Sync on Startup"
+  description: "Sync boiler time when Home Assistant starts"
+  trigger:
+    - platform: homeassistant
+      event: start
+  action:
+    - delay: "00:01:00"  # Wait for MQTT connection
+    - service: mqtt.publish
+      data:
+        topic: "opentherm/cmd/sync_time"
+        payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
+```
+
+### Time Sync Command Format
+
+The gateway accepts two formats via MQTT:
+
+**ISO 8601 (recommended):**
+```
+Topic: opentherm/cmd/sync_time
+Payload: 2025-01-17T14:30:00
+```
+
+**Unix Timestamp:**
+```
+Topic: opentherm/cmd/sync_time
+Payload: 1737121800
+```
+
+### Viewing Boiler Time
+
+Monitor your boiler's clock with these sensors:
+- `sensor.opentherm_gw_day_of_week` - e.g., "Monday"
+- `sensor.opentherm_gw_time_of_day` - e.g., "14:30"
+- `sensor.opentherm_gw_date` - e.g., "01/17"
+- `sensor.opentherm_gw_year` - e.g., "2025"
+
+### Daylight Saving Time
+
+The gateway can automatically sync after DST changes. See the included `home_assistant/automations.yaml` for complete examples that detect:
+- Spring forward (last Sunday in March for Europe)
+- Fall back (last Sunday in October for Europe)
+
+### Troubleshooting Time Sync
+
+**Sync fails silently:**
+- Not all boilers support time/date writes (Data IDs 20-22)
+- Check the gateway's serial output for error messages
+- The gateway will report which fields succeeded/failed
+
+**Wrong timezone:**
+- The gateway syncs the exact time from Home Assistant
+- Ensure HA timezone is correct in `configuration.yaml`
+- For Docker setups, set the `TZ` environment variable
+
+**Time drifts:**
+- Some boilers have poor internal clocks
+- Set up daily sync automation to maintain accuracy
+- Consider syncing after power outages
+
+## Temperature Bounds Monitoring (NEW!)
+
+The gateway reports your boiler's min/max temperature limits, helping you avoid invalid setpoints.
+
+### Available Sensors
+
+- `sensor.opentherm_gw_dhw_setpoint_min` - e.g., 40°C
+- `sensor.opentherm_gw_dhw_setpoint_max` - e.g., 65°C
+- `sensor.opentherm_gw_ch_setpoint_min` - e.g., 30°C
+- `sensor.opentherm_gw_ch_setpoint_max` - e.g., 90°C
+
+These sensors update once at startup and reflect the physical limits configured in your boiler.
+
+### Automatic Bounds Validation
+
+Add this automation to alert when you try to set a value outside the boiler's range:
+
+```yaml
+- id: opentherm_bounds_check
+  alias: "OpenTherm: Setpoint Bounds Check"
+  description: "Alert if setpoint exceeds boiler bounds"
+  trigger:
+    - platform: state
+      entity_id:
+        - number.opentherm_gw_dhw_setpoint
+        - number.opentherm_gw_max_ch_setpoint
+  condition:
+    - condition: template
+      value_template: >
+        {% set entity = trigger.entity_id %}
+        {% set value = trigger.to_state.state | float %}
+        {% if 'dhw' in entity %}
+          {% set min = states('sensor.opentherm_gw_dhw_setpoint_min') | float %}
+          {% set max = states('sensor.opentherm_gw_dhw_setpoint_max') | float %}
+        {% else %}
+          {% set min = states('sensor.opentherm_gw_ch_setpoint_min') | float %}
+          {% set max = states('sensor.opentherm_gw_ch_setpoint_max') | float %}
+        {% endif %}
+        {{ value < min or value > max }}
+  action:
+    - service: persistent_notification.create
+      data:
+        title: "⚠️ Setpoint Out of Bounds"
+        message: >
+          Requested setpoint is outside the boiler's valid range!
+          The boiler may reject this value.
+```
+
+See `home_assistant/automations.yaml` for the complete version with detailed messages.
+
+### Using Bounds in UI
+
+Configure number entity ranges based on the boiler's actual limits:
+
+```yaml
+type: entities
+entities:
+  - entity: number.opentherm_gw_dhw_setpoint
+    name: DHW Setpoint
+    # These will automatically use the boiler's min/max if supported
+```
+
+For custom cards with sliders, use template sensors:
+
+```yaml
+template:
+  - sensor:
+      - name: "DHW Setpoint Range"
+        state: >
+          {{ states('sensor.opentherm_gw_dhw_setpoint_min') | float }} -
+          {{ states('sensor.opentherm_gw_dhw_setpoint_max') | float }}°C
+```
+
+### Troubleshooting Bounds
+
+**Sensors show "unknown":**
+- Not all boilers support bounds queries (Data IDs 48-49)
+- This is normal and doesn't affect functionality
+- You can still set setpoints; the boiler will reject invalid values
+
+**Bounds seem wrong:**
+- Some boilers report factory defaults, not user-configured limits
+- Cross-reference with your boiler's manual
+- The gateway reports exactly what the boiler provides
 
 ## License
 
