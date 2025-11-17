@@ -255,3 +255,74 @@
           The boiler may reject this value.
         notification_id: opentherm_bounds_warning
   mode: queued
+
+# WiFi Signal Strength Alert
+- id: opentherm_wifi_weak_signal
+  alias: OpenTherm - Weak WiFi Signal Alert
+  description: Alert when WiFi signal is weak
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.opentherm_gw_wifi_rssi
+      below: -75
+      for:
+        minutes: 5
+  condition: []
+  action:
+    - service: persistent_notification.create
+      data:
+        title: Weak WiFi Signal
+        message: >
+          OpenTherm Gateway WiFi signal is weak: {{ states('sensor.opentherm_gw_wifi_rssi') }} dBm
+          Consider moving closer to WiFi router or adding WiFi extender.
+        notification_id: opentherm_weak_wifi
+  mode: single
+
+# WiFi Disconnection Alert
+- id: opentherm_wifi_disconnected
+  alias: OpenTherm - WiFi Disconnected Alert
+  description: Alert when WiFi connection is lost
+  trigger:
+    - platform: state
+      entity_id: sensor.opentherm_gw_wifi_link_status
+      from: connected
+      for:
+        minutes: 2
+  condition:
+    - condition: template
+      value_template: "{{ trigger.to_state.state != 'connected' }}"
+  action:
+    - service: persistent_notification.create
+      data:
+        title: WiFi Connection Lost
+        message: >
+          OpenTherm Gateway WiFi disconnected!
+          Status: {{ states('sensor.opentherm_gw_wifi_link_status') }}
+          Last known IP: {{ states('sensor.opentherm_gw_ip_address') }}
+        notification_id: opentherm_wifi_disconnected
+  mode: single
+
+# WiFi Reconnection Notification
+- id: opentherm_wifi_reconnected
+  alias: OpenTherm - WiFi Reconnected
+  description: Notify when WiFi reconnects after disconnection
+  trigger:
+    - platform: state
+      entity_id: sensor.opentherm_gw_wifi_link_status
+      to: connected
+  condition:
+    - condition: template
+      value_template: "{{ trigger.from_state.state != 'connected' }}"
+  action:
+    - service: persistent_notification.create
+      data:
+        title: WiFi Reconnected
+        message: >
+          OpenTherm Gateway WiFi reconnected!
+          IP Address: {{ states('sensor.opentherm_gw_ip_address') }}
+          Signal: {{ states('sensor.opentherm_gw_wifi_rssi') }} dBm
+        notification_id: opentherm_wifi_reconnected
+    - delay: "00:00:05"
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: opentherm_wifi_disconnected
+  mode: single

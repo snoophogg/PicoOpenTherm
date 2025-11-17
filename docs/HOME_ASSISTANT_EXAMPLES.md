@@ -10,6 +10,7 @@ This folder contains ready-to-use dashboard configurations, entity cards, and au
 - **`dashboard_graphs.yaml`** - Historical temperature and performance graphs
 - **`dashboard_control.yaml`** - Quick control interface with sliders and buttons
 - **`dashboard_mobile.yaml`** - Mobile-optimized tabbed dashboard
+- **`dashboard_wifi.yaml`** ⭐ **NEW!** - WiFi monitoring dashboard with signal strength trends, network diagnostics, and alerts
 - **`entity_cards.yaml`** - Individual card examples for each entity type
 
 ### Automation Files
@@ -21,6 +22,9 @@ This folder contains ready-to-use dashboard configurations, entity cards, and au
   - Weather-based compensation
   - Presence-based control (away/home modes)
   - Efficiency monitoring
+  - **WiFi monitoring** ⭐ **NEW!** - Signal strength alerts, disconnection notifications, daily reports
+  - **Time synchronization** - Daily sync, DST handling, manual button trigger
+  - **Temperature bounds** - Setpoint validation against boiler limits
 
 ## Installation
 
@@ -93,7 +97,41 @@ Optimized for phones with tabs:
 - **Temperatures** - All temp sensors and history
 - **Performance** - Modulation, pressure, flow
 - **Statistics** - Counters and operating hours
-- **Diagnostics** - Fault info and configuration
+
+### WiFi Monitoring Dashboard ⭐ NEW!
+Comprehensive WiFi and network monitoring:
+- **Overview Tab**:
+  - Real-time WiFi signal gauge (RSSI in dBm)
+  - Connection status, IP address, SSID
+  - Device uptime and memory usage
+  - 24-hour signal strength history graph
+  - Signal quality interpretation guide
+
+- **Trends Tab**:
+  - 7-day signal strength trends with hourly averages
+  - Device uptime trends
+  - 30-day statistics (mean, min, max)
+  - ApexCharts integration (optional, requires HACS)
+
+- **Diagnostics Tab**:
+  - Detailed network information
+  - Signal strength bar chart with color-coded quality
+  - Connection event logbook (24h history)
+  - Troubleshooting guide with solutions
+
+- **Alerts Tab**:
+  - Current alert status and thresholds
+  - Active automation management
+  - Alert configuration documentation
+  - 7-day connection status history
+
+**Signal Quality Reference:**
+- -30 to -50 dBm: Excellent (maximum performance)
+- -50 to -60 dBm: Very Good (reliable connection)
+- -60 to -70 dBm: Good (stable for most uses)
+- -70 to -80 dBm: Fair (may experience issues)
+- -80 to -90 dBm: Poor (frequent disconnects)
+- < -90 dBm: Very Poor (unreliable)
 
 ## Automation Examples
 
@@ -127,6 +165,27 @@ Optimized for phones with tabs:
 ```yaml
 # Away mode: Lower to 50°C and 16°C room temp
 # Home mode: Restore to 65°C and 21°C room temp
+```
+
+### WiFi Monitoring ⭐ NEW!
+```yaml
+# Weak Signal Alert
+# - Trigger: RSSI < -75 dBm for 5 minutes
+# - Action: Persistent notification with recommendation
+
+# Disconnection Alert
+# - Trigger: Link status not 'connected' for 2 minutes
+# - Action: Notification with last known IP
+# - Auto-clear on reconnection
+
+# Reconnection Notification
+# - Trigger: Link status changes to 'connected'
+# - Action: Success notification with new IP and signal strength
+# - Auto-dismiss previous disconnection alert
+
+# Daily WiFi Report
+# - Schedule: Daily at 23:55
+# - Content: Signal strength, status, IP, SSID, uptime
 ```
 
 ## Custom Cards Used

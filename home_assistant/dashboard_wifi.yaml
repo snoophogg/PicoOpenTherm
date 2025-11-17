@@ -1,0 +1,338 @@
+# OpenTherm Gateway - WiFi & Network Monitoring Dashboard
+# Complete dashboard for monitoring WiFi signal quality, connectivity, and device health
+
+title: OpenTherm WiFi Monitor
+views:
+  - title: Overview
+    path: wifi_overview
+    icon: mdi:wifi
+    cards:
+      # WiFi Status Card
+      - type: vertical-stack
+        cards:
+          - type: markdown
+            content: |
+              # 📡 WiFi & Network Status
+              Real-time monitoring of OpenTherm Gateway connectivity
+
+          # Current Status Grid
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              # WiFi Signal Gauge
+              - type: gauge
+                entity: sensor.opentherm_gw_wifi_rssi
+                name: WiFi Signal
+                unit: dBm
+                min: -100
+                max: -30
+                severity:
+                  red: -100
+                  yellow: -75
+                  green: -60
+                needle: true
+
+              # Link Status
+              - type: entity
+                entity: sensor.opentherm_gw_wifi_link_status
+                name: Link Status
+                icon: mdi:wifi-check
+
+              # IP Address
+              - type: entity
+                entity: sensor.opentherm_gw_ip_address
+                name: IP Address
+                icon: mdi:ip-network
+
+              # SSID
+              - type: entity
+                entity: sensor.opentherm_gw_wifi_ssid
+                name: Connected Network
+                icon: mdi:wifi-marker
+
+          # Uptime Card
+          - type: entities
+            title: Device Health
+            entities:
+              - entity: sensor.opentherm_gw_uptime
+                name: Uptime
+                icon: mdi:clock-start
+                secondary_info: last-changed
+              - entity: sensor.opentherm_gw_free_heap
+                name: Free Memory
+                icon: mdi:memory
+
+      # WiFi Signal History Graph
+      - type: history-graph
+        title: WiFi Signal Strength (24h)
+        hours_to_show: 24
+        refresh_interval: 60
+        entities:
+          - entity: sensor.opentherm_gw_wifi_rssi
+            name: RSSI
+
+      # Signal Quality Interpretation
+      - type: markdown
+        content: |
+          ## 📊 Signal Quality Guide
+
+          | RSSI Range | Quality | Description |
+          |------------|---------|-------------|
+          | -30 to -50 dBm | Excellent | Maximum performance |
+          | -50 to -60 dBm | Very Good | Reliable connection |
+          | -60 to -70 dBm | Good | Stable for most uses |
+          | -70 to -80 dBm | Fair | May experience issues |
+          | -80 to -90 dBm | Poor | Frequent disconnects |
+          | < -90 dBm | Very Poor | Unreliable |
+
+  - title: Trends
+    path: wifi_trends
+    icon: mdi:chart-line
+    cards:
+      # Long-term Signal Strength
+      - type: custom:apexcharts-card
+        header:
+          show: true
+          title: WiFi Signal Strength - 7 Days
+          show_states: true
+        graph_span: 7d
+        span:
+          end: day
+        series:
+          - entity: sensor.opentherm_gw_wifi_rssi
+            name: RSSI
+            stroke_width: 2
+            type: line
+            color: '#1f77b4'
+            group_by:
+              func: avg
+              duration: 1h
+        yaxis:
+          - min: -100
+            max: -30
+            apex_config:
+              tickAmount: 7
+
+      # Connection Uptime
+      - type: custom:apexcharts-card
+        header:
+          show: true
+          title: Device Uptime - 7 Days
+        graph_span: 7d
+        series:
+          - entity: sensor.opentherm_gw_uptime
+            name: Uptime
+            type: area
+            transform: return x / 3600;
+            unit: ' hours'
+            stroke_width: 2
+            color: '#2ca02c'
+
+      # Alternative using built-in history-graph (no custom cards needed)
+      - type: history-graph
+        title: WiFi Signal Strength - Week View
+        hours_to_show: 168
+        refresh_interval: 300
+        entities:
+          - entity: sensor.opentherm_gw_wifi_rssi
+            name: RSSI (dBm)
+
+      # Statistics Summary
+      - type: statistics-graph
+        title: WiFi Signal Statistics (30 days)
+        entities:
+          - sensor.opentherm_gw_wifi_rssi
+        stat_types:
+          - mean
+          - min
+          - max
+        days_to_show: 30
+        period: day
+
+  - title: Diagnostics
+    path: wifi_diagnostics
+    icon: mdi:network-outline
+    cards:
+      # Network Information Grid
+      - type: grid
+        columns: 1
+        square: false
+        cards:
+          - type: markdown
+            content: |
+              # 🔍 Network Diagnostics
+              Detailed network and connectivity information
+
+          - type: entities
+            title: Network Details
+            entities:
+              - entity: sensor.opentherm_gw_wifi_ssid
+                name: SSID
+                icon: mdi:wifi-marker
+              - entity: sensor.opentherm_gw_ip_address
+                name: IP Address
+                icon: mdi:ip-network
+              - entity: sensor.opentherm_gw_wifi_link_status
+                name: Link Status
+                icon: mdi:wifi-check
+              - entity: sensor.opentherm_gw_wifi_rssi
+                name: Signal Strength
+                icon: mdi:wifi
+              - type: divider
+              - entity: sensor.opentherm_gw_uptime
+                name: Uptime
+                icon: mdi:clock-start
+              - entity: sensor.opentherm_gw_free_heap
+                name: Free Heap Memory
+                icon: mdi:memory
+
+      # Connection Quality Analysis
+      - type: custom:bar-card
+        entities:
+          - entity: sensor.opentherm_gw_wifi_rssi
+            name: Current Signal
+            min: -100
+            max: -30
+            positions:
+              icon: outside
+              indicator: inside
+              name: inside
+            severity:
+              - color: '#FF0000'
+                from: -100
+                to: -80
+              - color: '#FFA500'
+                from: -80
+                to: -70
+              - color: '#FFFF00'
+                from: -70
+                to: -60
+              - color: '#00FF00'
+                from: -60
+                to: -30
+
+      # Alternative simple gauge (no custom cards)
+      - type: gauge
+        entity: sensor.opentherm_gw_wifi_rssi
+        name: Signal Quality
+        min: -100
+        max: -30
+        severity:
+          red: -100
+          yellow: -75
+          green: -60
+        segments:
+          - from: -100
+            color: '#db4437'
+            label: Poor
+          - from: -80
+            color: '#ff9800'
+            label: Fair
+          - from: -70
+            color: '#ffc107'
+            label: Good
+          - from: -60
+            color: '#4caf50'
+            label: Excellent
+
+      # Recent Connection Events
+      - type: logbook
+        title: Recent WiFi Events
+        hours_to_show: 24
+        entities:
+          - sensor.opentherm_gw_wifi_link_status
+          - sensor.opentherm_gw_ip_address
+          - sensor.opentherm_gw_wifi_rssi
+
+      # Troubleshooting Guide
+      - type: markdown
+        content: |
+          ## 🔧 Troubleshooting WiFi Issues
+
+          ### Weak Signal (< -75 dBm)
+          - Move gateway closer to WiFi router
+          - Add WiFi range extender or mesh node
+          - Check for physical obstructions (walls, metal objects)
+          - Switch to less congested WiFi channel
+
+          ### Frequent Disconnects
+          - Check router stability and firmware updates
+          - Verify WiFi password hasn't changed
+          - Check for IP conflicts
+          - Monitor router logs for errors
+
+          ### Connection Status Meanings
+          - **connected**: Normal operation
+          - **joining**: Attempting to connect
+          - **no_ip**: Connected but no IP assigned (DHCP issue)
+          - **failed**: Connection attempt failed
+          - **bad_auth**: Incorrect WiFi password
+          - **no_network**: SSID not found
+          - **down**: WiFi adapter disabled
+
+  - title: Alerts
+    path: wifi_alerts
+    icon: mdi:bell-alert
+    cards:
+      - type: markdown
+        content: |
+          # 🔔 WiFi Alert Configuration
+          Automated notifications for connectivity issues
+
+      # Active Alerts
+      - type: entities
+        title: Current Status
+        entities:
+          - entity: sensor.opentherm_gw_wifi_rssi
+            name: Signal Strength
+            type: custom:bar-entity-row
+          - entity: sensor.opentherm_gw_wifi_link_status
+            name: Connection Status
+
+      # Alert Thresholds
+      - type: markdown
+        content: |
+          ## Alert Thresholds
+
+          The following automations are active:
+
+          ### 📶 Weak Signal Alert
+          - **Trigger**: RSSI < -75 dBm for 5 minutes
+          - **Action**: Persistent notification
+          - **Recommendation**: Check placement or add extender
+
+          ### 🚨 Disconnection Alert
+          - **Trigger**: Link status not 'connected' for 2 minutes
+          - **Action**: Persistent notification with last known IP
+          - **Auto-clear**: Dismissed when reconnected
+
+          ### ✅ Reconnection Notification
+          - **Trigger**: Link status changes to 'connected'
+          - **Action**: Success notification with new IP and signal
+          - **Auto-clear**: Previous disconnect notification dismissed
+
+          ### 📊 Daily Report
+          - **Schedule**: Daily at 23:55
+          - **Content**: Signal strength, uptime, IP address
+          - **Method**: Standard notify service
+
+      # Manual Actions
+      - type: entities
+        title: Manual Actions
+        entities:
+          - entity: automation.opentherm_wifi_weak_signal
+            name: Weak Signal Alerts
+          - entity: automation.opentherm_wifi_disconnected
+            name: Disconnection Alerts
+          - entity: automation.opentherm_wifi_reconnected
+            name: Reconnection Alerts
+          - entity: automation.opentherm_daily_wifi_report
+            name: Daily WiFi Report
+
+      # Historical Alerts
+      - type: history-graph
+        title: Connection Status History (7 days)
+        hours_to_show: 168
+        entities:
+          - sensor.opentherm_gw_wifi_link_status
