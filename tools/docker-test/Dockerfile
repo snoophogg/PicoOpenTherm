@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libssl-dev \
         python3 \
         python3-pip \
-        netcat \
+        netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy sources and tools (build context is repository root)
