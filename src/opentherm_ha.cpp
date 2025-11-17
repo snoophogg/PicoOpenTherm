@@ -319,6 +319,70 @@ namespace OpenTherm
             }
         }
 
+        void HAInterface::publishWiFiStats()
+        {
+            // WiFi RSSI (signal strength in dBm)
+            int32_t rssi = 0;
+            if (cyw43_wifi_get_rssi(&cyw43_state, &rssi) == 0)
+            {
+                publishSensor(MQTTTopics::WIFI_RSSI, (int)rssi);
+            }
+
+            // WiFi link status
+            int link_status = cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA);
+            const char *status_str = "unknown";
+            switch (link_status)
+            {
+            case CYW43_LINK_DOWN:
+                status_str = "down";
+                break;
+            case CYW43_LINK_JOIN:
+                status_str = "joining";
+                break;
+            case CYW43_LINK_NOIP:
+                status_str = "no_ip";
+                break;
+            case CYW43_LINK_UP:
+                status_str = "connected";
+                break;
+            case CYW43_LINK_FAIL:
+                status_str = "failed";
+                break;
+            case CYW43_LINK_NONET:
+                status_str = "no_network";
+                break;
+            case CYW43_LINK_BADAUTH:
+                status_str = "bad_auth";
+                break;
+            }
+            publishSensor(MQTTTopics::WIFI_LINK_STATUS, status_str);
+
+            // IP address
+            if (netif_list)
+            {
+                const char *ip_addr = ip4addr_ntoa(netif_ip4_addr(netif_list));
+                publishSensor(MQTTTopics::IP_ADDRESS, ip_addr);
+            }
+
+            // WiFi SSID (from configuration)
+            char ssid[64];
+            if (::Config::getWiFiSSID(ssid, sizeof(ssid)))
+            {
+                publishSensor(MQTTTopics::WIFI_SSID, ssid);
+            }
+
+            // Uptime in seconds
+            uint64_t uptime_us = time_us_64();
+            uint32_t uptime_seconds = (uint32_t)(uptime_us / 1000000ULL);
+            publishSensor(MQTTTopics::UPTIME, (int)uptime_seconds);
+
+            // Free heap memory - using total_heap from Pico SDK
+            // Note: This requires mallinfo() or custom heap tracking
+            // For now, we'll publish a placeholder value of 0
+            // TODO: Implement proper heap tracking using malloc_stats or custom allocator
+            publishSensor(MQTTTopics::FREE_HEAP, 0);
+        }
+
         // Parse ISO 8601 datetime string (e.g., "2025-01-17T14:30:00Z" or "2025-01-17T14:30:00+00:00")
         bool HAInterface::syncTimeToBoiler(const char *iso8601_time)
         {
@@ -560,6 +624,7 @@ namespace OpenTherm
                 publishFaults();
                 publishTimeDate();
                 publishTemperatureBounds();
+                publishWiFiStats();
                 publishDeviceConfiguration();
             }
         }

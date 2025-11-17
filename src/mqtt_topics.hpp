@@ -74,6 +74,14 @@ namespace OpenTherm
         constexpr const char *DHW_SETPOINT_MAX = "dhw_setpoint_max";
         constexpr const char *CH_SETPOINT_MIN = "ch_setpoint_min";
         constexpr const char *CH_SETPOINT_MAX = "ch_setpoint_max";
+
+        // WiFi statistics
+        constexpr const char *WIFI_RSSI = "wifi_rssi";
+        constexpr const char *WIFI_LINK_STATUS = "wifi_link_status";
+        constexpr const char *IP_ADDRESS = "ip_address";
+        constexpr const char *WIFI_SSID = "wifi_ssid";
+        constexpr const char *UPTIME = "uptime";
+        constexpr const char *FREE_HEAP = "free_heap";
     }
 }
 

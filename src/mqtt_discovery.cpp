@@ -280,6 +280,20 @@ namespace OpenTherm
             publishDiscoveryConfig(cfg, "sensor", CH_SETPOINT_MAX, "CH Setpoint Max",
                                    buildStateTopic(cfg, CH_SETPOINT_MAX).c_str(), "temperature", "°C", "mdi:thermometer-high");
 
+            // WiFi statistics
+            publishDiscoveryConfig(cfg, "sensor", WIFI_RSSI, "WiFi Signal Strength",
+                                   buildStateTopic(cfg, WIFI_RSSI).c_str(), "signal_strength", "dBm", "mdi:wifi");
+            publishDiscoveryConfig(cfg, "sensor", WIFI_LINK_STATUS, "WiFi Link Status",
+                                   buildStateTopic(cfg, WIFI_LINK_STATUS).c_str(), nullptr, nullptr, "mdi:wifi-check");
+            publishDiscoveryConfig(cfg, "sensor", IP_ADDRESS, "IP Address",
+                                   buildStateTopic(cfg, IP_ADDRESS).c_str(), nullptr, nullptr, "mdi:ip-network");
+            publishDiscoveryConfig(cfg, "sensor", WIFI_SSID, "WiFi SSID",
+                                   buildStateTopic(cfg, WIFI_SSID).c_str(), nullptr, nullptr, "mdi:wifi-marker");
+            publishDiscoveryConfig(cfg, "sensor", UPTIME, "Uptime",
+                                   buildStateTopic(cfg, UPTIME).c_str(), "duration", "s", "mdi:clock-start");
+            publishDiscoveryConfig(cfg, "sensor", FREE_HEAP, "Free Heap Memory",
+                                   buildStateTopic(cfg, FREE_HEAP).c_str(), "data_size", "B", "mdi:memory");
+
             printf("Discovery configs published!\n");
             return true;
         }

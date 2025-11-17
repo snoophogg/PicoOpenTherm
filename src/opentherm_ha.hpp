@@ -72,6 +72,7 @@ namespace OpenTherm
             void publishFaults();
             void publishTimeDate();
             void publishTemperatureBounds();
+            void publishWiFiStats();
 
             // Control functions
             bool setControlSetpoint(float temperature);
