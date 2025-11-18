@@ -52,7 +52,8 @@ services:
       - "4000:4000"  # MQTT Explorer Web UI
     environment:
       - HTTP_PORT=4000
-      - CONFIG_PATH=/mqtt-explorer/config.json
+      - CONFIG_PATH=/mqtt-explorer/config
+      - INITIAL_CONFIG={"ConnectionManager_connections":{"mosquitto":{"configVersion":1,"certValidation":false,"clientId":"","id":"mosquitto","name":"mosquitto","encryption":false,"subscriptions":[{"topic":"#","qos":0},{"topic":"$$SYS/#","qos":0}],"type":"mqtt","host":"mosquitto","port":1883,"protocol":"mqtt"}}}
     networks:
       - picoopentherm
     depends_on:
