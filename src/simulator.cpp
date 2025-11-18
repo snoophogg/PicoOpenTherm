@@ -256,13 +256,26 @@ int main()
             // WiFi link status
             int link_status = cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA);
             const char *status_str = "unknown";
+
+            // Check if we have an IP address
+            bool has_ip = false;
+            const char *ip_addr = nullptr;
+            if (netif_list && netif_is_up(netif_list))
+            {
+                ip_addr = ip4addr_ntoa(netif_ip4_addr(netif_list));
+                // Check if IP is not 0.0.0.0
+                has_ip = (ip_addr && strcmp(ip_addr, "0.0.0.0") != 0);
+            }
+
             switch (link_status)
             {
             case CYW43_LINK_DOWN:
                 status_str = "down";
                 break;
             case CYW43_LINK_JOIN:
-                status_str = "joining";
+                // CYW43_LINK_JOIN = Connected to WiFi
+                // Override based on actual IP state since driver may not update to LINK_UP
+                status_str = has_ip ? "connected" : "joining";
                 break;
             case CYW43_LINK_NOIP:
                 status_str = "no_ip";
@@ -283,9 +296,8 @@ int main()
             publishSensor(ha_cfg, WIFI_LINK_STATUS, status_str);
 
             // IP address
-            if (netif_list)
+            if (ip_addr)
             {
-                const char *ip_addr = ip4addr_ntoa(netif_ip4_addr(netif_list));
                 publishSensor(ha_cfg, IP_ADDRESS, ip_addr);
             }
 

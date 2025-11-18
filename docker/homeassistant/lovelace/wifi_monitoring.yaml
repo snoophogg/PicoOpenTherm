@@ -145,9 +145,10 @@ cards:
       - Monitor for IP address conflicts
 
       ### Connection Status Meanings:
-      - `connected` - Normal operation
-      - `joining` - Connecting to network
-      - `no_ip` - Connected but no IP (DHCP issue)
+      - `connected` - Fully connected with IP address
+      - `joining` - Connecting to WiFi (no IP yet)
+      - `no_ip` - Connected but DHCP failed
+      - `down` - WiFi link is down
       - `failed` - Connection failed
       - `bad_auth` - Wrong password
       - `no_network` - SSID not found
