@@ -33,12 +33,6 @@ lovelace:
       icon: mdi:radiator
       show_in_sidebar: true
       filename: lovelace/dashboards.yaml
-    wifi-dashboard:
-      mode: yaml
-      title: OpenTherm Wifi
-      icon: mdi:wifi
-      show_in_sidebar: true
-      filename: lovelace/wifi_monitoring.yaml
 
 # Enable the frontend
 frontend:

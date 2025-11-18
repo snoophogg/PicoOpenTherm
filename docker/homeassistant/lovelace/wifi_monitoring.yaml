@@ -6,9 +6,9 @@ title: WiFi Monitor
 path: wifi_monitor
 icon: mdi:wifi
 badges:
-  - entity: sensor.wifi_rssi
-  - entity: sensor.wifi_link_status
-  - entity: sensor.uptime
+  - entity: sensor.opentherm_gw_wifi_rssi
+  - entity: sensor.opentherm_gw_wifi_link_status
+  - entity: sensor.opentherm_gw_uptime
 cards:
   # Header
   - type: markdown
@@ -21,7 +21,7 @@ cards:
     cards:
       # Signal Strength Gauge
       - type: gauge
-        entity: sensor.wifi_rssi
+        entity: sensor.opentherm_gw_wifi_rssi
         name: WiFi Signal
         unit: dBm
         min: -100
@@ -35,21 +35,21 @@ cards:
       # Connection Status
       - type: glance
         entities:
-          - entity: sensor.wifi_link_status
+          - entity: sensor.opentherm_gw_wifi_link_status
             name: Link Status
-          - entity: sensor.ip_address
+          - entity: sensor.opentherm_gw_ip_address
             name: IP Address
-          - entity: sensor.wifi_ssid
+          - entity: sensor.opentherm_gw_wifi_ssid
             name: SSID
 
   # Device Health
   - type: entities
     title: Device Health
     entities:
-      - entity: sensor.uptime
+      - entity: sensor.opentherm_gw_uptime
         name: Uptime (seconds)
         icon: mdi:clock-start
-      - entity: sensor.free_heap
+      - entity: sensor.opentherm_gw_free_heap
         name: Free Heap Memory
         icon: mdi:memory
 
@@ -59,7 +59,7 @@ cards:
     hours_to_show: 24
     refresh_interval: 60
     entities:
-      - entity: sensor.wifi_rssi
+      - entity: sensor.opentherm_gw_wifi_rssi
         name: RSSI (dBm)
 
   # Weekly Trend
@@ -68,14 +68,14 @@ cards:
     hours_to_show: 168
     refresh_interval: 300
     entities:
-      - entity: sensor.wifi_rssi
+      - entity: sensor.opentherm_gw_wifi_rssi
         name: RSSI (dBm)
 
   # Statistics
   - type: statistics-graph
     title: Signal Statistics (30 days)
     entities:
-      - sensor.wifi_rssi
+      - sensor.opentherm_gw_wifi_rssi
     stat_types:
       - mean
       - min
@@ -106,16 +106,16 @@ cards:
   - type: entities
     title: Network Information
     entities:
-      - entity: sensor.wifi_ssid
+      - entity: sensor.opentherm_gw_wifi_ssid
         name: SSID
         icon: mdi:wifi-marker
-      - entity: sensor.ip_address
+      - entity: sensor.opentherm_gw_ip_address
         name: IP Address
         icon: mdi:ip-network
-      - entity: sensor.wifi_link_status
+      - entity: sensor.opentherm_gw_wifi_link_status
         name: Link Status
         icon: mdi:wifi-check
-      - entity: sensor.wifi_rssi
+      - entity: sensor.opentherm_gw_wifi_rssi
         name: Signal Strength
         icon: mdi:wifi
 

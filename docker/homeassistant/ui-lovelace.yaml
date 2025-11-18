@@ -17,7 +17,6 @@ views:
         title: OpenTherm Gateway
         show_header_toggle: false
         entities:
-          - entity: climate.opentherm_thermostat
           - entity: sensor.opentherm_gw_room_temp
             name: Room Temperature
           - entity: sensor.opentherm_gw_boiler_temp
@@ -32,15 +31,9 @@ views:
     path: opentherm
     icon: mdi:radiator
     badges:
-      - entity: sensor.opentherm_gw_status
       - entity: sensor.opentherm_gw_uptime
-      - entity: sensor.opentherm_gw_wifi_signal
+      - entity: sensor.opentherm_gw_wifi_rssi
     cards:
-      # Thermostat Control
-      - type: thermostat
-        entity: climate.opentherm_thermostat
-        name: Central Heating Control
-      
       # Current Status
       - type: glance
         title: Current Status
@@ -135,9 +128,9 @@ views:
         entities:
           - entity: sensor.opentherm_gw_ip_address
             name: IP Address
-          - entity: sensor.opentherm_gw_wifi_signal
+          - entity: sensor.opentherm_gw_wifi_rssi
             name: WiFi Signal
-          - entity: sensor.opentherm_gw_status
+          - entity: sensor.opentherm_gw_wifi_link_status
             name: Connection Status
           - entity: sensor.opentherm_gw_uptime
             name: Uptime
