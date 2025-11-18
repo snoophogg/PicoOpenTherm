@@ -172,3 +172,6 @@ views:
             name: Max Modulation Level
           - entity: sensor.opentherm_gw_pressure
             name: CH Water Pressure
+
+  # WiFi Monitoring View
+  - !include lovelace/wifi_monitoring.yaml

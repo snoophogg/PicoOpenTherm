@@ -90,6 +90,7 @@ namespace OpenTherm
         constexpr const char *JSON_NAME = "name";
         constexpr const char *JSON_OBJECT_ID = "object_id";
         constexpr const char *JSON_UNIQUE_ID = "unique_id";
+        constexpr const char *JSON_DEFAULT_ENTITY_ID = "default_entity_id";
         constexpr const char *JSON_STATE_TOPIC = "state_topic";
         constexpr const char *JSON_COMMAND_TOPIC = "command_topic";
         constexpr const char *JSON_DEVICE_CLASS = "device_class";

@@ -137,3 +137,6 @@ views:
                 name: CH Pump Hours
               - entity: sensor.opentherm_gw_dhw_pump_hours
                 name: DHW Pump Hours
+
+  # WiFi Monitoring View
+  - !include wifi_monitoring.yaml

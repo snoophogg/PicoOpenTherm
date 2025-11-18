@@ -1,0 +1,164 @@
+# OpenTherm Gateway - WiFi Monitoring View
+# Lovelace-style dashboard view for WiFi monitoring
+# To use: Add this as a view in your lovelace configuration
+
+title: WiFi Monitor
+path: wifi_monitor
+icon: mdi:wifi
+badges:
+  - entity: sensor.wifi_rssi
+  - entity: sensor.wifi_link_status
+  - entity: sensor.uptime
+cards:
+  # Header
+  - type: markdown
+    content: |
+      # 📡 OpenTherm Gateway WiFi Status
+      Monitor WiFi connectivity and signal quality
+
+  # Status Overview
+  - type: horizontal-stack
+    cards:
+      # Signal Strength Gauge
+      - type: gauge
+        entity: sensor.wifi_rssi
+        name: WiFi Signal
+        unit: dBm
+        min: -100
+        max: -30
+        severity:
+          red: -100
+          yellow: -75
+          green: -60
+        needle: true
+
+      # Connection Status
+      - type: glance
+        entities:
+          - entity: sensor.wifi_link_status
+            name: Link Status
+          - entity: sensor.ip_address
+            name: IP Address
+          - entity: sensor.wifi_ssid
+            name: SSID
+
+  # Device Health
+  - type: entities
+    title: Device Health
+    entities:
+      - entity: sensor.uptime
+        name: Uptime (seconds)
+        icon: mdi:clock-start
+      - entity: sensor.free_heap
+        name: Free Heap Memory
+        icon: mdi:memory
+
+  # Signal Strength History
+  - type: history-graph
+    title: WiFi Signal Strength (24 hours)
+    hours_to_show: 24
+    refresh_interval: 60
+    entities:
+      - entity: sensor.wifi_rssi
+        name: RSSI (dBm)
+
+  # Weekly Trend
+  - type: history-graph
+    title: WiFi Signal Strength (7 days)
+    hours_to_show: 168
+    refresh_interval: 300
+    entities:
+      - entity: sensor.wifi_rssi
+        name: RSSI (dBm)
+
+  # Statistics
+  - type: statistics-graph
+    title: Signal Statistics (30 days)
+    entities:
+      - sensor.wifi_rssi
+    stat_types:
+      - mean
+      - min
+      - max
+    days_to_show: 30
+    period: day
+
+  # Signal Quality Guide
+  - type: markdown
+    content: |
+      ## 📊 Signal Quality Reference
+
+      | RSSI (dBm) | Quality | Description |
+      |------------|---------|-------------|
+      | -30 to -50 | Excellent | Maximum speed and reliability |
+      | -50 to -60 | Very Good | Excellent performance |
+      | -60 to -70 | Good | Reliable for all applications |
+      | -70 to -80 | Fair | May experience slow speeds |
+      | -80 to -90 | Poor | Frequent connection issues |
+      | < -90 | Very Poor | Barely usable |
+
+      ### Current Status
+      - Signal: **{{ states('sensor.wifi_rssi') }} dBm**
+      - Status: **{{ states('sensor.wifi_link_status') }}**
+      - IP: **{{ states('sensor.ip_address') }}**
+
+  # Network Details
+  - type: entities
+    title: Network Information
+    entities:
+      - entity: sensor.wifi_ssid
+        name: SSID
+        icon: mdi:wifi-marker
+      - entity: sensor.ip_address
+        name: IP Address
+        icon: mdi:ip-network
+      - entity: sensor.wifi_link_status
+        name: Link Status
+        icon: mdi:wifi-check
+      - entity: sensor.wifi_rssi
+        name: Signal Strength
+        icon: mdi:wifi
+
+  # Connection Events
+  - type: logbook
+    title: Recent WiFi Events
+    hours_to_show: 24
+    entities:
+      - sensor.wifi_link_status
+      - sensor.ip_address
+
+  # Troubleshooting
+  - type: markdown
+    content: |
+      ## 🔧 Troubleshooting Tips
+
+      ### If signal is weak (< -75 dBm):
+      - Move gateway closer to WiFi router
+      - Add WiFi extender or mesh node
+      - Check for obstacles (walls, appliances)
+      - Try different WiFi channel on router
+
+      ### If connection is unstable:
+      - Verify WiFi password
+      - Check router DHCP settings
+      - Update router firmware
+      - Monitor for IP address conflicts
+
+      ### Connection Status Meanings:
+      - `connected` - Normal operation
+      - `joining` - Connecting to network
+      - `no_ip` - Connected but no IP (DHCP issue)
+      - `failed` - Connection failed
+      - `bad_auth` - Wrong password
+      - `no_network` - SSID not found
+
+  # Active Automations
+  - type: entities
+    title: Active WiFi Automations
+    entities:
+      - entity: automation.opentherm_wifi_weak_signal
+        name: Weak Signal Alerts
+      - entity: automation.opentherm_wifi_disconnected
+        name: Disconnection Alerts
+      - entity: automation.opentherm_wifi_reconnected
+        name: Reconnection Alerts

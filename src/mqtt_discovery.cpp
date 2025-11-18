@@ -80,7 +80,7 @@ namespace OpenTherm
             std::ostringstream payload;
             payload << "{";
             payload << "\"" << JSON_NAME << "\":\"" << name << "\",";
-            payload << "\"" << JSON_OBJECT_ID << "\":\"" << cfg.device_id << "_" << object_id << "\",";
+            payload << "\"" << JSON_DEFAULT_ENTITY_ID << "\":\"" << component << "." << cfg.device_id << "_" << object_id << "\",";
             payload << "\"" << JSON_UNIQUE_ID << "\":\"" << cfg.device_id << "_" << object_id << "\",";
             payload << "\"" << JSON_STATE_TOPIC << "\":\"" << state_topic << "\",";
 
