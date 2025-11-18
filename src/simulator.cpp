@@ -132,6 +132,25 @@ int main()
     }
 
     printf("Discovery configuration complete!\n");
+
+    // Function to subscribe to all command topics
+    auto subscribe_to_commands = [&cmd_base]() {
+        printf("Subscribing to command topics...\n");
+        using namespace OpenTherm::MQTTTopics;
+        OpenTherm::Common::mqtt_subscribe_wrapper((cmd_base + "/" + CH_ENABLE).c_str());
+        OpenTherm::Common::mqtt_subscribe_wrapper((cmd_base + "/" + DHW_ENABLE).c_str());
+        OpenTherm::Common::mqtt_subscribe_wrapper((cmd_base + "/" + CONTROL_SETPOINT).c_str());
+        OpenTherm::Common::mqtt_subscribe_wrapper((cmd_base + "/" + ROOM_SETPOINT).c_str());
+        OpenTherm::Common::mqtt_subscribe_wrapper((cmd_base + "/" + DHW_SETPOINT).c_str());
+        OpenTherm::Common::mqtt_subscribe_wrapper((cmd_base + "/" + MAX_CH_SETPOINT).c_str());
+        OpenTherm::Common::mqtt_subscribe_wrapper((cmd_base + "/" + SYNC_TIME).c_str());
+        OpenTherm::Common::mqtt_subscribe_wrapper((cmd_base + "/" + RESTART).c_str());
+        printf("Command topic subscriptions complete!\n");
+    };
+
+    // Initial subscription
+    subscribe_to_commands();
+
     printf("Simulator ready! Publishing simulated data to Home Assistant...\n");
 
     uint32_t last_connection_check = 0;
@@ -152,11 +171,15 @@ int main()
             OpenTherm::Common::check_and_reconnect(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port,
                                                    mqtt_client_id, nullptr);
 
-            // Update LED pattern based on connection status
+            // Update LED pattern and resubscribe if reconnected
             if (OpenTherm::Common::g_mqtt_connected && !was_connected)
             {
                 // Just reconnected - set to normal pattern
                 OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_NORMAL);
+
+                // Resubscribe to command topics
+                printf("MQTT reconnected, resubscribing to command topics...\n");
+                subscribe_to_commands();
             }
 
             last_connection_check = now;
@@ -327,30 +350,82 @@ int main()
         {
             for (auto &msg : OpenTherm::Common::g_pending_messages)
             {
-                // Handle setpoint changes
-                if (msg.first.find("/room_setpoint") != std::string::npos)
+                printf("[MQTT] Received message on topic: %s, payload: %s\n", msg.first.c_str(), msg.second.c_str());
+
+                bool handled = false;
+
+                // Handle CH enable/disable
+                if (msg.first.find("/ch_enable") != std::string::npos)
+                {
+                    bool enable = (msg.second == "ON");
+                    printf("CH Enable command: %s\n", enable ? "ON" : "OFF");
+                    sim_ot.writeCHEnabled(enable);
+                    handled = true;
+                }
+                // Handle DHW enable/disable
+                else if (msg.first.find("/dhw_enable") != std::string::npos)
+                {
+                    bool enable = (msg.second == "ON");
+                    printf("DHW Enable command: %s\n", enable ? "ON" : "OFF");
+                    sim_ot.writeDHWEnabled(enable);
+                    handled = true;
+                }
+                // Handle control setpoint
+                else if (msg.first.find("/control_setpoint") != std::string::npos)
                 {
                     float setpoint = std::stof(msg.second);
+                    printf("Control setpoint command: %.1f°C\n", setpoint);
+                    // Simulator doesn't have separate control setpoint, use room setpoint
                     sim_ot.writeRoomSetpoint(setpoint);
+                    handled = true;
                 }
+                // Handle room setpoint
+                else if (msg.first.find("/room_setpoint") != std::string::npos)
+                {
+                    float setpoint = std::stof(msg.second);
+                    printf("Room setpoint command: %.1f°C\n", setpoint);
+                    sim_ot.writeRoomSetpoint(setpoint);
+                    handled = true;
+                }
+                // Handle DHW setpoint
                 else if (msg.first.find("/dhw_setpoint") != std::string::npos)
                 {
                     float setpoint = std::stof(msg.second);
+                    printf("DHW setpoint command: %.1f°C\n", setpoint);
                     sim_ot.writeDHWSetpoint(setpoint);
+                    handled = true;
                 }
+                // Handle max CH setpoint
+                else if (msg.first.find("/max_ch_setpoint") != std::string::npos)
+                {
+                    float setpoint = std::stof(msg.second);
+                    printf("Max CH setpoint command: %.1f°C\n", setpoint);
+                    // Simulator doesn't implement max CH setpoint separately
+                    handled = true;
+                }
+                // Handle time sync
                 else if (msg.first.find("/sync_time") != std::string::npos)
                 {
                     printf("Time sync command received in simulator: %s\n", msg.second.c_str());
                     printf("Simulator stores time/date in simulated state\n");
                     // In simulator, we don't actually need to do anything - just log it
                     // The real hardware would sync to the boiler
+                    handled = true;
                 }
+                // Handle restart
                 else if (msg.first.find("/restart") != std::string::npos)
                 {
                     printf("Restart requested via MQTT command\n");
                     printf("Restarting simulator in 2 seconds...\n");
                     sleep_ms(2000);
                     watchdog_reboot(0, 0, 0);
+                    handled = true;
+                }
+
+                // Catchall for unknown commands
+                if (!handled)
+                {
+                    printf("[WARN] Unknown command topic: %s with payload: %s\n", msg.first.c_str(), msg.second.c_str());
                 }
             }
             OpenTherm::Common::g_pending_messages.clear();
