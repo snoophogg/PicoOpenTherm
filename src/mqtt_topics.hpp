@@ -83,6 +83,155 @@ namespace OpenTherm
         constexpr const char *UPTIME = "uptime";
         constexpr const char *FREE_HEAP = "free_heap";
     }
+
+    namespace MQTTDiscovery
+    {
+        // JSON keys
+        constexpr const char *JSON_NAME = "name";
+        constexpr const char *JSON_OBJECT_ID = "object_id";
+        constexpr const char *JSON_UNIQUE_ID = "unique_id";
+        constexpr const char *JSON_STATE_TOPIC = "state_topic";
+        constexpr const char *JSON_COMMAND_TOPIC = "command_topic";
+        constexpr const char *JSON_DEVICE_CLASS = "device_class";
+        constexpr const char *JSON_UNIT_OF_MEASUREMENT = "unit_of_measurement";
+        constexpr const char *JSON_ICON = "icon";
+        constexpr const char *JSON_VALUE_TEMPLATE = "value_template";
+        constexpr const char *JSON_MIN = "min";
+        constexpr const char *JSON_MAX = "max";
+        constexpr const char *JSON_STEP = "step";
+        constexpr const char *JSON_MODE = "mode";
+        constexpr const char *JSON_DEVICE = "device";
+        constexpr const char *JSON_IDENTIFIERS = "identifiers";
+        constexpr const char *JSON_MODEL = "model";
+        constexpr const char *JSON_MANUFACTURER = "manufacturer";
+
+        // Component types
+        constexpr const char *COMPONENT_BINARY_SENSOR = "binary_sensor";
+        constexpr const char *COMPONENT_SENSOR = "sensor";
+        constexpr const char *COMPONENT_SWITCH = "switch";
+        constexpr const char *COMPONENT_NUMBER = "number";
+        constexpr const char *COMPONENT_TEXT = "text";
+        constexpr const char *COMPONENT_BUTTON = "button";
+
+        // Device classes
+        constexpr const char *DEVICE_CLASS_PROBLEM = "problem";
+        constexpr const char *DEVICE_CLASS_HEAT = "heat";
+        constexpr const char *DEVICE_CLASS_COLD = "cold";
+        constexpr const char *DEVICE_CLASS_TEMPERATURE = "temperature";
+        constexpr const char *DEVICE_CLASS_PRESSURE = "pressure";
+        constexpr const char *DEVICE_CLASS_DURATION = "duration";
+        constexpr const char *DEVICE_CLASS_SWITCH = "switch";
+        constexpr const char *DEVICE_CLASS_SIGNAL_STRENGTH = "signal_strength";
+        constexpr const char *DEVICE_CLASS_DATA_SIZE = "data_size";
+
+        // Units of measurement
+        constexpr const char *UNIT_CELSIUS = "°C";
+        constexpr const char *UNIT_BAR = "bar";
+        constexpr const char *UNIT_LITERS_PER_MIN = "l/min";
+        constexpr const char *UNIT_STARTS = "starts";
+        constexpr const char *UNIT_HOURS = "h";
+        constexpr const char *UNIT_PERCENT = "%";
+        constexpr const char *UNIT_DBM = "dBm";
+        constexpr const char *UNIT_SECONDS = "s";
+        constexpr const char *UNIT_BYTES = "B";
+
+        // Icons
+        constexpr const char *ICON_ALERT_CIRCLE = "mdi:alert-circle";
+        constexpr const char *ICON_RADIATOR = "mdi:radiator";
+        constexpr const char *ICON_WATER_BOILER = "mdi:water-boiler";
+        constexpr const char *ICON_FIRE = "mdi:fire";
+        constexpr const char *ICON_SNOWFLAKE = "mdi:snowflake";
+        constexpr const char *ICON_WRENCH = "mdi:wrench";
+        constexpr const char *ICON_THERMOMETER = "mdi:thermometer";
+        constexpr const char *ICON_HOME_THERMOMETER = "mdi:home-thermometer";
+        constexpr const char *ICON_THERMOMETER_LINES = "mdi:thermometer-lines";
+        constexpr const char *ICON_HOME_THERMOMETER_OUTLINE = "mdi:home-thermometer-outline";
+        constexpr const char *ICON_WATER_THERMOMETER_OUTLINE = "mdi:water-thermometer-outline";
+        constexpr const char *ICON_THERMOMETER_HIGH = "mdi:thermometer-high";
+        constexpr const char *ICON_THERMOMETER_LOW = "mdi:thermometer-low";
+        constexpr const char *ICON_PERCENT = "mdi:percent";
+        constexpr const char *ICON_GAUGE = "mdi:gauge";
+        constexpr const char *ICON_WATER_PUMP = "mdi:water-pump";
+        constexpr const char *ICON_COUNTER = "mdi:counter";
+        constexpr const char *ICON_CLOCK_OUTLINE = "mdi:clock-outline";
+        constexpr const char *ICON_ALERT_OCTAGON = "mdi:alert-octagon";
+        constexpr const char *ICON_INFORMATION = "mdi:information";
+        constexpr const char *ICON_TAG_TEXT = "mdi:tag-text";
+        constexpr const char *ICON_IDENTIFIER = "mdi:identifier";
+        constexpr const char *ICON_PIN = "mdi:pin";
+        constexpr const char *ICON_CALENDAR = "mdi:calendar";
+        constexpr const char *ICON_CALENDAR_TODAY = "mdi:calendar-today";
+        constexpr const char *ICON_CLOCK_SYNC = "mdi:clock-sync";
+        constexpr const char *ICON_WIFI = "mdi:wifi";
+        constexpr const char *ICON_WIFI_CHECK = "mdi:wifi-check";
+        constexpr const char *ICON_IP_NETWORK = "mdi:ip-network";
+        constexpr const char *ICON_WIFI_MARKER = "mdi:wifi-marker";
+        constexpr const char *ICON_CLOCK_START = "mdi:clock-start";
+        constexpr const char *ICON_MEMORY = "mdi:memory";
+
+        // Display names
+        constexpr const char *NAME_FAULT = "Fault";
+        constexpr const char *NAME_CH_MODE = "Central Heating Mode";
+        constexpr const char *NAME_DHW_MODE = "Hot Water Mode";
+        constexpr const char *NAME_FLAME = "Flame Status";
+        constexpr const char *NAME_COOLING = "Cooling Active";
+        constexpr const char *NAME_DIAGNOSTIC = "Diagnostic Mode";
+        constexpr const char *NAME_CH_ENABLE = "Central Heating Enable";
+        constexpr const char *NAME_DHW_ENABLE = "Hot Water Enable";
+        constexpr const char *NAME_BOILER_TEMP = "Boiler Temperature";
+        constexpr const char *NAME_DHW_TEMP = "Hot Water Temperature";
+        constexpr const char *NAME_RETURN_TEMP = "Return Water Temperature";
+        constexpr const char *NAME_OUTSIDE_TEMP = "Outside Temperature";
+        constexpr const char *NAME_ROOM_TEMP = "Room Temperature";
+        constexpr const char *NAME_EXHAUST_TEMP = "Exhaust Temperature";
+        constexpr const char *NAME_CONTROL_SETPOINT = "Control Setpoint";
+        constexpr const char *NAME_ROOM_SETPOINT = "Room Setpoint";
+        constexpr const char *NAME_DHW_SETPOINT = "Hot Water Setpoint";
+        constexpr const char *NAME_MAX_CH_SETPOINT = "Max CH Setpoint";
+        constexpr const char *NAME_MODULATION = "Modulation Level";
+        constexpr const char *NAME_MAX_MODULATION = "Max Modulation Level";
+        constexpr const char *NAME_PRESSURE = "CH Water Pressure";
+        constexpr const char *NAME_DHW_FLOW = "Hot Water Flow Rate";
+        constexpr const char *NAME_BURNER_STARTS = "Burner Starts";
+        constexpr const char *NAME_CH_PUMP_STARTS = "CH Pump Starts";
+        constexpr const char *NAME_DHW_PUMP_STARTS = "DHW Pump Starts";
+        constexpr const char *NAME_BURNER_HOURS = "Burner Operating Hours";
+        constexpr const char *NAME_CH_PUMP_HOURS = "CH Pump Operating Hours";
+        constexpr const char *NAME_DHW_PUMP_HOURS = "DHW Pump Operating Hours";
+        constexpr const char *NAME_FAULT_CODE = "Fault Code";
+        constexpr const char *NAME_DIAGNOSTIC_CODE = "Diagnostic Code";
+        constexpr const char *NAME_DHW_PRESENT = "DHW Present";
+        constexpr const char *NAME_COOLING_SUPPORTED = "Cooling Supported";
+        constexpr const char *NAME_CH2_PRESENT = "CH2 Present";
+        constexpr const char *NAME_OPENTHERM_VERSION = "OpenTherm Version";
+        constexpr const char *NAME_DEVICE_NAME = "Device Name";
+        constexpr const char *NAME_DEVICE_ID = "Device ID";
+        constexpr const char *NAME_OPENTHERM_TX_PIN = "OpenTherm TX Pin";
+        constexpr const char *NAME_OPENTHERM_RX_PIN = "OpenTherm RX Pin";
+        constexpr const char *NAME_DAY_OF_WEEK = "Day of Week";
+        constexpr const char *NAME_TIME_OF_DAY = "Time of Day";
+        constexpr const char *NAME_DATE = "Date";
+        constexpr const char *NAME_YEAR = "Year";
+        constexpr const char *NAME_SYNC_TIME = "Sync Time to Boiler";
+        constexpr const char *NAME_DHW_SETPOINT_MIN = "DHW Setpoint Min";
+        constexpr const char *NAME_DHW_SETPOINT_MAX = "DHW Setpoint Max";
+        constexpr const char *NAME_CH_SETPOINT_MIN = "CH Setpoint Min";
+        constexpr const char *NAME_CH_SETPOINT_MAX = "CH Setpoint Max";
+        constexpr const char *NAME_WIFI_RSSI = "WiFi Signal Strength";
+        constexpr const char *NAME_WIFI_LINK_STATUS = "WiFi Link Status";
+        constexpr const char *NAME_IP_ADDRESS = "IP Address";
+        constexpr const char *NAME_WIFI_SSID = "WiFi SSID";
+        constexpr const char *NAME_UPTIME = "Uptime";
+        constexpr const char *NAME_FREE_HEAP = "Free Heap Memory";
+
+        // Device information
+        constexpr const char *DEVICE_MODEL = "OpenTherm Gateway";
+        constexpr const char *DEVICE_MANUFACTURER = "PicoOpenTherm";
+
+        // Other constants
+        constexpr const char *MODE_BOX = "box";
+        constexpr const char *CONFIG_SUFFIX = "/config";
+    }
 }
 
 #endif // MQTT_TOPICS_HPP
