@@ -275,6 +275,11 @@ namespace OpenTherm
                                    buildStateTopic(cfg, SYNC_TIME).c_str(), nullptr, nullptr, ICON_CLOCK_SYNC,
                                    buildCommandTopic(cfg, SYNC_TIME).c_str());
 
+            // Restart button - pressing this will restart the gateway
+            publishDiscoveryConfig(cfg, COMPONENT_BUTTON, RESTART, NAME_RESTART,
+                                   buildStateTopic(cfg, RESTART).c_str(), nullptr, nullptr, ICON_RESTART,
+                                   buildCommandTopic(cfg, RESTART).c_str());
+
             // Temperature bounds (read-only from boiler)
             publishDiscoveryConfig(cfg, COMPONENT_SENSOR, DHW_SETPOINT_MIN, NAME_DHW_SETPOINT_MIN,
                                    buildStateTopic(cfg, DHW_SETPOINT_MIN).c_str(), DEVICE_CLASS_TEMPERATURE, UNIT_CELSIUS, ICON_THERMOMETER_LOW);

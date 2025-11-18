@@ -68,6 +68,7 @@ namespace OpenTherm
         constexpr const char *DATE = "date";
         constexpr const char *YEAR = "year";
         constexpr const char *SYNC_TIME = "sync_time"; // Command topic for time sync
+        constexpr const char *RESTART = "restart"; // Command topic for restart
 
         // Temperature bounds
         constexpr const char *DHW_SETPOINT_MIN = "dhw_setpoint_min";
@@ -163,6 +164,7 @@ namespace OpenTherm
         constexpr const char *ICON_CALENDAR = "mdi:calendar";
         constexpr const char *ICON_CALENDAR_TODAY = "mdi:calendar-today";
         constexpr const char *ICON_CLOCK_SYNC = "mdi:clock-sync";
+        constexpr const char *ICON_RESTART = "mdi:restart";
         constexpr const char *ICON_WIFI = "mdi:wifi";
         constexpr const char *ICON_WIFI_CHECK = "mdi:wifi-check";
         constexpr const char *ICON_IP_NETWORK = "mdi:ip-network";
@@ -214,6 +216,7 @@ namespace OpenTherm
         constexpr const char *NAME_DATE = "Date";
         constexpr const char *NAME_YEAR = "Year";
         constexpr const char *NAME_SYNC_TIME = "Sync Time to Boiler";
+        constexpr const char *NAME_RESTART = "Restart Gateway";
         constexpr const char *NAME_DHW_SETPOINT_MIN = "DHW Setpoint Min";
         constexpr const char *NAME_DHW_SETPOINT_MAX = "DHW Setpoint Max";
         constexpr const char *NAME_CH_SETPOINT_MIN = "CH Setpoint Min";

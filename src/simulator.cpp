@@ -326,6 +326,20 @@ int main()
                     float setpoint = std::stof(msg.second);
                     sim_ot.writeDHWSetpoint(setpoint);
                 }
+                else if (msg.first.find("/sync_time") != std::string::npos)
+                {
+                    printf("Time sync command received in simulator: %s\n", msg.second.c_str());
+                    printf("Simulator stores time/date in simulated state\n");
+                    // In simulator, we don't actually need to do anything - just log it
+                    // The real hardware would sync to the boiler
+                }
+                else if (msg.first.find("/restart") != std::string::npos)
+                {
+                    printf("Restart requested via MQTT command\n");
+                    printf("Restarting simulator in 2 seconds...\n");
+                    sleep_ms(2000);
+                    watchdog_reboot(0, 0, 0);
+                }
             }
             OpenTherm::Common::g_pending_messages.clear();
         }

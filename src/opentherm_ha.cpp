@@ -39,6 +39,7 @@ namespace OpenTherm
             mqtt_.subscribe((base_cmd + "/" + DHW_SETPOINT).c_str());
             mqtt_.subscribe((base_cmd + "/" + MAX_CH_SETPOINT).c_str());
             mqtt_.subscribe((base_cmd + "/" + SYNC_TIME).c_str());
+            mqtt_.subscribe((base_cmd + "/" + RESTART).c_str());
         }
 
         void HAInterface::publishDiscoveryConfigs()
@@ -731,6 +732,15 @@ namespace OpenTherm
                         printf("Expected ISO 8601 (YYYY-MM-DDTHH:MM:SS) or Unix timestamp\n");
                     }
                 }
+            }
+            // Restart command
+            else if (strcmp(topic, (cmd_base + "/restart").c_str()) == 0)
+            {
+                printf("Restart requested via MQTT command\n");
+                printf("Restarting in 2 seconds...\n");
+                sleep_ms(2000); // Give time for the message to be logged and MQTT to ack
+                watchdog_reboot(0, 0, 0);
+                // watchdog_reboot will reset the system
             }
         }
 
