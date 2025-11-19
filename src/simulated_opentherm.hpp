@@ -73,7 +73,7 @@ namespace OpenTherm
             uint16_t readOEMDiagnosticCode();
 
             // Update simulator state (call periodically)
-            void update();
+            void update(float time_seconds);
 
         private:
             SimulatorState state_;

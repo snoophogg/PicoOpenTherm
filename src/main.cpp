@@ -138,13 +138,6 @@ int main()
 
     // Load update interval from configuration
     uint32_t update_interval_ms = Config::getUpdateIntervalMs();
-#ifdef USE_SIMULATOR
-    // Simulator defaults to 60 seconds if not configured
-    if (update_interval_ms == Config::DEFAULT_UPDATE_INTERVAL_MS)
-    {
-        update_interval_ms = 60000;
-    }
-#endif
 
     // Configure Home Assistant interface using loaded configuration
     OpenTherm::HomeAssistant::Config ha_config = {
@@ -197,7 +190,7 @@ int main()
 
 #ifdef USE_SIMULATOR
         // Update simulator state
-        sim_ot.update();
+        sim_ot.update(now / 1000.0f); // Pass time in seconds
 #endif
 
         // Update Home Assistant (reads sensors and publishes to MQTT)

@@ -61,6 +61,7 @@ namespace OpenTherm
 
         // Modulation level read (percentage)
         bool readModulationLevel(float *level) override;
+        bool readMaxModulationLevel(float *level) override;
 
         // Setpoint reads
         bool readControlSetpoint(float *setpoint) override;
@@ -79,14 +80,31 @@ namespace OpenTherm
         bool readOpenThermVersion(float *version) override;
         bool readSlaveVersion(uint8_t *type, uint8_t *version) override;
 
+        // Time and date reads
+        bool readDayTime(uint8_t *day_of_week, uint8_t *hours, uint8_t *minutes) override;
+        bool readDate(uint8_t *month, uint8_t *day) override;
+        bool readYear(uint16_t *year) override;
+
+        // Temperature bounds reads
+        bool readDHWBounds(uint8_t *min_temp, uint8_t *max_temp) override;
+        bool readCHBounds(uint8_t *min_temp, uint8_t *max_temp) override;
+
         // Write functions
         bool writeControlSetpoint(float temperature) override;
         bool writeRoomSetpoint(float temperature) override;
         bool writeDHWSetpoint(float temperature) override;
         bool writeMaxCHSetpoint(float temperature) override;
+        bool writeCHEnable(bool enable) override;
+        bool writeDHWEnable(bool enable) override;
 
-        // Helper function to send request and wait for response
-        bool sendAndReceive(uint32_t request, uint32_t *response) override;
+        // Time and date writes
+        bool writeDayTime(uint8_t day_of_week, uint8_t hours, uint8_t minutes) override;
+        bool writeDate(uint8_t month, uint8_t day) override;
+        bool writeYear(uint16_t year) override;
+
+        // Low-level request/response handling
+        // Sends a request frame and waits for response
+        bool sendAndReceive(uint32_t request, uint32_t *response);
 
     private:
     };

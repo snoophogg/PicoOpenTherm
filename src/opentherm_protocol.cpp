@@ -41,7 +41,7 @@ namespace OpenTherm
             packed |= (static_cast<uint32_t>(frame->data_value) & 0xFFFF);
 
             // Calculate and set parity bit
-            uint8_t parity = opentherm_calculate_parity(packed);
+            uint8_t parity = calculate_parity(packed);
             packed |= (static_cast<uint32_t>(parity) << 31);
 
             return packed;
@@ -60,7 +60,7 @@ namespace OpenTherm
         // Verify frame parity
         bool verify_parity(uint32_t frame)
         {
-            uint8_t calculated_parity = opentherm_calculate_parity(frame & 0x7FFFFFFF);
+            uint8_t calculated_parity = calculate_parity(frame & 0x7FFFFFFF);
             uint8_t frame_parity = (frame >> 31) & 0x01;
             return calculated_parity == frame_parity;
         }
@@ -74,7 +74,7 @@ namespace OpenTherm
                 .spare = 0,
                 .data_id = data_id,
                 .data_value = 0x0000};
-            return opentherm_pack_frame(&frame);
+            return pack_frame(&frame);
         }
 
         // Create a WRITE-DATA request
@@ -86,7 +86,7 @@ namespace OpenTherm
                 .spare = 0,
                 .data_id = data_id,
                 .data_value = data_value};
-            return opentherm_pack_frame(&frame);
+            return pack_frame(&frame);
         }
 
         // Convert float temperature to f8.8 format
@@ -114,22 +114,22 @@ namespace OpenTherm
         // Extract and convert f8.8 temperature value from a frame
         float get_f8_8(uint32_t frame)
         {
-            uint16_t value = opentherm_get_u16(frame);
-            return opentherm_f8_8_to_float(value);
+            uint16_t value = OpenTherm::Protocol::get_u16(frame);
+            return OpenTherm::Protocol::f8_8_to_float(value);
         }
 
         // Extract and convert s16 signed integer from a frame
         int16_t get_s16(uint32_t frame)
         {
-            uint16_t value = opentherm_get_u16(frame);
-            return opentherm_decode_s16(value);
+            uint16_t value = OpenTherm::Protocol::get_u16(frame);
+            return OpenTherm::Protocol::decode_s16(value);
         }
 
         // Extract two u8 bytes from a frame
         void get_u8_u8(uint32_t frame, uint8_t *hb, uint8_t *lb)
         {
-            uint16_t value = opentherm_get_u16(frame);
-            opentherm_decode_u8_u8(value, hb, lb);
+            uint16_t value = OpenTherm::Protocol::get_u16(frame);
+            OpenTherm::Protocol::decode_u8_u8(value, hb, lb);
         }
 
         // Encode two bytes into a 16-bit data value (HB:LB)
@@ -213,7 +213,7 @@ namespace OpenTherm
             if (status->diagnostic)
                 slave_flags |= 0x40;
 
-            return opentherm_encode_u8_u8(master_flags, slave_flags);
+            return OpenTherm::Protocol::encode_u8_u8(master_flags, slave_flags);
         }
 
         // Decode configuration flags
@@ -312,13 +312,13 @@ namespace OpenTherm
         {
             uint8_t hb = ((time->day_of_week & 0x07) << 5) | (time->hours & 0x1F);
             uint8_t lb = time->minutes & 0x3F;
-            return opentherm_encode_u8_u8(hb, lb);
+            return OpenTherm::Protocol::encode_u8_u8(hb, lb);
         }
 
         void decode_time(uint16_t value, opentherm_time_t *time)
         {
             uint8_t hb, lb;
-            opentherm_decode_u8_u8(value, &hb, &lb);
+            OpenTherm::Protocol::decode_u8_u8(value, &hb, &lb);
 
             time->day_of_week = (hb >> 5) & 0x07;
             time->hours = hb & 0x1F;
@@ -328,12 +328,12 @@ namespace OpenTherm
         // Encode/decode date (Data ID 21)
         uint16_t encode_date(const opentherm_date_t *date)
         {
-            return opentherm_encode_u8_u8(date->month, date->day);
+            return OpenTherm::Protocol::encode_u8_u8(date->month, date->day);
         }
 
         void decode_date(uint16_t value, opentherm_date_t *date)
         {
-            opentherm_decode_u8_u8(value, &date->month, &date->day);
+            OpenTherm::Protocol::decode_u8_u8(value, &date->month, &date->day);
         }
 
         // Helper functions for reading and writing with proper type conversions

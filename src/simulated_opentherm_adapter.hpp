@@ -286,6 +286,80 @@ namespace OpenTherm
                 return false;
             }
 
+            bool writeCHEnable(bool enable) override
+            {
+                return sim_.writeCHEnabled(enable);
+            }
+
+            bool writeDHWEnable(bool enable) override
+            {
+                return sim_.writeDHWEnabled(enable);
+            }
+
+            bool readMaxModulationLevel(float *level) override
+            {
+                if (!level)
+                    return false;
+                *level = sim_.readMaxModulationLevel();
+                return true;
+            }
+
+            bool readDayTime(uint8_t *day_of_week, uint8_t *hours, uint8_t *minutes) override
+            {
+                // Simulator doesn't support time/date
+                return false;
+            }
+
+            bool readDate(uint8_t *month, uint8_t *day) override
+            {
+                // Simulator doesn't support time/date
+                return false;
+            }
+
+            bool readYear(uint16_t *year) override
+            {
+                // Simulator doesn't support time/date
+                return false;
+            }
+
+            bool readDHWBounds(uint8_t *min_temp, uint8_t *max_temp) override
+            {
+                // Simulator doesn't support bounds - return reasonable defaults
+                if (!min_temp || !max_temp)
+                    return false;
+                *min_temp = 40;
+                *max_temp = 65;
+                return true;
+            }
+
+            bool readCHBounds(uint8_t *min_temp, uint8_t *max_temp) override
+            {
+                // Simulator doesn't support bounds - return reasonable defaults
+                if (!min_temp || !max_temp)
+                    return false;
+                *min_temp = 20;
+                *max_temp = 80;
+                return true;
+            }
+
+            bool writeDayTime(uint8_t day_of_week, uint8_t hours, uint8_t minutes) override
+            {
+                // Simulator doesn't support time/date writes
+                return false;
+            }
+
+            bool writeDate(uint8_t month, uint8_t day) override
+            {
+                // Simulator doesn't support time/date writes
+                return false;
+            }
+
+            bool writeYear(uint16_t year) override
+            {
+                // Simulator doesn't support time/date writes
+                return false;
+            }
+
             // Timeout configuration
             void setTimeout(uint32_t timeout_ms) override
             {
@@ -295,27 +369,6 @@ namespace OpenTherm
             uint32_t getTimeout() const override
             {
                 return timeout_ms_;
-            }
-
-            // Low-level request/response handling
-            bool sendAndReceive(uint32_t request, uint32_t *response) override
-            {
-                // Simulator doesn't implement low-level frame handling
-                // For now, return false for unsupported operations
-                // In the future, we could simulate responses based on request type
-                if (!response)
-                    return false;
-
-                // Parse request to determine what's being asked
-                uint8_t msg_type = (request >> 28) & 0x07;
-                uint8_t data_id = (request >> 16) & 0xFF;
-
-                // We could implement specific responses here based on data_id
-                // For now, return false to indicate not supported
-                (void)msg_type;
-                (void)data_id;
-                *response = 0;
-                return false;
             }
 
             // Access to underlying simulator

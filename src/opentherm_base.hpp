@@ -37,6 +37,7 @@ namespace OpenTherm
 
         // Modulation level read (percentage)
         virtual bool readModulationLevel(float *level) = 0;
+        virtual bool readMaxModulationLevel(float *level) = 0;
 
         // Setpoint reads
         virtual bool readControlSetpoint(float *setpoint) = 0;
@@ -55,19 +56,31 @@ namespace OpenTherm
         virtual bool readOpenThermVersion(float *version) = 0;
         virtual bool readSlaveVersion(uint8_t *type, uint8_t *version) = 0;
 
+        // Time and date reads
+        virtual bool readDayTime(uint8_t *day_of_week, uint8_t *hours, uint8_t *minutes) = 0;
+        virtual bool readDate(uint8_t *month, uint8_t *day) = 0;
+        virtual bool readYear(uint16_t *year) = 0;
+
+        // Temperature bounds reads
+        virtual bool readDHWBounds(uint8_t *min_temp, uint8_t *max_temp) = 0;
+        virtual bool readCHBounds(uint8_t *min_temp, uint8_t *max_temp) = 0;
+
         // Write functions
         virtual bool writeControlSetpoint(float temperature) = 0;
         virtual bool writeRoomSetpoint(float temperature) = 0;
         virtual bool writeDHWSetpoint(float temperature) = 0;
         virtual bool writeMaxCHSetpoint(float temperature) = 0;
+        virtual bool writeCHEnable(bool enable) = 0;
+        virtual bool writeDHWEnable(bool enable) = 0;
+
+        // Time and date writes
+        virtual bool writeDayTime(uint8_t day_of_week, uint8_t hours, uint8_t minutes) = 0;
+        virtual bool writeDate(uint8_t month, uint8_t day) = 0;
+        virtual bool writeYear(uint16_t year) = 0;
 
         // Timeout configuration
         virtual void setTimeout(uint32_t timeout_ms) = 0;
         virtual uint32_t getTimeout() const = 0;
-
-        // Low-level request/response handling
-        // Sends a request frame and waits for response
-        virtual bool sendAndReceive(uint32_t request, uint32_t *response) = 0;
     };
 
 } // namespace OpenTherm

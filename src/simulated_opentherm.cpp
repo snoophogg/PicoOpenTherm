@@ -172,9 +172,9 @@ namespace OpenTherm
         uint16_t SimulatedInterface::readOEMDiagnosticCode() { return 0; }
 
         // Update simulator state
-        void SimulatedInterface::update()
+        void SimulatedInterface::update(float time_seconds)
         {
-            state_.time += 0.1f; // Increment time
+            state_.time = time_seconds;
 
             // Increment statistics slowly
             if (state_.flame_on)

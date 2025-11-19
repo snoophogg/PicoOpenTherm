@@ -1,4 +1,5 @@
 #include "opentherm_ha.hpp"
+#include "opentherm_protocol.hpp"
 #include "config.hpp"
 #include "mqtt_discovery.hpp"
 #include "mqtt_topics.hpp"
@@ -170,11 +171,9 @@ namespace OpenTherm
             }
 
             // Read max modulation
-            uint32_t request = opentherm_read_max_rel_mod();
-            uint32_t response;
-            if (ot_.sendAndReceive(request, &response))
+            float max_mod;
+            if (ot_.readMaxModulationLevel(&max_mod))
             {
-                float max_mod = opentherm_get_f8_8(response);
                 publishSensor(MQTTTopics::MAX_MODULATION, max_mod);
             }
         }
@@ -250,74 +249,56 @@ namespace OpenTherm
         void HAInterface::publishTimeDate()
         {
             // Read time/date from boiler (if supported)
-            uint32_t request, response;
-
-            // Day and time (ID 20)
-            request = opentherm_read_day_time();
-            if (ot_.sendAndReceive(request, &response))
+            uint8_t day_of_week, hours, minutes;
+            if (ot_.readDayTime(&day_of_week, &hours, &minutes))
             {
-                opentherm_time_t time;
-                uint16_t value = opentherm_get_u16(response);
-                opentherm_decode_time(value, &time);
-
                 // Day of week (1=Monday, 7=Sunday, 0=unknown)
                 const char *day_names[] = {"Unknown", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-                if (time.day_of_week <= 7)
+                if (day_of_week <= 7)
                 {
-                    publishSensor(MQTTTopics::DAY_OF_WEEK, day_names[time.day_of_week]);
+                    publishSensor(MQTTTopics::DAY_OF_WEEK, day_names[day_of_week]);
                 }
 
                 // Time of day (HH:MM format)
                 char time_str[16];
-                snprintf(time_str, sizeof(time_str), "%02u:%02u", time.hours, time.minutes);
+                snprintf(time_str, sizeof(time_str), "%02u:%02u", hours, minutes);
                 publishSensor(MQTTTopics::TIME_OF_DAY, time_str);
             }
 
             // Date (ID 21)
-            request = opentherm_read_date();
-            if (ot_.sendAndReceive(request, &response))
+            uint8_t month, day;
+            if (ot_.readDate(&month, &day))
             {
-                opentherm_date_t date;
-                uint16_t value = opentherm_get_u16(response);
-                opentherm_decode_date(value, &date);
-
                 // Date (MM/DD format)
                 char date_str[16];
-                snprintf(date_str, sizeof(date_str), "%02u/%02u", date.month, date.day);
+                snprintf(date_str, sizeof(date_str), "%02u/%02u", month, day);
                 publishSensor(MQTTTopics::DATE, date_str);
             }
 
             // Year (ID 22)
-            request = opentherm_read_year();
-            if (ot_.sendAndReceive(request, &response))
+            uint16_t year;
+            if (ot_.readYear(&year))
             {
-                uint16_t year = opentherm_get_u16(response);
                 publishSensor(MQTTTopics::YEAR, (int)year);
             }
         }
 
         void HAInterface::publishTemperatureBounds()
         {
-            uint32_t request, response;
-
             // DHW bounds (ID 48)
-            request = opentherm_read_dhw_bounds();
-            if (ot_.sendAndReceive(request, &response))
+            uint8_t dhw_min, dhw_max;
+            if (ot_.readDHWBounds(&dhw_min, &dhw_max))
             {
-                uint8_t max_val, min_val;
-                opentherm_get_u8_u8(response, &max_val, &min_val);
-                publishSensor(MQTTTopics::DHW_SETPOINT_MIN, (int)min_val);
-                publishSensor(MQTTTopics::DHW_SETPOINT_MAX, (int)max_val);
+                publishSensor(MQTTTopics::DHW_SETPOINT_MIN, (int)dhw_min);
+                publishSensor(MQTTTopics::DHW_SETPOINT_MAX, (int)dhw_max);
             }
 
             // CH bounds (ID 49)
-            request = opentherm_read_ch_bounds();
-            if (ot_.sendAndReceive(request, &response))
+            uint8_t ch_min, ch_max;
+            if (ot_.readCHBounds(&ch_min, &ch_max))
             {
-                uint8_t max_val, min_val;
-                opentherm_get_u8_u8(response, &max_val, &min_val);
-                publishSensor(MQTTTopics::CH_SETPOINT_MIN, (int)min_val);
-                publishSensor(MQTTTopics::CH_SETPOINT_MAX, (int)max_val);
+                publishSensor(MQTTTopics::CH_SETPOINT_MIN, (int)ch_min);
+                publishSensor(MQTTTopics::CH_SETPOINT_MAX, (int)ch_max);
             }
         }
 
@@ -436,12 +417,10 @@ namespace OpenTherm
             // Convert Zeller (0=Saturday) to OpenTherm (1=Monday, 7=Sunday)
             uint8_t day_of_week = ((dow_zeller + 5) % 7) + 1;
 
-            uint32_t request, response;
             bool success = true;
 
             // Sync day/time to boiler (ID 20)
-            request = opentherm_write_day_time(day_of_week, (uint8_t)hour, (uint8_t)minute);
-            if (!ot_.sendAndReceive(request, &response))
+            if (!ot_.writeDayTime(day_of_week, (uint8_t)hour, (uint8_t)minute))
             {
                 printf("WARNING: Failed to sync day/time to boiler\n");
                 success = false;
@@ -452,8 +431,7 @@ namespace OpenTherm
             }
 
             // Sync date to boiler (ID 21)
-            request = opentherm_write_date((uint8_t)month, (uint8_t)day);
-            if (!ot_.sendAndReceive(request, &response))
+            if (!ot_.writeDate((uint8_t)month, (uint8_t)day))
             {
                 printf("WARNING: Failed to sync date to boiler\n");
                 success = false;
@@ -464,8 +442,7 @@ namespace OpenTherm
             }
 
             // Sync year to boiler (ID 22)
-            request = opentherm_write_year((uint16_t)year);
-            if (!ot_.sendAndReceive(request, &response))
+            if (!ot_.writeYear((uint16_t)year))
             {
                 printf("WARNING: Failed to sync year to boiler\n");
                 success = false;
@@ -563,28 +540,24 @@ namespace OpenTherm
                 day_of_week = 7; // OpenTherm: 7=Sunday
             // else OpenTherm: 1=Monday matches (day_of_week from calculation)
 
-            uint32_t request, response;
             bool success = true;
 
             // Sync day/time to boiler
-            request = opentherm_write_day_time(day_of_week, hour, minute);
-            if (!ot_.sendAndReceive(request, &response))
+            if (!ot_.writeDayTime(day_of_week, hour, minute))
             {
                 printf("WARNING: Failed to sync day/time to boiler\n");
                 success = false;
             }
 
             // Sync date to boiler
-            request = opentherm_write_date(month, day);
-            if (!ot_.sendAndReceive(request, &response))
+            if (!ot_.writeDate(month, day))
             {
                 printf("WARNING: Failed to sync date to boiler\n");
                 success = false;
             }
 
             // Sync year to boiler
-            request = opentherm_write_year(year);
-            if (!ot_.sendAndReceive(request, &response))
+            if (!ot_.writeYear(year))
             {
                 printf("WARNING: Failed to sync year to boiler\n");
                 success = false;
@@ -808,20 +781,9 @@ namespace OpenTherm
 
         bool HAInterface::setCHEnable(bool enable)
         {
-            if (!status_valid_)
+            if (ot_.writeCHEnable(enable))
             {
-                return false;
-            }
-
-            // Build status frame with updated CH enable flag
-            last_status_.ch_enable = enable;
-            uint16_t status_value = opentherm_encode_status(&last_status_);
-
-            uint32_t request = opentherm_build_write_request(OT_DATA_ID_STATUS, status_value);
-            uint32_t response;
-            if (ot_.sendAndReceive(request, &response))
-            {
-                publishBinarySensor("ch_enable", enable);
+                publishBinarySensor(MQTTTopics::CH_ENABLE, enable);
                 return true;
             }
             return false;
@@ -829,20 +791,9 @@ namespace OpenTherm
 
         bool HAInterface::setDHWEnable(bool enable)
         {
-            if (!status_valid_)
+            if (ot_.writeDHWEnable(enable))
             {
-                return false;
-            }
-
-            // Build status frame with updated DHW enable flag
-            last_status_.dhw_enable = enable;
-            uint16_t status_value = opentherm_encode_status(&last_status_);
-
-            uint32_t request = opentherm_build_write_request(OT_DATA_ID_STATUS, status_value);
-            uint32_t response;
-            if (ot_.sendAndReceive(request, &response))
-            {
-                publishBinarySensor("dhw_enable", enable);
+                publishBinarySensor(MQTTTopics::DHW_ENABLE, enable);
                 return true;
             }
             return false;
