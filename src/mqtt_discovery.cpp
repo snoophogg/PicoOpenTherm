@@ -55,17 +55,19 @@ namespace OpenTherm
 
         std::string buildStateTopic(const OpenTherm::HomeAssistant::Config &cfg, const char *suffix)
         {
-            return std::string(cfg.device_id) + "/" + cfg.topic_base + "/" + cfg.state_topic_base + "/" + suffix;
+            return std::string(cfg.topic_base) + "/" + cfg.device_id + "/" + cfg.state_topic_base + "/" + suffix;
         }
 
         std::string buildCommandTopic(const OpenTherm::HomeAssistant::Config &cfg, const char *suffix)
         {
-            return std::string(cfg.device_id) + "/" + cfg.topic_base + "/" + cfg.command_topic_base + "/" + suffix;
+            return std::string(cfg.topic_base) + "/" + cfg.device_id + "/" + cfg.command_topic_base + "/" + suffix;
         }
 
         std::string buildDiscoveryTopic(const OpenTherm::HomeAssistant::Config &cfg, const char *component, const char *object_id)
         {
-            return std::string(cfg.mqtt_prefix) + "/" + cfg.device_id + "/" + component + "/" + object_id + OpenTherm::MQTTDiscovery::CONFIG_SUFFIX;
+            // Home Assistant MQTT discovery format: <discovery_prefix>/<component>/[<node_id>/]<object_id>/config
+            // Example: homeassistant/sensor/opentherm_gw/boiler_temp/config
+            return std::string(cfg.mqtt_prefix) + "/" + component + "/" + cfg.device_id + "/" + object_id + OpenTherm::MQTTDiscovery::CONFIG_SUFFIX;
         }
 
         bool publishDiscoveryConfig(const OpenTherm::HomeAssistant::Config &cfg,
