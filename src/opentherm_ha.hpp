@@ -1,7 +1,7 @@
 #ifndef OPENTHERM_HA_HPP
 #define OPENTHERM_HA_HPP
 
-#include "opentherm.hpp"
+#include "opentherm_base.hpp"
 #include <string>
 #include <functional>
 
@@ -48,7 +48,7 @@ namespace OpenTherm
         class HAInterface
         {
         public:
-            HAInterface(OpenTherm::Interface &ot_interface, const Config &config);
+            HAInterface(OpenTherm::BaseInterface &ot_interface, const Config &config);
 
             // Initialize Home Assistant MQTT discovery
             void begin(const MQTTCallbacks &callbacks);
@@ -94,7 +94,7 @@ namespace OpenTherm
             void publishDeviceConfiguration();
 
         private:
-            OpenTherm::Interface &ot_;
+            OpenTherm::BaseInterface &ot_;
             Config config_;
             MQTTCallbacks mqtt_;
             uint32_t last_update_;

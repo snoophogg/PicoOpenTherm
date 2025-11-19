@@ -4,12 +4,13 @@
 #include <cstdint>
 #include "hardware/pio.h"
 #include "opentherm_protocol.hpp"
+#include "opentherm_base.hpp"
 
 // C++ OpenTherm Interface
 namespace OpenTherm
 {
 
-    class Interface
+    class Interface : public BaseInterface
     {
     private:
         PIO pio_tx_;
@@ -25,8 +26,8 @@ namespace OpenTherm
         Interface(unsigned int tx_pin, unsigned int rx_pin, PIO pio_tx = pio0, PIO pio_rx = pio1);
 
         // Set/get timeout for read/write operations (default 1000ms)
-        void setTimeout(uint32_t timeout_ms) { timeout_ms_ = timeout_ms; }
-        uint32_t getTimeout() const { return timeout_ms_; }
+        void setTimeout(uint32_t timeout_ms) override { timeout_ms_ = timeout_ms; }
+        uint32_t getTimeout() const override { return timeout_ms_; }
 
         // Send an OpenTherm frame
         void send(uint32_t frame);
@@ -41,51 +42,51 @@ namespace OpenTherm
         // Returns true if successful, false if timeout or error
 
         // Status and configuration reads
-        bool readStatus(opentherm_status_t *status);
-        bool readSlaveConfig(opentherm_config_t *config);
-        bool readFaultFlags(opentherm_fault_t *fault);
-        bool readOemDiagnosticCode(uint16_t *diag_code);
+        bool readStatus(opentherm_status_t *status) override;
+        bool readSlaveConfig(opentherm_config_t *config) override;
+        bool readFaultFlags(opentherm_fault_t *fault) override;
+        bool readOemDiagnosticCode(uint16_t *diag_code) override;
 
         // Temperature sensor reads (returns temperature in °C)
-        bool readBoilerTemperature(float *temp);
-        bool readDHWTemperature(float *temp);
-        bool readOutsideTemperature(float *temp);
-        bool readReturnWaterTemperature(float *temp);
-        bool readRoomTemperature(float *temp);
-        bool readExhaustTemperature(int16_t *temp);
+        bool readBoilerTemperature(float *temp) override;
+        bool readDHWTemperature(float *temp) override;
+        bool readOutsideTemperature(float *temp) override;
+        bool readReturnWaterTemperature(float *temp) override;
+        bool readRoomTemperature(float *temp) override;
+        bool readExhaustTemperature(int16_t *temp) override;
 
         // Pressure and flow reads
-        bool readCHWaterPressure(float *pressure); // bar
-        bool readDHWFlowRate(float *flow_rate);    // l/min
+        bool readCHWaterPressure(float *pressure) override; // bar
+        bool readDHWFlowRate(float *flow_rate) override;    // l/min
 
         // Modulation level read (percentage)
-        bool readModulationLevel(float *level);
+        bool readModulationLevel(float *level) override;
 
         // Setpoint reads
-        bool readControlSetpoint(float *setpoint);
-        bool readDHWSetpoint(float *setpoint);
-        bool readMaxCHSetpoint(float *setpoint);
+        bool readControlSetpoint(float *setpoint) override;
+        bool readDHWSetpoint(float *setpoint) override;
+        bool readMaxCHSetpoint(float *setpoint) override;
 
         // Counter/statistics reads
-        bool readBurnerStarts(uint16_t *count);
-        bool readCHPumpStarts(uint16_t *count);
-        bool readDHWPumpStarts(uint16_t *count);
-        bool readBurnerHours(uint16_t *hours);
-        bool readCHPumpHours(uint16_t *hours);
-        bool readDHWPumpHours(uint16_t *hours);
+        bool readBurnerStarts(uint16_t *count) override;
+        bool readCHPumpStarts(uint16_t *count) override;
+        bool readDHWPumpStarts(uint16_t *count) override;
+        bool readBurnerHours(uint16_t *hours) override;
+        bool readCHPumpHours(uint16_t *hours) override;
+        bool readDHWPumpHours(uint16_t *hours) override;
 
         // Version information reads
-        bool readOpenThermVersion(float *version);
-        bool readSlaveVersion(uint8_t *type, uint8_t *version);
+        bool readOpenThermVersion(float *version) override;
+        bool readSlaveVersion(uint8_t *type, uint8_t *version) override;
 
         // Write functions
-        bool writeControlSetpoint(float temperature);
-        bool writeRoomSetpoint(float temperature);
-        bool writeDHWSetpoint(float temperature);
-        bool writeMaxCHSetpoint(float temperature);
+        bool writeControlSetpoint(float temperature) override;
+        bool writeRoomSetpoint(float temperature) override;
+        bool writeDHWSetpoint(float temperature) override;
+        bool writeMaxCHSetpoint(float temperature) override;
 
         // Helper function to send request and wait for response
-        bool sendAndReceive(uint32_t request, uint32_t *response);
+        bool sendAndReceive(uint32_t request, uint32_t *response) override;
 
     private:
     };

@@ -14,7 +14,7 @@ namespace OpenTherm
     namespace HomeAssistant
     {
 
-        HAInterface::HAInterface(OpenTherm::Interface &ot_interface, const Config &config)
+        HAInterface::HAInterface(OpenTherm::BaseInterface &ot_interface, const Config &config)
             : ot_(ot_interface), config_(config), last_update_(0), status_valid_(false)
         {
             memset(&last_status_, 0, sizeof(last_status_));
