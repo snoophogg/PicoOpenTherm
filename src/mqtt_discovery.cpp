@@ -55,11 +55,13 @@ namespace OpenTherm
 
         std::string buildStateTopic(const OpenTherm::HomeAssistant::Config &cfg, const char *suffix)
         {
+            // opentherm/opentherm_gw/state/boiler_temp
             return std::string(cfg.topic_base) + "/" + cfg.device_id + "/" + cfg.state_topic_base + "/" + suffix;
         }
 
         std::string buildCommandTopic(const OpenTherm::HomeAssistant::Config &cfg, const char *suffix)
         {
+            // opentherm/opentherm_gw/cmd/ch_enable
             return std::string(cfg.topic_base) + "/" + cfg.device_id + "/" + cfg.command_topic_base + "/" + suffix;
         }
 
