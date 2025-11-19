@@ -259,6 +259,9 @@ namespace OpenTherm
             publishDiscoveryConfig(cfg, COMPONENT_NUMBER, OPENTHERM_RX_PIN, NAME_OPENTHERM_RX_PIN,
                                    buildStateTopic(cfg, OPENTHERM_RX_PIN).c_str(), nullptr, nullptr, ICON_PIN,
                                    buildCommandTopic(cfg, OPENTHERM_RX_PIN).c_str(), nullptr, 0.0f, 28.0f, 1.0f);
+            publishDiscoveryConfig(cfg, COMPONENT_NUMBER, UPDATE_INTERVAL, NAME_UPDATE_INTERVAL,
+                                   buildStateTopic(cfg, UPDATE_INTERVAL).c_str(), nullptr, UNIT_MS, ICON_TIMER,
+                                   buildCommandTopic(cfg, UPDATE_INTERVAL).c_str(), nullptr, 1000.0f, 300000.0f, 1000.0f);
 
             // Time/Date sensors (read-only from boiler)
             publishDiscoveryConfig(cfg, COMPONENT_SENSOR, DAY_OF_WEEK, NAME_DAY_OF_WEEK,

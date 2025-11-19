@@ -15,6 +15,7 @@ namespace Config
     constexpr const char *KEY_DEVICE_ID = "device.id";
     constexpr const char *KEY_OPENTHERM_TX_PIN = "opentherm.tx_pin";
     constexpr const char *KEY_OPENTHERM_RX_PIN = "opentherm.rx_pin";
+    constexpr const char *KEY_UPDATE_INTERVAL_MS = "update.interval_ms";
 
     // Default values
     constexpr const char *DEFAULT_WIFI_SSID = "your_wifi_ssid";
@@ -26,6 +27,7 @@ namespace Config
     constexpr const char *DEFAULT_DEVICE_ID = "opentherm_gw";
     constexpr uint8_t DEFAULT_OPENTHERM_TX_PIN = 16;
     constexpr uint8_t DEFAULT_OPENTHERM_RX_PIN = 17;
+    constexpr uint32_t DEFAULT_UPDATE_INTERVAL_MS = 10000; // 10 seconds
 
     // Initialize configuration system
     bool init();
@@ -55,6 +57,10 @@ namespace Config
     uint8_t getOpenThermRxPin();
     bool setOpenThermTxPin(uint8_t pin);
     bool setOpenThermRxPin(uint8_t pin);
+
+    // Update interval configuration
+    uint32_t getUpdateIntervalMs();
+    bool setUpdateIntervalMs(uint32_t interval_ms);
 
     // Reset to defaults
     bool resetToDefaults();

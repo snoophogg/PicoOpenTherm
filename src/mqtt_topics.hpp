@@ -83,6 +83,9 @@ namespace OpenTherm
         constexpr const char *WIFI_SSID = "wifi_ssid";
         constexpr const char *UPTIME = "uptime";
         constexpr const char *FREE_HEAP = "free_heap";
+
+        // Configuration / Settings
+        constexpr const char *UPDATE_INTERVAL = "update_interval";
     }
 
     namespace MQTTDiscovery
@@ -136,6 +139,7 @@ namespace OpenTherm
         constexpr const char *UNIT_DBM = "dBm";
         constexpr const char *UNIT_SECONDS = "s";
         constexpr const char *UNIT_BYTES = "B";
+        constexpr const char *UNIT_MS = "ms";
 
         // Icons
         constexpr const char *ICON_ALERT_CIRCLE = "mdi:alert-circle";
@@ -161,6 +165,7 @@ namespace OpenTherm
         constexpr const char *ICON_TAG_TEXT = "mdi:tag-text";
         constexpr const char *ICON_IDENTIFIER = "mdi:identifier";
         constexpr const char *ICON_PIN = "mdi:pin";
+        constexpr const char *ICON_TIMER = "mdi:timer-cog";
         constexpr const char *ICON_CALENDAR = "mdi:calendar";
         constexpr const char *ICON_CALENDAR_TODAY = "mdi:calendar-today";
         constexpr const char *ICON_CLOCK_SYNC = "mdi:clock-sync";
@@ -211,6 +216,7 @@ namespace OpenTherm
         constexpr const char *NAME_DEVICE_ID = "Device ID";
         constexpr const char *NAME_OPENTHERM_TX_PIN = "OpenTherm TX Pin";
         constexpr const char *NAME_OPENTHERM_RX_PIN = "OpenTherm RX Pin";
+        constexpr const char *NAME_UPDATE_INTERVAL = "Update Interval";
         constexpr const char *NAME_DAY_OF_WEEK = "Day of Week";
         constexpr const char *NAME_TIME_OF_DAY = "Time of Day";
         constexpr const char *NAME_DATE = "Date";

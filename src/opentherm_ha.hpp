@@ -91,6 +91,8 @@ namespace OpenTherm
             bool setDeviceID(const char *id);
             bool setOpenThermTxPin(uint8_t pin);
             bool setOpenThermRxPin(uint8_t pin);
+            bool setUpdateInterval(uint32_t interval_ms);
+            uint32_t getUpdateInterval() const;
             void publishDeviceConfiguration();
 
         private:

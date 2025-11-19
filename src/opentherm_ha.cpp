@@ -40,6 +40,7 @@ namespace OpenTherm
             mqtt_.subscribe((base_cmd + "/" + MAX_CH_SETPOINT).c_str());
             mqtt_.subscribe((base_cmd + "/" + SYNC_TIME).c_str());
             mqtt_.subscribe((base_cmd + "/" + RESTART).c_str());
+            mqtt_.subscribe((base_cmd + "/" + UPDATE_INTERVAL).c_str());
         }
 
         void HAInterface::publishDiscoveryConfigs()
@@ -616,6 +617,9 @@ namespace OpenTherm
             // Publish OpenTherm GPIO pins
             publishSensor(MQTTTopics::OPENTHERM_TX_PIN, (int)::Config::getOpenThermTxPin());
             publishSensor(MQTTTopics::OPENTHERM_RX_PIN, (int)::Config::getOpenThermRxPin());
+
+            // Publish update interval
+            publishSensor(MQTTTopics::UPDATE_INTERVAL, (int)config_.update_interval_ms);
         }
 
         void HAInterface::update()
@@ -754,6 +758,12 @@ namespace OpenTherm
                 watchdog_reboot(0, 0, 0);
                 // watchdog_reboot will reset the system
             }
+            // Update interval command
+            else if (strcmp(topic, (cmd_base + "/update_interval").c_str()) == 0)
+            {
+                uint32_t interval_ms = (uint32_t)atoi(payload);
+                setUpdateInterval(interval_ms);
+            }
         }
 
         bool HAInterface::setControlSetpoint(float temperature)
@@ -888,6 +898,23 @@ namespace OpenTherm
                 return true;
             }
             return false;
+        }
+
+        bool HAInterface::setUpdateInterval(uint32_t interval_ms)
+        {
+            if (::Config::setUpdateIntervalMs(interval_ms))
+            {
+                config_.update_interval_ms = interval_ms;
+                publishSensor(MQTTTopics::UPDATE_INTERVAL, (int)interval_ms);
+                printf("Update interval changed to: %u ms (%.1f seconds)\n", interval_ms, interval_ms / 1000.0f);
+                return true;
+            }
+            return false;
+        }
+
+        uint32_t HAInterface::getUpdateInterval() const
+        {
+            return config_.update_interval_ms;
         }
 
     } // namespace HomeAssistant

@@ -136,6 +136,16 @@ int main()
     OpenTherm::Interface ot(opentherm_tx_pin, opentherm_rx_pin);
 #endif
 
+    // Load update interval from configuration
+    uint32_t update_interval_ms = Config::getUpdateIntervalMs();
+#ifdef USE_SIMULATOR
+    // Simulator defaults to 60 seconds if not configured
+    if (update_interval_ms == Config::DEFAULT_UPDATE_INTERVAL_MS)
+    {
+        update_interval_ms = 60000;
+    }
+#endif
+
     // Configure Home Assistant interface using loaded configuration
     OpenTherm::HomeAssistant::Config ha_config = {
         .device_name = device_name,
@@ -144,11 +154,7 @@ int main()
         .state_topic_base = "opentherm/state",
         .command_topic_base = "opentherm/cmd",
         .auto_discovery = true,
-#ifdef USE_SIMULATOR
-        .update_interval_ms = 60000 // Simulator: Update every 60 seconds
-#else
-        .update_interval_ms = 10000 // Hardware: Update every 10 seconds
-#endif
+        .update_interval_ms = update_interval_ms
     };
 
     OpenTherm::HomeAssistant::HAInterface ha(ot, ha_config);

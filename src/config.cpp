@@ -217,6 +217,36 @@ namespace Config
         return kvs_set(KEY_OPENTHERM_RX_PIN, buffer, strlen(buffer) + 1) == KVSTORE_SUCCESS;
     }
 
+    uint32_t getUpdateIntervalMs()
+    {
+        char buffer[16];
+        int rc = kvs_get_str(KEY_UPDATE_INTERVAL_MS, buffer, sizeof(buffer));
+        if (rc == KVSTORE_SUCCESS)
+        {
+            uint32_t interval = (uint32_t)atoi(buffer);
+            // Validate range: 1 second to 5 minutes
+            if (interval >= 1000 && interval <= 300000)
+            {
+                return interval;
+            }
+        }
+
+        return DEFAULT_UPDATE_INTERVAL_MS;
+    }
+
+    bool setUpdateIntervalMs(uint32_t interval_ms)
+    {
+        // Validate range: 1 second to 5 minutes
+        if (interval_ms < 1000 || interval_ms > 300000)
+        {
+            return false;
+        }
+
+        char buffer[16];
+        snprintf(buffer, sizeof(buffer), "%u", (unsigned int)interval_ms);
+        return kvs_set(KEY_UPDATE_INTERVAL_MS, buffer, strlen(buffer) + 1) == KVSTORE_SUCCESS;
+    }
+
     bool resetToDefaults()
     {
         printf("Resetting configuration to defaults...\n");
@@ -282,6 +312,13 @@ namespace Config
             return false;
         }
 
+        // Update interval default
+        if (!setUpdateIntervalMs(DEFAULT_UPDATE_INTERVAL_MS))
+        {
+            printf("  ERROR: Failed to set update interval\n");
+            return false;
+        }
+
         printf("Configuration reset complete\n");
         return true;
     }
@@ -314,6 +351,9 @@ namespace Config
         printf("OpenTherm:\n");
         printf("  TX Pin: GPIO%u\n", getOpenThermTxPin());
         printf("  RX Pin: GPIO%u\n", getOpenThermRxPin());
+
+        printf("Update:\n");
+        printf("  Interval: %u ms (%.1f seconds)\n", getUpdateIntervalMs(), getUpdateIntervalMs() / 1000.0f);
 
         printf("===========================\n\n");
     }
