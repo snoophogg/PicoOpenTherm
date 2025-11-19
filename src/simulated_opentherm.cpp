@@ -171,6 +171,74 @@ namespace OpenTherm
         uint16_t SimulatedInterface::readOEMFaultCode() { return 0; }
         uint16_t SimulatedInterface::readOEMDiagnosticCode() { return 0; }
 
+        // Time and date read functions
+        bool SimulatedInterface::readDayTime(uint8_t *day_of_week, uint8_t *hours, uint8_t *minutes)
+        {
+            if (!day_of_week || !hours || !minutes)
+                return false;
+
+            *day_of_week = state_.day_of_week;
+            *hours = state_.hours;
+            *minutes = state_.minutes;
+            return true;
+        }
+
+        bool SimulatedInterface::readDate(uint8_t *month, uint8_t *day)
+        {
+            if (!month || !day)
+                return false;
+
+            *month = state_.month;
+            *day = state_.day;
+            return true;
+        }
+
+        bool SimulatedInterface::readYear(uint16_t *year)
+        {
+            if (!year)
+                return false;
+
+            *year = state_.year;
+            return true;
+        }
+
+        // Time and date write functions
+        bool SimulatedInterface::writeDayTime(uint8_t day_of_week, uint8_t hours, uint8_t minutes)
+        {
+            // Validate inputs
+            if (day_of_week > 7 || hours > 23 || minutes > 59)
+                return false;
+
+            state_.day_of_week = day_of_week;
+            state_.hours = hours;
+            state_.minutes = minutes;
+            printf("Simulator: Time set to day=%u %02u:%02u\n", day_of_week, hours, minutes);
+            return true;
+        }
+
+        bool SimulatedInterface::writeDate(uint8_t month, uint8_t day)
+        {
+            // Validate inputs
+            if (month < 1 || month > 12 || day < 1 || day > 31)
+                return false;
+
+            state_.month = month;
+            state_.day = day;
+            printf("Simulator: Date set to %02u/%02u\n", month, day);
+            return true;
+        }
+
+        bool SimulatedInterface::writeYear(uint16_t year)
+        {
+            // Validate year (reasonable range)
+            if (year < 2000 || year > 2099)
+                return false;
+
+            state_.year = year;
+            printf("Simulator: Year set to %u\n", year);
+            return true;
+        }
+
         // Update simulator state
         void SimulatedInterface::update(float time_seconds)
         {

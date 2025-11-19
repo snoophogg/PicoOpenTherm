@@ -22,6 +22,14 @@ namespace OpenTherm
             uint32_t burner_hours = 0;
             uint32_t ch_pump_hours = 0;
             uint32_t dhw_pump_hours = 0;
+
+            // Time and date storage
+            uint8_t day_of_week = 1;  // Monday
+            uint8_t hours = 12;
+            uint8_t minutes = 0;
+            uint8_t month = 1;
+            uint8_t day = 1;
+            uint16_t year = 2025;
         };
 
         // Simulated OpenTherm Interface - no actual hardware
@@ -71,6 +79,14 @@ namespace OpenTherm
             // Fault/diagnostic codes (none in simulator)
             uint16_t readOEMFaultCode();
             uint16_t readOEMDiagnosticCode();
+
+            // Time and date functions
+            bool readDayTime(uint8_t *day_of_week, uint8_t *hours, uint8_t *minutes);
+            bool readDate(uint8_t *month, uint8_t *day);
+            bool readYear(uint16_t *year);
+            bool writeDayTime(uint8_t day_of_week, uint8_t hours, uint8_t minutes);
+            bool writeDate(uint8_t month, uint8_t day);
+            bool writeYear(uint16_t year);
 
             // Update simulator state (call periodically)
             void update(float time_seconds);

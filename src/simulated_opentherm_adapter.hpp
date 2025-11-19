@@ -306,20 +306,17 @@ namespace OpenTherm
 
             bool readDayTime(uint8_t *day_of_week, uint8_t *hours, uint8_t *minutes) override
             {
-                // Simulator doesn't support time/date
-                return false;
+                return sim_.readDayTime(day_of_week, hours, minutes);
             }
 
             bool readDate(uint8_t *month, uint8_t *day) override
             {
-                // Simulator doesn't support time/date
-                return false;
+                return sim_.readDate(month, day);
             }
 
             bool readYear(uint16_t *year) override
             {
-                // Simulator doesn't support time/date
-                return false;
+                return sim_.readYear(year);
             }
 
             bool readDHWBounds(uint8_t *min_temp, uint8_t *max_temp) override
@@ -344,20 +341,17 @@ namespace OpenTherm
 
             bool writeDayTime(uint8_t day_of_week, uint8_t hours, uint8_t minutes) override
             {
-                // Simulator doesn't support time/date writes
-                return false;
+                return sim_.writeDayTime(day_of_week, hours, minutes);
             }
 
             bool writeDate(uint8_t month, uint8_t day) override
             {
-                // Simulator doesn't support time/date writes
-                return false;
+                return sim_.writeDate(month, day);
             }
 
             bool writeYear(uint16_t year) override
             {
-                // Simulator doesn't support time/date writes
-                return false;
+                return sim_.writeYear(year);
             }
 
             // Timeout configuration
