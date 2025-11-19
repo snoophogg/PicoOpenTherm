@@ -140,7 +140,7 @@ def main():
         time.sleep(1)
 
         if args.test:
-            topic = f"opentherm/cmd/{args.device}/room_setpoint"
+            topic = f"opentherm/opentherm_gw/cmd/{args.device}/room_setpoint"
             payload = "21.5"
             print(f"[{now()}] Publishing test command {topic} -> {payload}")
             client.publish(topic, payload)

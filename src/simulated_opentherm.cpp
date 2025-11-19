@@ -50,6 +50,16 @@ namespace OpenTherm
             return 10.0f + 8.0f * std::sin(state_.time * 0.02f); // 2-18°C daily variation
         }
 
+        // Exhaust temperature (hotter when flame is on)
+        int16_t SimulatedInterface::readExhaustTemperature()
+        {
+            if (state_.flame_on)
+            {
+                return state_.exhaust_temp + static_cast<int16_t>(state_.modulation * 0.5f); // Up to +50°C with modulation
+            }
+            return 50; // Ambient when off
+        }
+
         // Modulation level (affected by temperature difference)
         float SimulatedInterface::readModulationLevel()
         {
@@ -75,6 +85,16 @@ namespace OpenTherm
         float SimulatedInterface::readCHWaterPressure()
         {
             return 1.5f + 0.2f * std::sin(state_.time * 0.3f); // 1.3-1.7 bar
+        }
+
+        // DHW flow rate (higher when DHW is active)
+        float SimulatedInterface::readDHWFlowRate()
+        {
+            if (state_.dhw_enabled && readDHWActive())
+            {
+                return state_.dhw_flow_rate + 2.0f * std::sin(state_.time * 0.5f); // 8-12 L/min variation
+            }
+            return 0.0f; // No flow when not active
         }
 
         // Flame status
@@ -107,6 +127,11 @@ namespace OpenTherm
             return state_.dhw_setpoint;
         }
 
+        float SimulatedInterface::readMaxCHSetpoint()
+        {
+            return state_.max_ch_setpoint;
+        }
+
         bool SimulatedInterface::writeRoomSetpoint(float setpoint)
         {
             state_.room_setpoint = setpoint;
@@ -118,6 +143,17 @@ namespace OpenTherm
         {
             state_.dhw_setpoint = setpoint;
             printf("Simulator: DHW setpoint set to %.1f°C\n", setpoint);
+            return true;
+        }
+
+        bool SimulatedInterface::writeMaxCHSetpoint(float setpoint)
+        {
+            // Validate range (20-80°C is typical)
+            if (setpoint < 20.0f || setpoint > 80.0f)
+                return false;
+
+            state_.max_ch_setpoint = setpoint;
+            printf("Simulator: Max CH setpoint set to %.1f°C\n", setpoint);
             return true;
         }
 
@@ -159,6 +195,16 @@ namespace OpenTherm
         uint32_t SimulatedInterface::readDHWPumpHours()
         {
             return state_.dhw_pump_hours;
+        }
+
+        uint32_t SimulatedInterface::readCHPumpStarts()
+        {
+            return state_.ch_pump_starts;
+        }
+
+        uint32_t SimulatedInterface::readDHWPumpStarts()
+        {
+            return state_.dhw_pump_starts;
         }
 
         // Max modulation (fixed)

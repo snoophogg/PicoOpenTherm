@@ -110,7 +110,7 @@ int main(int argc, char **argv)
     };
 
     std::string base_state = std::string("opentherm/state/") + device_id;
-    std::string base_cmd = std::string("opentherm/cmd/") + device_id;
+    std::string base_cmd = std::string("opentherm/opentherm_gw/cmd/") + device_id;
 
     // publish discovery
     for (auto &kv : expected_map)

@@ -307,7 +307,7 @@
   action:
     - service: mqtt.publish
       data:
-        topic: "opentherm/cmd/sync_time"
+        topic: "opentherm/opentherm_gw/cmd/sync_time"
         payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
     - service: logbook.log
       data:
@@ -327,7 +327,7 @@
     - delay: "00:01:00"  # Wait for MQTT connection
     - service: mqtt.publish
       data:
-        topic: "opentherm/cmd/sync_time"
+        topic: "opentherm/opentherm_gw/cmd/sync_time"
         payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
     - service: logbook.log
       data:
@@ -346,7 +346,7 @@
   action:
     - service: mqtt.publish
       data:
-        topic: "opentherm/cmd/sync_time"
+        topic: "opentherm/opentherm_gw/cmd/sync_time"
         payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
     - service: persistent_notification.create
       data:
@@ -376,7 +376,7 @@
   action:
     - service: mqtt.publish
       data:
-        topic: "opentherm/cmd/sync_time"
+        topic: "opentherm/opentherm_gw/cmd/sync_time"
         payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
     - service: persistent_notification.create
       data:
@@ -402,7 +402,7 @@
   action:
     - service: mqtt.publish
       data:
-        topic: "opentherm/cmd/sync_time"
+        topic: "opentherm/opentherm_gw/cmd/sync_time"
         payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
     - service: persistent_notification.create
       data:

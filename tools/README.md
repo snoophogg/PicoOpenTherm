@@ -30,7 +30,7 @@ python3 tools/subscribe_simulator.py --host mqtt.local --test
 Options
 - `--host` — MQTT broker hostname (default: `localhost`)
 - `--port` — MQTT broker port (default: `1883`)
- - `--test` — publish a test `room_setpoint` command to `opentherm/cmd/<device>/room_setpoint`
+ - `--test` — publish a test `room_setpoint` command to `opentherm/opentherm_gw/cmd/<device>/room_setpoint`
  - `--device` — device id used in the command topic (default: `opentherm_gw`)
  - `--verify` — automatically verify expected Home Assistant discovery topics are published (default: off)
  - `--timeout` — timeout in seconds for verification and test round-trip (default: 15)

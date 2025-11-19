@@ -401,7 +401,7 @@ Monitor all OpenTherm MQTT traffic:
 docker exec -it picoopentherm-mosquitto mosquitto_sub -h localhost -t 'opentherm/state/#' -v
 
 # Commands
-docker exec -it picoopentherm-mosquitto mosquitto_sub -h localhost -t 'opentherm/cmd/#' -v
+docker exec -it picoopentherm-mosquitto mosquitto_sub -h localhost -t 'opentherm/opentherm_gw/cmd/#' -v
 
 # Discovery
 docker exec -it picoopentherm-mosquitto mosquitto_sub -h localhost -t 'homeassistant/#' -v

@@ -134,10 +134,10 @@ opentherm/state/modulation
 
 ### Command Topics (Subscribed by Gateway)
 ```
-opentherm/cmd/ch_enable        # ON/OFF
-opentherm/cmd/dhw_enable       # ON/OFF
-opentherm/cmd/control_setpoint # Float (°C)
-opentherm/cmd/sync_time        # ISO 8601 or Unix timestamp
+opentherm/opentherm_gw/cmd/ch_enable        # ON/OFF
+opentherm/opentherm_gw/cmd/dhw_enable       # ON/OFF
+opentherm/opentherm_gw/cmd/control_setpoint # Float (°C)
+opentherm/opentherm_gw/cmd/sync_time        # ISO 8601 or Unix timestamp
 ```
 
 ### Discovery Topics
@@ -194,7 +194,7 @@ Monitor your boiler's setpoint limits:
   action:
     - service: mqtt.publish
       data:
-        topic: "opentherm/cmd/sync_time"
+        topic: "opentherm/opentherm_gw/cmd/sync_time"
         payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
 ```
 

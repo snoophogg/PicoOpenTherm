@@ -60,7 +60,7 @@ Run the native simulator (defaults to device id `opentherm_gw`):
 ./host_simulator localhost 1883 test_gw &
 ```
 
-The simulator publishes Home Assistant discovery payloads (retained) and periodic `opentherm/state/<device>/...` topics. It also subscribes to `opentherm/cmd/<device>/#` to accept setpoint commands.
+The simulator publishes Home Assistant discovery payloads (retained) and periodic `opentherm/state/<device>/...` topics. It also subscribes to `opentherm/opentherm_gw/cmd/<device>/#` to accept setpoint commands.
 
 ## Run the Python validator
 

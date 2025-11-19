@@ -42,7 +42,7 @@ def main():
 
     device = args.device
     base_state = f"opentherm/state/{device}"
-    base_cmd = f"opentherm/cmd/{device}"
+    base_cmd = f"opentherm/opentherm_gw/cmd/{device}"
 
     expected_map = {
         'binary_sensor': ['fault', 'ch_mode', 'dhw_mode', 'flame', 'cooling', 'diagnostic', 'dhw_present', 'cooling_supported', 'ch2_present'],

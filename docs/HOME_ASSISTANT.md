@@ -139,15 +139,15 @@ Examples:
 - `opentherm/state/modulation`
 
 ### Command Topics (Subscribed by Gateway)
-All command topics follow the pattern: `opentherm/cmd/{control_name}`
+All command topics follow the pattern: `opentherm/opentherm_gw/cmd/{control_name}`
 
 Examples:
-- `opentherm/cmd/ch_enable` - Payload: `ON` or `OFF`
-- `opentherm/cmd/dhw_enable` - Payload: `ON` or `OFF`
-- `opentherm/cmd/control_setpoint` - Payload: float (e.g., `65.5`)
-- `opentherm/cmd/room_setpoint` - Payload: float (e.g., `21.0`)
-- `opentherm/cmd/dhw_setpoint` - Payload: float (e.g., `55.0`)
-- `opentherm/cmd/max_ch_setpoint` - Payload: float (e.g., `80.0`)
+- `opentherm/opentherm_gw/cmd/ch_enable` - Payload: `ON` or `OFF`
+- `opentherm/opentherm_gw/cmd/dhw_enable` - Payload: `ON` or `OFF`
+- `opentherm/opentherm_gw/cmd/control_setpoint` - Payload: float (e.g., `65.5`)
+- `opentherm/opentherm_gw/cmd/room_setpoint` - Payload: float (e.g., `21.0`)
+- `opentherm/opentherm_gw/cmd/dhw_setpoint` - Payload: float (e.g., `55.0`)
+- `opentherm/opentherm_gw/cmd/max_ch_setpoint` - Payload: float (e.g., `80.0`)
 
 ### Discovery Topics
 Auto-discovery configs are published to:
@@ -347,7 +347,7 @@ Add this automation to `automations.yaml`:
   action:
     - service: mqtt.publish
       data:
-        topic: "opentherm/cmd/sync_time"
+        topic: "opentherm/opentherm_gw/cmd/sync_time"
         payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
 ```
 
@@ -364,7 +364,7 @@ Add this automation to `automations.yaml`:
     - delay: "00:01:00"  # Wait for MQTT connection
     - service: mqtt.publish
       data:
-        topic: "opentherm/cmd/sync_time"
+        topic: "opentherm/opentherm_gw/cmd/sync_time"
         payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
 ```
 
@@ -374,13 +374,13 @@ The gateway accepts two formats via MQTT:
 
 **ISO 8601 (recommended):**
 ```
-Topic: opentherm/cmd/sync_time
+Topic: opentherm/opentherm_gw/cmd/sync_time
 Payload: 2025-01-17T14:30:00
 ```
 
 **Unix Timestamp:**
 ```
-Topic: opentherm/cmd/sync_time
+Topic: opentherm/opentherm_gw/cmd/sync_time
 Payload: 1737121800
 ```
 

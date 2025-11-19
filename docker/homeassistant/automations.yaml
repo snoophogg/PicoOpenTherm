@@ -172,7 +172,7 @@
   action:
     - service: mqtt.publish
       data:
-        topic: opentherm/cmd/sync_time
+        topic: opentherm/opentherm_gw/cmd/sync_time
         payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
   mode: single
 
@@ -188,7 +188,7 @@
     - delay: "00:01:00"
     - service: mqtt.publish
       data:
-        topic: opentherm/cmd/sync_time
+        topic: opentherm/opentherm_gw/cmd/sync_time
         payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
   mode: single
 
@@ -203,7 +203,7 @@
   action:
     - service: mqtt.publish
       data:
-        topic: opentherm/cmd/sync_time
+        topic: opentherm/opentherm_gw/cmd/sync_time
         payload: "{{ now().strftime('%Y-%m-%dT%H:%M:%S') }}"
     - service: persistent_notification.create
       data:

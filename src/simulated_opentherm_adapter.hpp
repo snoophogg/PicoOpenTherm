@@ -123,9 +123,8 @@ namespace OpenTherm
                 if (!temp)
                     return false;
 
-                // Simulator doesn't have exhaust temp, return 0
-                *temp = 0;
-                return false;
+                *temp = sim_.readExhaustTemperature();
+                return true;
             }
 
             // Pressure and flow reads
@@ -143,9 +142,8 @@ namespace OpenTherm
                 if (!flow_rate)
                     return false;
 
-                // Simulator doesn't have flow rate, return 0
-                *flow_rate = 0.0f;
-                return false;
+                *flow_rate = sim_.readDHWFlowRate();
+                return true;
             }
 
             // Modulation level read (percentage)
@@ -183,7 +181,7 @@ namespace OpenTherm
                 if (!setpoint)
                     return false;
 
-                *setpoint = sim_.readMaxModulationLevel();
+                *setpoint = sim_.readMaxCHSetpoint();
                 return true;
             }
 
@@ -202,9 +200,8 @@ namespace OpenTherm
                 if (!count)
                     return false;
 
-                // Simulator doesn't track pump starts separately
-                *count = 0;
-                return false;
+                *count = (uint16_t)sim_.readCHPumpStarts();
+                return true;
             }
 
             bool readDHWPumpStarts(uint16_t *count) override
@@ -212,9 +209,8 @@ namespace OpenTherm
                 if (!count)
                     return false;
 
-                // Simulator doesn't track DHW pump starts
-                *count = 0;
-                return false;
+                *count = (uint16_t)sim_.readDHWPumpStarts();
+                return true;
             }
 
             bool readBurnerHours(uint16_t *hours) override
@@ -282,8 +278,7 @@ namespace OpenTherm
 
             bool writeMaxCHSetpoint(float temperature) override
             {
-                // Simulator doesn't support max CH setpoint
-                return false;
+                return sim_.writeMaxCHSetpoint(temperature);
             }
 
             bool writeCHEnable(bool enable) override

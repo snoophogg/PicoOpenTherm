@@ -22,6 +22,15 @@ namespace OpenTherm
             uint32_t burner_hours = 0;
             uint32_t ch_pump_hours = 0;
             uint32_t dhw_pump_hours = 0;
+            uint32_t ch_pump_starts = 0;
+            uint32_t dhw_pump_starts = 0;
+
+            // Additional temperature sensors
+            int16_t exhaust_temp = 150; // Exhaust gas temperature in °C
+
+            // Flow and bounds
+            float dhw_flow_rate = 10.0f; // L/min
+            float max_ch_setpoint = 80.0f; // °C
 
             // Time and date storage
             uint8_t day_of_week = 1;  // Monday
@@ -44,11 +53,15 @@ namespace OpenTherm
             float readDHWTemperature();
             float readReturnWaterTemperature();
             float readOutsideTemperature();
+            int16_t readExhaustTemperature();
 
             // Pressure and modulation
             float readCHWaterPressure();
             float readModulationLevel();
             float readMaxModulationLevel();
+
+            // Flow rate
+            float readDHWFlowRate();
 
             // Status flags
             bool readFlameStatus();
@@ -61,10 +74,12 @@ namespace OpenTherm
             // Setpoints (read)
             float readRoomSetpoint();
             float readDHWSetpoint();
+            float readMaxCHSetpoint();
 
             // Setpoints (write)
             bool writeRoomSetpoint(float setpoint);
             bool writeDHWSetpoint(float setpoint);
+            bool writeMaxCHSetpoint(float setpoint);
 
             // Control
             bool writeCHEnabled(bool enabled);
@@ -75,6 +90,8 @@ namespace OpenTherm
             uint32_t readBurnerHours();
             uint32_t readCHPumpHours();
             uint32_t readDHWPumpHours();
+            uint32_t readCHPumpStarts();
+            uint32_t readDHWPumpStarts();
 
             // Fault/diagnostic codes (none in simulator)
             uint16_t readOEMFaultCode();

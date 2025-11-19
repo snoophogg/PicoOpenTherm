@@ -75,7 +75,7 @@ TEST(DiscoveryConfigTests, NumberEntityWithRange)
         "min":20.0,
         "max":80.0,
         "step":0.5,
-        "command_topic":"opentherm/cmd/ch_setpoint"
+        "command_topic":"opentherm/opentherm_gw/cmd/ch_setpoint"
     })";
     
     EXPECT_NE(json.find("\"min\""), std::string::npos);
@@ -90,7 +90,7 @@ TEST(DiscoveryConfigTests, NumberEntityWithRange)
 
 TEST(CommandParsingTests, ParseChEnableCommand)
 {
-    std::string command_topic = "opentherm/cmd/ch_enable";
+    std::string command_topic = "opentherm/opentherm_gw/cmd/ch_enable";
     std::string payload = "ON";
     
     bool ch_enable = (payload == "ON");
@@ -119,7 +119,7 @@ TEST(CommandParsingTests, ParseTemperatureSetpoint)
 
 TEST(CommandParsingTests, ParseDhwSetpoint)
 {
-    std::string command_topic = "opentherm/cmd/dhw_setpoint";
+    std::string command_topic = "opentherm/opentherm_gw/cmd/dhw_setpoint";
     std::string payload = "60.0";
     
     float setpoint = std::stof(payload);
@@ -132,24 +132,24 @@ TEST(CommandParsingTests, ParseDhwSetpoint)
 
 TEST(TopicMatchingTests, MatchExactCommandTopic)
 {
-    std::string topic = "opentherm/cmd/ch_enable";
-    std::string pattern = "opentherm/cmd/ch_enable";
+    std::string topic = "opentherm/opentherm_gw/cmd/ch_enable";
+    std::string pattern = "opentherm/opentherm_gw/cmd/ch_enable";
     
     EXPECT_EQ(topic, pattern);
 }
 
 TEST(TopicMatchingTests, MatchCommandTopicPrefix)
 {
-    std::string topic = "opentherm/cmd/ch_enable";
-    std::string prefix = "opentherm/cmd/";
+    std::string topic = "opentherm/opentherm_gw/cmd/ch_enable";
+    std::string prefix = "opentherm/opentherm_gw/cmd/";
     
     EXPECT_EQ(topic.substr(0, prefix.length()), prefix);
 }
 
 TEST(TopicMatchingTests, ExtractCommandSuffix)
 {
-    std::string topic = "opentherm/cmd/ch_setpoint";
-    std::string prefix = "opentherm/cmd/";
+    std::string topic = "opentherm/opentherm_gw/cmd/ch_setpoint";
+    std::string prefix = "opentherm/opentherm_gw/cmd/";
     
     if (topic.substr(0, prefix.length()) == prefix)
     {
