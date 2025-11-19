@@ -9,6 +9,7 @@
 #include <sstream>
 #include "pico/stdlib.h"
 #include "hardware/watchdog.h"
+#include "led_blink.hpp"
 
 namespace OpenTherm
 {
@@ -27,21 +28,30 @@ namespace OpenTherm
 
             if (config_.auto_discovery)
             {
-                publishDiscoveryConfigs();
+                if (!OpenTherm::Discovery::publishDiscoveryConfigs(config_))
+                {
+                    printf("FATAL ERROR: Failed to publish discovery configurations after all retries\n");
+                    printf("Cannot continue without Home Assistant discovery - halting execution\n");
+                    OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_CONFIG_ERROR);
+                    while (true)
+                    {
+                        sleep_ms(1000); // Halt execution
+                    }
+                }
             }
 
             // Subscribe to command topics
             using namespace OpenTherm::MQTTTopics;
-            std::string base_cmd = config_.command_topic_base;
-            mqtt_.subscribe((base_cmd + "/" + CH_ENABLE).c_str());
-            mqtt_.subscribe((base_cmd + "/" + DHW_ENABLE).c_str());
-            mqtt_.subscribe((base_cmd + "/" + CONTROL_SETPOINT).c_str());
-            mqtt_.subscribe((base_cmd + "/" + ROOM_SETPOINT).c_str());
-            mqtt_.subscribe((base_cmd + "/" + DHW_SETPOINT).c_str());
-            mqtt_.subscribe((base_cmd + "/" + MAX_CH_SETPOINT).c_str());
-            mqtt_.subscribe((base_cmd + "/" + SYNC_TIME).c_str());
-            mqtt_.subscribe((base_cmd + "/" + RESTART).c_str());
-            mqtt_.subscribe((base_cmd + "/" + UPDATE_INTERVAL).c_str());
+            std::string base_cmd = std::string(config_.command_topic_base) + "/" + std::string(config_.device_id)+ "/";
+            mqtt_.subscribe((base_cmd + CH_ENABLE).c_str());
+            mqtt_.subscribe((base_cmd + DHW_ENABLE).c_str());
+            mqtt_.subscribe((base_cmd + CONTROL_SETPOINT).c_str());
+            mqtt_.subscribe((base_cmd + ROOM_SETPOINT).c_str());
+            mqtt_.subscribe((base_cmd + DHW_SETPOINT).c_str());
+            mqtt_.subscribe((base_cmd + MAX_CH_SETPOINT).c_str());
+            mqtt_.subscribe((base_cmd + SYNC_TIME).c_str());
+            mqtt_.subscribe((base_cmd + RESTART).c_str());
+            mqtt_.subscribe((base_cmd + UPDATE_INTERVAL).c_str());
         }
 
         void HAInterface::publishDiscoveryConfigs()
@@ -621,68 +631,68 @@ namespace OpenTherm
 
         void HAInterface::handleMessage(const char *topic, const char *payload)
         {
-            std::string cmd_base = config_.command_topic_base;
+            std::string cmd_base = std::string(config_.command_topic_base) + "/" + std::string(config_.device_id) + "/";
 
             // CH Enable switch
-            if (strcmp(topic, (cmd_base + "/ch_enable").c_str()) == 0)
+            if (strcmp(topic, (cmd_base + MQTTTopics::CH_ENABLE).c_str()) == 0)
             {
                 bool enable = (strcmp(payload, "ON") == 0);
                 setCHEnable(enable);
             }
             // DHW Enable switch
-            else if (strcmp(topic, (cmd_base + "/dhw_enable").c_str()) == 0)
+            else if (strcmp(topic, (cmd_base + MQTTTopics::DHW_ENABLE).c_str()) == 0)
             {
                 bool enable = (strcmp(payload, "ON") == 0);
                 setDHWEnable(enable);
             }
             // Control setpoint
-            else if (strcmp(topic, (cmd_base + "/control_setpoint").c_str()) == 0)
+            else if (strcmp(topic, (cmd_base + MQTTTopics::CONTROL_SETPOINT).c_str()) == 0)
             {
                 float temp = atof(payload);
                 setControlSetpoint(temp);
             }
             // Room setpoint
-            else if (strcmp(topic, (cmd_base + "/room_setpoint").c_str()) == 0)
+            else if (strcmp(topic, (cmd_base + MQTTTopics::ROOM_SETPOINT).c_str()) == 0)
             {
                 float temp = atof(payload);
                 setRoomSetpoint(temp);
             }
             // DHW setpoint
-            else if (strcmp(topic, (cmd_base + "/dhw_setpoint").c_str()) == 0)
+            else if (strcmp(topic, (cmd_base + MQTTTopics::DHW_SETPOINT).c_str()) == 0)
             {
                 float temp = atof(payload);
                 setDHWSetpoint(temp);
             }
             // Max CH setpoint
-            else if (strcmp(topic, (cmd_base + "/max_ch_setpoint").c_str()) == 0)
+            else if (strcmp(topic, (cmd_base + MQTTTopics::MAX_CH_SETPOINT).c_str()) == 0)
             {
                 float temp = atof(payload);
                 setMaxCHSetpoint(temp);
             }
             // Device name
-            else if (strcmp(topic, (cmd_base + "/device_name").c_str()) == 0)
+            else if (strcmp(topic, (cmd_base + MQTTTopics::DEVICE_NAME).c_str()) == 0)
             {
                 setDeviceName(payload);
             }
             // Device ID
-            else if (strcmp(topic, (cmd_base + "/device_id").c_str()) == 0)
+            else if (strcmp(topic, (cmd_base + MQTTTopics::DEVICE_ID).c_str()) == 0)
             {
                 setDeviceID(payload);
             }
             // OpenTherm TX pin
-            else if (strcmp(topic, (cmd_base + "/opentherm_tx_pin").c_str()) == 0)
+            else if (strcmp(topic, (cmd_base + MQTTTopics::OPENTHERM_TX_PIN).c_str()) == 0)
             {
                 uint8_t pin = (uint8_t)atoi(payload);
                 setOpenThermTxPin(pin);
             }
             // OpenTherm RX pin
-            else if (strcmp(topic, (cmd_base + "/opentherm_rx_pin").c_str()) == 0)
+            else if (strcmp(topic, (cmd_base + MQTTTopics::OPENTHERM_RX_PIN).c_str()) == 0)
             {
                 uint8_t pin = (uint8_t)atoi(payload);
                 setOpenThermRxPin(pin);
             }
             // Time sync command
-            else if (strcmp(topic, (cmd_base + "/sync_time").c_str()) == 0)
+            else if (strcmp(topic, (cmd_base + MQTTTopics::SYNC_TIME).c_str()) == 0)
             {
                 // Payload format can be:
                 // 1. ISO 8601: "2025-01-17T14:30:00Z"
@@ -723,7 +733,7 @@ namespace OpenTherm
                 }
             }
             // Restart command
-            else if (strcmp(topic, (cmd_base + "/restart").c_str()) == 0)
+            else if (strcmp(topic, (cmd_base + MQTTTopics::RESTART).c_str()) == 0)
             {
                 printf("Restart requested via MQTT command\n");
                 printf("Restarting in 2 seconds...\n");
@@ -732,7 +742,7 @@ namespace OpenTherm
                 // watchdog_reboot will reset the system
             }
             // Update interval command
-            else if (strcmp(topic, (cmd_base + "/update_interval").c_str()) == 0)
+            else if (strcmp(topic, (cmd_base + MQTTTopics::UPDATE_INTERVAL).c_str()) == 0)
             {
                 uint32_t interval_ms = (uint32_t)atoi(payload);
                 setUpdateInterval(interval_ms);

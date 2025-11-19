@@ -156,12 +156,13 @@ int main()
     // Set up MQTT callbacks
     OpenTherm::HomeAssistant::MQTTCallbacks mqtt_callbacks = {
         .publish = OpenTherm::Common::mqtt_publish_wrapper,
-        .subscribe = OpenTherm::Common::mqtt_subscribe_wrapper};
+        .subscribe = OpenTherm::Common::mqtt_subscribe_wrapper
+    };
+
+    printf("System ready! Publishing to Home Assistant via MQTT...\n");
 
     // Initialize Home Assistant interface
     ha.begin(mqtt_callbacks);
-
-    printf("System ready! Publishing to Home Assistant via MQTT...\n");
 
     uint32_t last_connection_check = 0;
 
@@ -183,6 +184,10 @@ int main()
             {
                 // Just reconnected - set to normal pattern
                 OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_NORMAL);
+                
+                // Resubscribe to command topics
+                printf("MQTT reconnected, publishing and resubscribing...\n");
+                ha.begin(mqtt_callbacks);
             }
 
             last_connection_check = now;

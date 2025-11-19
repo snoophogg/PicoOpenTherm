@@ -31,16 +31,20 @@ namespace OpenTherm
             }
         }
 
+        // Static variables to track incoming MQTT message state
+        static std::string current_topic;
+        static std::string current_payload;
+
         void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len)
         {
             printf("Incoming publish at topic %s with total length %u\n", topic, (unsigned int)tot_len);
+            // Store the topic for the incoming data callback
+            current_topic = topic;
+            current_payload.clear();
         }
 
         void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
         {
-            static std::string current_topic;
-            static std::string current_payload;
-
             current_payload.append((const char *)data, len);
 
             if (flags & MQTT_DATA_FLAG_LAST)

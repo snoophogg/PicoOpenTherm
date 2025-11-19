@@ -54,12 +54,12 @@ namespace OpenTherm
 
         std::string buildStateTopic(const OpenTherm::HomeAssistant::Config &cfg, const char *suffix)
         {
-            return std::string(cfg.state_topic_base) + "/" + suffix;
+            return std::string(cfg.state_topic_base) + "/" + cfg.device_id + "/" + suffix;
         }
 
         std::string buildCommandTopic(const OpenTherm::HomeAssistant::Config &cfg, const char *suffix)
         {
-            return std::string(cfg.command_topic_base) + "/" + suffix;
+            return std::string(cfg.command_topic_base) + "/" + cfg.device_id + "/" + suffix;
         }
 
         std::string buildDiscoveryTopic(const OpenTherm::HomeAssistant::Config &cfg, const char *component, const char *object_id)
