@@ -144,8 +144,9 @@ int main()
         .device_name = device_name,
         .device_id = device_id,
         .mqtt_prefix = "homeassistant",
-        .state_topic_base = "opentherm/state",
-        .command_topic_base = "opentherm/cmd",
+        .topic_base = "opentherm",
+        .state_topic_base = "state",
+        .command_topic_base = "cmd",
         .auto_discovery = true,
         .update_interval_ms = update_interval_ms
     };

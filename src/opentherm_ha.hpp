@@ -22,8 +22,9 @@ namespace OpenTherm
             const char *device_name;        // e.g., "OpenTherm Gateway"
             const char *device_id;          // e.g., "opentherm_gw"
             const char *mqtt_prefix;        // e.g., "homeassistant"
-            const char *state_topic_base;   // e.g., "opentherm/state"
-            const char *command_topic_base; // e.g., "opentherm/cmd"
+            const char *topic_base;         // e.g., "opentherm"
+            const char *state_topic_base;   // e.g., "state"
+            const char *command_topic_base; // e.g., "cmd"
             bool auto_discovery;            // Enable MQTT auto-discovery
             uint32_t update_interval_ms;    // How often to poll sensors (default: 60000ms)
         };
