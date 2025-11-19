@@ -614,17 +614,38 @@ namespace OpenTherm
             {
                 last_update_ = now;
 
-                // Update all sensors
+                // Update all sensors with delays between groups to prevent lwIP overflow
+                // Each group may publish multiple messages, so we need spacing
                 publishStatus();
+                sleep_ms(100);
+
                 publishTemperatures();
+                sleep_ms(100);
+
                 publishPressureFlow();
+                sleep_ms(100);
+
                 publishModulation();
+                sleep_ms(100);
+
                 publishCounters();
+                sleep_ms(100);
+
                 publishConfiguration();
+                sleep_ms(100);
+
                 publishFaults();
+                sleep_ms(100);
+
                 publishTimeDate();
+                sleep_ms(100);
+
                 publishTemperatureBounds();
+                sleep_ms(100);
+
                 publishWiFiStats();
+                sleep_ms(100);
+
                 publishDeviceConfiguration();
             }
         }
