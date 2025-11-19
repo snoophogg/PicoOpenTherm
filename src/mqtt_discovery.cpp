@@ -23,8 +23,9 @@ namespace OpenTherm
                 if (OpenTherm::Common::mqtt_publish_wrapper(topic, config, true))
                 {
                     // Success - give buffers time to clear before next publish
-                    // Poll network aggressively to process ACKs (500ms)
-                    for (int i = 0; i < 50; i++)
+                    // Poll network aggressively to process ACKs
+                    // Increased to 800ms to prevent lwIP panic during discovery bursts
+                    for (int i = 0; i < 80; i++)
                     {
                         cyw43_arch_poll();
                         sleep_ms(10);

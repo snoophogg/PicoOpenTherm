@@ -132,7 +132,8 @@ namespace OpenTherm
             // Critical for preventing ERR_MEM when publishing multiple messages
             // Needs to be long enough for TCP ACK and PBUF cleanup
             // Also poll the network stack to process pending packets
-            for (int i = 0; i < 10; i++)
+            // Increased to 200ms to prevent lwIP panic during discovery
+            for (int i = 0; i < 20; i++)
             {
                 cyw43_arch_poll();
                 sleep_ms(10);
