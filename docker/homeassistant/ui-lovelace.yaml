@@ -56,7 +56,7 @@ views:
           - entity: sensor.opentherm_gw_room_temp
             name: Room Temperature
             icon: mdi:home-thermometer
-          - entity: sensor.opentherm_gw_room_setpoint
+          - entity: number.opentherm_gw_room_setpoint
             name: Room Setpoint
             icon: mdi:thermometer-lines
           - type: divider
@@ -66,9 +66,19 @@ views:
           - entity: sensor.opentherm_gw_return_temp
             name: Return Water
             icon: mdi:water-thermometer-outline
+          - entity: sensor.opentherm_gw_exhaust_temp
+            name: Exhaust Gas
+            icon: mdi:smoke
+          - type: divider
           - entity: sensor.opentherm_gw_dhw_temp
             name: Hot Water
             icon: mdi:water-boiler
+          - entity: number.opentherm_gw_dhw_setpoint
+            name: DHW Setpoint
+            icon: mdi:water-thermometer-outline
+          - entity: sensor.opentherm_gw_dhw_flow
+            name: DHW Flow Rate
+            icon: mdi:water-pump
           - type: divider
           - entity: sensor.opentherm_gw_outside_temp
             name: Outside
@@ -104,6 +114,30 @@ views:
           - entity: sensor.opentherm_gw_modulation
             name: Modulation
       
+      # Control Setpoints
+      - type: entities
+        title: Heating & Hot Water Control
+        entities:
+          - entity: switch.opentherm_gw_ch_enable
+            name: Central Heating Enable
+            icon: mdi:radiator
+          - entity: switch.opentherm_gw_dhw_enable
+            name: Hot Water Enable
+            icon: mdi:water-boiler
+          - type: divider
+          - entity: number.opentherm_gw_control_setpoint
+            name: Control Setpoint
+            icon: mdi:thermometer-lines
+          - entity: number.opentherm_gw_room_setpoint
+            name: Room Setpoint
+            icon: mdi:home-thermometer-outline
+          - entity: number.opentherm_gw_dhw_setpoint
+            name: Hot Water Setpoint
+            icon: mdi:water-thermometer-outline
+          - entity: number.opentherm_gw_max_ch_setpoint
+            name: Max CH Setpoint
+            icon: mdi:thermometer-high
+
       # Gateway Configuration
       - type: entities
         title: Gateway Configuration
@@ -112,10 +146,18 @@ views:
             name: Device Name
           - entity: text.opentherm_gw_device_id
             name: Device ID
-          - entity: number.opentherm_gw_tx_pin
+          - entity: number.opentherm_gw_update_interval
+            name: Update Interval (ms)
+          - type: divider
+          - entity: number.opentherm_gw_opentherm_tx_pin
             name: TX Pin (GPIO)
-          - entity: number.opentherm_gw_rx_pin
+          - entity: number.opentherm_gw_opentherm_rx_pin
             name: RX Pin (GPIO)
+          - type: section
+            label: Time Sync
+          - entity: button.opentherm_gw_sync_time
+            name: Sync Time to Boiler
+            icon: mdi:clock-sync
           - type: section
             label: Actions
           - entity: button.opentherm_gw_restart
@@ -165,6 +207,9 @@ views:
             name: Max Modulation Level
           - entity: sensor.opentherm_gw_pressure
             name: CH Water Pressure
+
+  # System & Time Monitoring View
+  - !include lovelace/system_time.yaml
 
   # WiFi Monitoring View
   - !include lovelace/wifi_monitoring.yaml

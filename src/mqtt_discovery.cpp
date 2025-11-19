@@ -22,12 +22,14 @@ namespace OpenTherm
                 // Publish with retain flag so configs survive HA restarts
                 if (OpenTherm::Common::mqtt_publish_wrapper(topic, config, true))
                 {
-                    // Success - give buffers time to clear before next publish
-                    // Poll network aggressively to process ACKs
-                    // Increased to 800ms to prevent lwIP panic during discovery bursts
-                    for (int i = 0; i < 80; i++)
+                    // Success - give buffers EXTRA time to clear before next discovery publish
+                    // Discovery messages are larger and come in rapid succession
+                    // Poll network very aggressively to process ACKs and free TCP buffers
+                    // Increased to 1200ms with double polling to prevent "no pbufs" TCP panic
+                    for (int i = 0; i < 120; i++)
                     {
                         cyw43_arch_poll();
+                        cyw43_arch_poll(); // Double poll for faster ACK processing
                         sleep_ms(10);
                     }
                     return true;

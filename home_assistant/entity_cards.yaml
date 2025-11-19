@@ -276,3 +276,305 @@ icon_color: |
 tap_action:
   action: more-info
   entity: sensor.opentherm_gw_modulation
+
+---
+
+# === TIME & DATE CARDS ===
+
+# Boiler Time Card
+type: markdown
+content: |
+  ## 🕐 Boiler Time & Date
+
+  **Day:** {{ states('sensor.opentherm_gw_day_of_week') }}
+  **Time:** {{ states('sensor.opentherm_gw_time_of_day') }}
+  **Date:** {{ states('sensor.opentherm_gw_date') }}
+  **Year:** {{ states('sensor.opentherm_gw_year') }}
+
+  ---
+
+  **System Time:** {{ now().strftime('%A, %H:%M') }}
+  **System Date:** {{ now().strftime('%m/%d/%Y') }}
+
+---
+
+# Time Sync Button Card
+type: button
+entity: button.opentherm_gw_sync_time
+name: Sync Time to Boiler
+icon: mdi:clock-sync
+show_state: false
+tap_action:
+  action: call-service
+  service: button.press
+  target:
+    entity_id: button.opentherm_gw_sync_time
+  confirmation:
+    text: Sync current time to boiler?
+
+---
+
+# Time Comparison Card (requires card-mod)
+type: markdown
+content: |
+  ## ⏰ Time Synchronization
+
+  {% set boiler_time = states('sensor.opentherm_gw_time_of_day') %}
+  {% set system_time = now().strftime('%H:%M') %}
+
+  **Boiler Time:** {{ boiler_time }}
+  **System Time:** {{ system_time }}
+
+  {% if boiler_time == system_time %}
+  ✅ Times are synchronized
+  {% elif boiler_time in ['unknown', 'unavailable'] %}
+  ⚠️ Boiler time not available
+  {% else %}
+  ⚠️ Times may differ - consider syncing
+  {% endif %}
+
+  *Last sync: {{ relative_time(states.button.opentherm_gw_sync_time.last_changed) }} ago*
+
+---
+
+# === WIFI & NETWORK CARDS ===
+
+# WiFi Signal Gauge
+type: gauge
+entity: sensor.opentherm_gw_wifi_rssi
+name: WiFi Signal
+min: -100
+max: -30
+severity:
+  red: -100
+  yellow: -70
+  green: -50
+needle: true
+
+---
+
+# WiFi Status Card
+type: markdown
+content: |
+  ## 📶 WiFi Connection
+
+  **Status:** {{ states('sensor.opentherm_gw_wifi_link_status') }}
+  **Signal:** {{ states('sensor.opentherm_gw_wifi_rssi') }} dBm
+  **Network:** {{ states('sensor.opentherm_gw_wifi_ssid') }}
+  **IP Address:** {{ states('sensor.opentherm_gw_ip_address') }}
+
+  {% set rssi = states('sensor.opentherm_gw_wifi_rssi')|int %}
+  {% if rssi > -50 %}
+  ✅ Excellent signal
+  {% elif rssi > -60 %}
+  ✅ Good signal
+  {% elif rssi > -70 %}
+  ⚠️ Fair signal
+  {% else %}
+  ⚠️ Weak signal
+  {% endif %}
+
+---
+
+# Network Mini Card
+type: glance
+title: Network Status
+columns: 2
+entities:
+  - entity: sensor.opentherm_gw_wifi_rssi
+    name: Signal
+  - entity: sensor.opentherm_gw_wifi_link_status
+    name: Status
+
+---
+
+# === SYSTEM HEALTH CARDS ===
+
+# System Uptime Card
+type: sensor
+entity: sensor.opentherm_gw_uptime
+name: Gateway Uptime
+graph: line
+detail: 2
+hours_to_show: 168  # 1 week
+
+---
+
+# Memory Usage Card
+type: markdown
+content: |
+  ## 💾 System Resources
+
+  **Free Memory:** {{ states('sensor.opentherm_gw_free_heap') }} bytes
+  **Uptime:** {{ (states('sensor.opentherm_gw_uptime')|int / 3600) | round(1) }} hours
+
+  {% set uptime_hours = (states('sensor.opentherm_gw_uptime')|int / 3600) %}
+  {% if uptime_hours < 1 %}
+  ℹ️ Recently restarted
+  {% elif uptime_hours < 24 %}
+  ✅ Running smoothly
+  {% else %}
+  ✅ Stable for {{ (uptime_hours / 24) | round(0) }} days
+  {% endif %}
+
+---
+
+# System Health Glance
+type: glance
+title: System Health
+columns: 3
+entities:
+  - entity: sensor.opentherm_gw_uptime
+    name: Uptime
+  - entity: sensor.opentherm_gw_free_heap
+    name: Memory
+  - entity: sensor.opentherm_gw_opentherm_version
+    name: Version
+
+---
+
+# Restart Gateway Button
+type: button
+entity: button.opentherm_gw_restart
+name: Restart Gateway
+icon: mdi:restart
+show_state: false
+tap_action:
+  action: call-service
+  service: button.press
+  target:
+    entity_id: button.opentherm_gw_restart
+  confirmation:
+    text: Are you sure you want to restart the OpenTherm Gateway? This will briefly interrupt boiler communication.
+card_mod:
+  style: |
+    ha-card {
+      background: rgba(255, 152, 0, 0.1);
+      border: 1px solid orange;
+    }
+
+---
+
+# === CONFIGURATION CARDS ===
+
+# Temperature Bounds Info Card
+type: markdown
+content: |
+  ## 🌡️ Temperature Limits
+
+  ### Central Heating
+  **Min:** {{ states('sensor.opentherm_gw_ch_setpoint_min') }}°C
+  **Max:** {{ states('sensor.opentherm_gw_ch_setpoint_max') }}°C
+  **Current Max:** {{ states('number.opentherm_gw_max_ch_setpoint') }}°C
+
+  ### Hot Water
+  **Min:** {{ states('sensor.opentherm_gw_dhw_setpoint_min') }}°C
+  **Max:** {{ states('sensor.opentherm_gw_dhw_setpoint_max') }}°C
+  **Current:** {{ states('number.opentherm_gw_dhw_setpoint') }}°C
+
+---
+
+# Gateway Settings Card
+type: entities
+title: Gateway Settings
+entities:
+  - entity: text.opentherm_gw_device_name
+    name: Device Name
+  - entity: text.opentherm_gw_device_id
+    name: Device ID
+  - entity: number.opentherm_gw_update_interval
+    name: Update Interval
+  - type: divider
+  - entity: number.opentherm_gw_opentherm_tx_pin
+    name: TX Pin
+  - entity: number.opentherm_gw_opentherm_rx_pin
+    name: RX Pin
+
+---
+
+# === COMPREHENSIVE DASHBOARD CARDS ===
+
+# Complete System Status Card
+type: entities
+title: Complete System Status
+show_header_toggle: false
+entities:
+  - type: section
+    label: Status
+  - entity: binary_sensor.opentherm_gw_fault
+    name: Fault
+  - entity: binary_sensor.opentherm_gw_flame
+    name: Flame
+  - entity: binary_sensor.opentherm_gw_ch_mode
+    name: CH Active
+  - entity: binary_sensor.opentherm_gw_dhw_mode
+    name: DHW Active
+  - type: section
+    label: Temperatures
+  - entity: sensor.opentherm_gw_boiler_temp
+    name: Boiler
+  - entity: sensor.opentherm_gw_dhw_temp
+    name: Hot Water
+  - entity: sensor.opentherm_gw_room_temp
+    name: Room
+  - entity: sensor.opentherm_gw_outside_temp
+    name: Outside
+  - type: section
+    label: Performance
+  - entity: sensor.opentherm_gw_modulation
+    name: Modulation
+  - entity: sensor.opentherm_gw_pressure
+    name: Pressure
+  - type: section
+    label: Time & Network
+  - entity: sensor.opentherm_gw_time_of_day
+    name: Boiler Time
+  - entity: sensor.opentherm_gw_wifi_link_status
+    name: WiFi Status
+
+---
+
+# Quick Actions Card
+type: entities
+title: Quick Actions
+show_header_toggle: false
+entities:
+  - entity: switch.opentherm_gw_ch_enable
+    name: Central Heating
+  - entity: switch.opentherm_gw_dhw_enable
+    name: Hot Water
+  - type: divider
+  - entity: button.opentherm_gw_sync_time
+    name: Sync Time
+  - entity: button.opentherm_gw_restart
+    name: Restart Gateway
+
+---
+
+# Combined Time & WiFi Status
+type: vertical-stack
+cards:
+  - type: markdown
+    content: |
+      ### ⏰ {{ states('sensor.opentherm_gw_time_of_day') }} - {{ states('sensor.opentherm_gw_day_of_week') }}
+      {{ states('sensor.opentherm_gw_date') }}/{{ states('sensor.opentherm_gw_year') }}
+  - type: entities
+    entities:
+      - entity: button.opentherm_gw_sync_time
+        name: Sync Time
+  - type: horizontal-stack
+    cards:
+      - type: gauge
+        entity: sensor.opentherm_gw_wifi_rssi
+        name: WiFi
+        min: -100
+        max: -30
+        severity:
+          red: -100
+          yellow: -70
+          green: -50
+        needle: true
+      - type: markdown
+        content: |
+          **{{ states('sensor.opentherm_gw_wifi_ssid') }}**
+          {{ states('sensor.opentherm_gw_ip_address') }}

@@ -616,37 +616,38 @@ namespace OpenTherm
             {
                 last_update_ = now;
 
-                // Update all sensors with delays between groups to prevent lwIP overflow
-                // Each group may publish multiple messages, so we need spacing
+                // Update all sensors with delays between groups to prevent lwIP TCP panic
+                // Each group publishes multiple messages - need time for TCP ACKs
+                // Increased to 200ms with active network polling to prevent buffer exhaustion
                 publishStatus();
-                sleep_ms(100);
+                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
 
                 publishTemperatures();
-                sleep_ms(100);
+                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
 
                 publishPressureFlow();
-                sleep_ms(100);
+                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
 
                 publishModulation();
-                sleep_ms(100);
+                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
 
                 publishCounters();
-                sleep_ms(100);
+                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
 
                 publishConfiguration();
-                sleep_ms(100);
+                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
 
                 publishFaults();
-                sleep_ms(100);
+                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
 
                 publishTimeDate();
-                sleep_ms(100);
+                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
 
                 publishTemperatureBounds();
-                sleep_ms(100);
+                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
 
                 publishWiFiStats();
-                sleep_ms(100);
+                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
 
                 publishDeviceConfiguration();
             }

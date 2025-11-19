@@ -1,0 +1,242 @@
+# OpenTherm Gateway - System & Time Monitoring View
+# Lovelace-style dashboard view for system configuration and time synchronization
+# To use: Add this as a view in your lovelace configuration
+
+title: System & Time
+path: system_time
+icon: mdi:cog-clock
+badges:
+  - entity: sensor.opentherm_gw_uptime
+  - entity: sensor.opentherm_gw_time_of_day
+  - entity: sensor.opentherm_gw_free_heap
+cards:
+  # Header
+  - type: markdown
+    content: |
+      # ⚙️ OpenTherm Gateway System Configuration
+      System settings, time synchronization, and diagnostics
+
+  # Time & Date Status
+  - type: horizontal-stack
+    cards:
+      # Boiler Time Display
+      - type: markdown
+        content: |
+          ## 🕐 Boiler Time & Date
+
+          **{{ states('sensor.opentherm_gw_day_of_week') }}**
+          **{{ states('sensor.opentherm_gw_time_of_day') }}**
+          {{ states('sensor.opentherm_gw_date') }}/{{ states('sensor.opentherm_gw_year') }}
+
+          ---
+
+          System: {{ now().strftime('%A, %H:%M') }}
+          {{ now().strftime('%m/%d/%Y') }}
+
+      # Time Sync Actions
+      - type: entities
+        title: Time Synchronization
+        entities:
+          - entity: button.opentherm_gw_sync_time
+            name: Sync Time Now
+            icon: mdi:clock-sync
+            tap_action:
+              action: call-service
+              service: button.press
+              target:
+                entity_id: button.opentherm_gw_sync_time
+
+  # Time Comparison
+  - type: markdown
+    content: |
+      ## ⏰ Time Drift Check
+
+      {% set boiler_time = states('sensor.opentherm_gw_time_of_day') %}
+      {% set system_time = now().strftime('%H:%M') %}
+
+      **Boiler Time:** {{ boiler_time }}
+      **System Time:** {{ system_time }}
+
+      {% if boiler_time == system_time %}
+      ✅ **Times are synchronized**
+      {% elif boiler_time in ['unknown', 'unavailable'] %}
+      ⚠️ **Boiler time not available**
+      {% else %}
+      ⚠️ **Times may differ** - consider syncing
+      {% endif %}
+
+      *Last sync: {{ relative_time(states.button.opentherm_gw_sync_time.last_changed) }} ago*
+
+  # Temperature Bounds
+  - type: entities
+    title: Temperature Limits
+    entities:
+      - type: section
+        label: Central Heating Bounds
+      - entity: sensor.opentherm_gw_ch_setpoint_min
+        name: Min CH Setpoint
+        icon: mdi:thermometer-low
+      - entity: sensor.opentherm_gw_ch_setpoint_max
+        name: Max CH Setpoint
+        icon: mdi:thermometer-high
+      - entity: number.opentherm_gw_max_ch_setpoint
+        name: Current Max CH Setpoint
+        icon: mdi:thermometer-lines
+      - type: section
+        label: Hot Water Bounds
+      - entity: sensor.opentherm_gw_dhw_setpoint_min
+        name: Min DHW Setpoint
+        icon: mdi:thermometer-low
+      - entity: sensor.opentherm_gw_dhw_setpoint_max
+        name: Max DHW Setpoint
+        icon: mdi:thermometer-high
+      - entity: number.opentherm_gw_dhw_setpoint
+        name: Current DHW Setpoint
+        icon: mdi:water-thermometer-outline
+
+  # Gateway Configuration
+  - type: entities
+    title: Gateway Configuration
+    entities:
+      - entity: text.opentherm_gw_device_name
+        name: Device Name
+        icon: mdi:tag-text
+      - entity: text.opentherm_gw_device_id
+        name: Device ID
+        icon: mdi:identifier
+      - entity: number.opentherm_gw_update_interval
+        name: Update Interval (ms)
+        icon: mdi:timer-cog
+      - type: divider
+      - entity: number.opentherm_gw_opentherm_tx_pin
+        name: TX Pin (GPIO)
+        icon: mdi:pin
+      - entity: number.opentherm_gw_opentherm_rx_pin
+        name: RX Pin (GPIO)
+        icon: mdi:pin
+
+  # System Health
+  - type: horizontal-stack
+    cards:
+      # Uptime Graph
+      - type: sensor
+        entity: sensor.opentherm_gw_uptime
+        name: Gateway Uptime
+        graph: line
+        detail: 2
+        hours_to_show: 168  # 1 week
+
+      # Memory Status
+      - type: markdown
+        content: |
+          ## 💾 Memory Status
+
+          **Free Heap:**
+          {{ states('sensor.opentherm_gw_free_heap') }} bytes
+
+          **Uptime:**
+          {{ (states('sensor.opentherm_gw_uptime')|int / 3600) | round(1) }} hours
+
+          {% set uptime_hours = (states('sensor.opentherm_gw_uptime')|int / 3600) %}
+          {% if uptime_hours < 1 %}
+          ℹ️ Recently restarted
+          {% elif uptime_hours < 24 %}
+          ✅ Running smoothly
+          {% else %}
+          ✅ Stable for {{ (uptime_hours / 24) | round(0) }} days
+          {% endif %}
+
+  # System Information
+  - type: entities
+    title: System Information
+    entities:
+      - entity: sensor.opentherm_gw_opentherm_version
+        name: OpenTherm Protocol Version
+        icon: mdi:information
+      - entity: sensor.opentherm_gw_uptime
+        name: Gateway Uptime
+        icon: mdi:clock-start
+      - entity: sensor.opentherm_gw_free_heap
+        name: Free Heap Memory
+        icon: mdi:memory
+      - type: divider
+      - entity: button.opentherm_gw_restart
+        name: Restart Gateway
+        icon: mdi:restart
+        tap_action:
+          action: call-service
+          service: button.press
+          target:
+            entity_id: button.opentherm_gw_restart
+          confirmation:
+            text: Are you sure you want to restart the gateway?
+
+  # Diagnostic Information
+  - type: entities
+    title: Diagnostic Information
+    entities:
+      - entity: binary_sensor.opentherm_gw_fault
+        name: Fault Status
+        icon: mdi:alert-circle
+      - entity: sensor.opentherm_gw_fault_code
+        name: Fault Code
+        icon: mdi:alert-octagon
+      - entity: sensor.opentherm_gw_diagnostic_code
+        name: Diagnostic Code
+        icon: mdi:alert-circle
+      - entity: binary_sensor.opentherm_gw_diagnostic
+        name: Diagnostic Mode
+        icon: mdi:wrench
+
+  # Boiler Configuration
+  - type: entities
+    title: Boiler Configuration
+    entities:
+      - entity: binary_sensor.opentherm_gw_dhw_present
+        name: DHW Capability
+        icon: mdi:water-boiler
+      - entity: binary_sensor.opentherm_gw_cooling_supported
+        name: Cooling Capability
+        icon: mdi:snowflake
+      - entity: binary_sensor.opentherm_gw_ch2_present
+        name: CH2 Present
+        icon: mdi:radiator
+
+  # Configuration Tips
+  - type: markdown
+    content: |
+      ## 💡 Configuration Tips
+
+      ### Update Interval
+      - **Default:** 10,000 ms (10 seconds)
+      - **Range:** 1,000 - 300,000 ms (1s - 5 min)
+      - Lower values = more responsive but higher MQTT traffic
+      - Higher values = less network load but slower updates
+
+      ### Time Synchronization
+      - Time is synced automatically:
+        - Daily at 3:00 AM
+        - On Home Assistant startup
+        - After DST changes (spring/fall)
+      - Manual sync: Press "Sync Time Now" button above
+
+      ### GPIO Pin Configuration
+      - **TX Pin:** Gateway → Boiler (default: 16)
+      - **RX Pin:** Boiler → Gateway (default: 17)
+      - ⚠️ Changing pins requires gateway restart
+
+      ### Memory & Uptime
+      - Free heap should stay above 50KB
+      - Low memory may cause instability
+      - Long uptimes (weeks/months) indicate stability
+
+  # Recent System Events
+  - type: logbook
+    title: Recent System Events (24 hours)
+    hours_to_show: 24
+    entities:
+      - button.opentherm_gw_restart
+      - button.opentherm_gw_sync_time
+      - text.opentherm_gw_device_name
+      - text.opentherm_gw_device_id
+      - number.opentherm_gw_update_interval

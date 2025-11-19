@@ -129,14 +129,15 @@ namespace OpenTherm
             consecutive_publish_failures = 0;
 
             // Delay between publishes to allow lwIP buffers to be freed
-            // Critical for preventing ERR_MEM when publishing multiple messages
+            // Critical for preventing ERR_MEM and TCP panic when publishing multiple messages
             // Needs to be long enough for TCP ACK and PBUF cleanup
-            // Also poll the network stack to process pending packets
-            // Increased to 200ms to prevent lwIP panic during discovery
-            for (int i = 0; i < 20; i++)
+            // Poll network aggressively to process ACKs and free buffers ASAP
+            // Increased to 300ms with aggressive polling to prevent "no pbufs" panic
+            for (int i = 0; i < 60; i++)
             {
+                cyw43_arch_poll(); // Poll twice per iteration
                 cyw43_arch_poll();
-                sleep_ms(10);
+                sleep_ms(5);
             }
             return true;
         }
