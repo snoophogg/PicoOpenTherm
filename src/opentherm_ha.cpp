@@ -41,8 +41,10 @@ namespace OpenTherm
             }
 
             // Subscribe to command topics
+            // Format: <topic_base>/<device_id>/<command_topic_base>/<suffix>
+            // Example: opentherm/opentherm_gw/cmd/ch_enable
             using namespace OpenTherm::MQTTTopics;
-            std::string base_cmd = std::string(config_.command_topic_base) + "/" + std::string(config_.device_id)+ "/";
+            std::string base_cmd = std::string(config_.topic_base) + "/" + std::string(config_.device_id) + "/" + std::string(config_.command_topic_base) + "/";
             mqtt_.subscribe((base_cmd + CH_ENABLE).c_str());
             mqtt_.subscribe((base_cmd + DHW_ENABLE).c_str());
             mqtt_.subscribe((base_cmd + CONTROL_SETPOINT).c_str());
@@ -652,7 +654,9 @@ namespace OpenTherm
 
         void HAInterface::handleMessage(const char *topic, const char *payload)
         {
-            std::string cmd_base = std::string(config_.command_topic_base) + "/" + std::string(config_.device_id) + "/";
+            // Build command topic base: <topic_base>/<device_id>/<command_topic_base>/
+            // Example: opentherm/opentherm_gw/cmd/
+            std::string cmd_base = std::string(config_.topic_base) + "/" + std::string(config_.device_id) + "/" + std::string(config_.command_topic_base) + "/";
 
             // CH Enable switch
             if (strcmp(topic, (cmd_base + MQTTTopics::CH_ENABLE).c_str()) == 0)
