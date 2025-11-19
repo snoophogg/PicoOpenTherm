@@ -101,9 +101,9 @@ if(BUILD_HOST_SIMULATOR)
     add_custom_target(host_simulator DEPENDS host_simulator_ep)
 endif()
 
-# Add OpenTherm Simulator executable
+# Add OpenTherm Simulator executable (uses main.cpp with USE_SIMULATOR flag)
 add_executable(picoopentherm_simulator
-    src/simulator.cpp
+    src/main.cpp
     src/simulated_opentherm.cpp
     src/opentherm_protocol.cpp
     src/opentherm_ha.cpp
@@ -114,6 +114,9 @@ add_executable(picoopentherm_simulator
     src/mqtt_publish.cpp
     src/kvs_init_custom.c
 )
+
+# Define USE_SIMULATOR preprocessor flag for simulator build
+target_compile_definitions(picoopentherm_simulator PRIVATE USE_SIMULATOR)
 
 # Add include directory for simulator
 target_include_directories(picoopentherm_simulator PRIVATE

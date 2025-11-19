@@ -2,13 +2,21 @@
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
 #include "hardware/watchdog.h"
-#include "opentherm.hpp"
-#include "opentherm_ha.hpp"
 #include "config.hpp"
 #include "mqtt_common.hpp"
 #include "mqtt_discovery.hpp"
 #include "led_blink.hpp"
 #include <string>
+
+// Conditional compilation: use simulator or hardware interface
+#ifdef USE_SIMULATOR
+#include "simulated_opentherm.hpp"
+#include "simulated_opentherm_adapter.hpp"
+#else
+#include "opentherm.hpp"
+#endif
+
+#include "opentherm_ha.hpp"
 
 // Global configuration buffers
 static char wifi_ssid[64];
@@ -47,7 +55,12 @@ int main()
     }
     printf("\n");
 
+#ifdef USE_SIMULATOR
+    printf("\n=== PicoOpenTherm SIMULATOR Mode ===\n");
+    printf("This firmware simulates OpenTherm data without hardware\n\n");
+#else
     printf("\n=== PicoOpenTherm Home Assistant Gateway ===\n");
+#endif
 
     // Enable watchdog to ensure system resets if main loop stalls.
     // The LED state machine will call `watchdog_update()` periodically while
@@ -113,9 +126,15 @@ int main()
     // Set normal blink pattern after successful connection
     OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_NORMAL);
 
-    // Initialize OpenTherm with configured pins
-    printf("Initializing OpenTherm...\n");
+    // Initialize OpenTherm interface (hardware or simulator)
+#ifdef USE_SIMULATOR
+    printf("Initializing OpenTherm Simulator...\n");
+    OpenTherm::Simulator::SimulatedInterface sim_ot;
+    OpenTherm::Simulator::SimulatedInterfaceAdapter ot(sim_ot);
+#else
+    printf("Initializing OpenTherm Hardware Interface...\n");
     OpenTherm::Interface ot(opentherm_tx_pin, opentherm_rx_pin);
+#endif
 
     // Configure Home Assistant interface using loaded configuration
     OpenTherm::HomeAssistant::Config ha_config = {
@@ -125,7 +144,11 @@ int main()
         .state_topic_base = "opentherm/state",
         .command_topic_base = "opentherm/cmd",
         .auto_discovery = true,
-        .update_interval_ms = 10000 // Update every 10 seconds
+#ifdef USE_SIMULATOR
+        .update_interval_ms = 60000 // Simulator: Update every 60 seconds
+#else
+        .update_interval_ms = 10000 // Hardware: Update every 10 seconds
+#endif
     };
 
     OpenTherm::HomeAssistant::HAInterface ha(ot, ha_config);
@@ -155,16 +178,21 @@ int main()
 
             OpenTherm::Common::check_and_reconnect(wifi_ssid, wifi_password, mqtt_server_ip, mqtt_server_port,
                                                    mqtt_client_id, on_reconnect);
-            
+
             // Update LED pattern based on connection status
             if (OpenTherm::Common::g_mqtt_connected && !was_connected)
             {
                 // Just reconnected - set to normal pattern
                 OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_NORMAL);
             }
-            
+
             last_connection_check = now;
         }
+
+#ifdef USE_SIMULATOR
+        // Update simulator state
+        sim_ot.update();
+#endif
 
         // Update Home Assistant (reads sensors and publishes to MQTT)
         // Only updates every configured interval

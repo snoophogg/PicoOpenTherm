@@ -48,7 +48,7 @@ namespace OpenTherm
                 config->control_type = false; // Modulating
                 config->cooling_config = false;
                 config->dhw_config = true;
-                config->master_low_off_pump = false;
+                config->master_pump_control = false;
                 config->ch2_present = false;
                 return true;
             }
