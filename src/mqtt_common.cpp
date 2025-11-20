@@ -112,8 +112,9 @@ namespace OpenTherm
                 {
                     if (retry < max_retries - 1)
                     {
-                        // Wait progressively longer: 50ms, 100ms
-                        uint32_t wait_ms = 50 * (retry + 1);
+                        // Wait progressively longer: 100ms, 200ms, 300ms
+                        // Longer waits allow more time for TCP ACKs to free buffers
+                        uint32_t wait_ms = 100 * (retry + 1);
                         printf("MQTT publish ERR_MEM, waiting %lums before retry %d/%d...\n",
                                wait_ms, retry + 1, max_retries);
                         aggressive_network_poll(wait_ms);
@@ -175,8 +176,11 @@ namespace OpenTherm
             consecutive_publish_failures = 0;
 
             // Delay between publishes to allow lwIP buffers to be freed
-            // Even with Core 1, need sufficient time for TCP ACKs to return
-            aggressive_network_poll(25); // 25ms - balanced between speed and reliability
+            // CRITICAL: Even with Core 1 processing network continuously, TCP ACKs
+            // take time to return over network. Insufficient delay causes long-term
+            // buffer accumulation leading to panic after 40+ minutes of operation.
+            // 50ms allows reliable ACK processing and prevents TCP queue corruption.
+            aggressive_network_poll(50); // 50ms - prevents long-term buffer leak
             return true;
         }
 
