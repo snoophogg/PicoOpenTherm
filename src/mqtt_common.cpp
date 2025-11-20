@@ -16,17 +16,16 @@ namespace OpenTherm
         static constexpr int PUBLISH_FAILURE_THRESHOLD = 5;
 
         // Network polling helper to prevent TCP buffer exhaustion
-        // Aggressively polls the network stack to process ACKs and free buffers
+        // Note: With Core 1 dedicated to network polling, this is now much lighter
+        // Core 1 continuously polls cyw43_arch_poll(), so we only need brief yields
         void aggressive_network_poll(int duration_ms)
         {
-            // Poll twice per iteration for maximum responsiveness
-            // Each iteration: 2 polls + 5ms sleep = ~5ms per iteration
-            int iterations = duration_ms / 5;
-            for (int i = 0; i < iterations; i++)
+            // With dual-core: Core 1 handles continuous polling in parallel
+            // We just yield briefly to allow any pending TCP operations to complete
+            // This is MUCH faster than the previous implementation
+            if (duration_ms > 0)
             {
-                cyw43_arch_poll(); // Process network packets
-                cyw43_arch_poll(); // Double poll for faster ACK processing
-                sleep_ms(5);
+                sleep_ms(duration_ms);
             }
         }
 
@@ -144,8 +143,8 @@ namespace OpenTherm
             consecutive_publish_failures = 0;
 
             // Delay between publishes to allow lwIP buffers to be freed
-            // Critical for preventing ERR_MEM and TCP panic when publishing multiple messages
-            aggressive_network_poll(50); // 50ms between publishes with aggressive polling
+            // With Core 1 dedicated to network processing, much shorter delay needed
+            aggressive_network_poll(10); // 10ms with Core 1 handling continuous polling
             return true;
         }
 

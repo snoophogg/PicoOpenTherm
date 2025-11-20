@@ -66,29 +66,29 @@ namespace OpenTherm
         void HAInterface::publishSensor(const char *topic_suffix, float value)
         {
             Discovery::publishSensor(config_, topic_suffix, value);
-            // Poll after each publish to prevent TCP buffer exhaustion
-            OpenTherm::Common::aggressive_network_poll(50);
+            // With Core 1 handling network polling, only need minimal delay
+            OpenTherm::Common::aggressive_network_poll(10);
         }
 
         void HAInterface::publishSensor(const char *topic_suffix, int value)
         {
             Discovery::publishSensor(config_, topic_suffix, value);
-            // Poll after each publish to prevent TCP buffer exhaustion
-            OpenTherm::Common::aggressive_network_poll(50);
+            // With Core 1 handling network polling, only need minimal delay
+            OpenTherm::Common::aggressive_network_poll(10);
         }
 
         void HAInterface::publishSensor(const char *topic_suffix, const char *value)
         {
             Discovery::publishSensor(config_, topic_suffix, value);
-            // Poll after each publish to prevent TCP buffer exhaustion
-            OpenTherm::Common::aggressive_network_poll(50);
+            // With Core 1 handling network polling, only need minimal delay
+            OpenTherm::Common::aggressive_network_poll(10);
         }
 
         void HAInterface::publishBinarySensor(const char *topic_suffix, bool value)
         {
             Discovery::publishBinarySensor(config_, topic_suffix, value);
-            // Poll after each publish to prevent TCP buffer exhaustion
-            OpenTherm::Common::aggressive_network_poll(50);
+            // With Core 1 handling network polling, only need minimal delay
+            OpenTherm::Common::aggressive_network_poll(10);
         }
 
         void HAInterface::publishStatus()

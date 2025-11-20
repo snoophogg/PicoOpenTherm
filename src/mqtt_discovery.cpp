@@ -22,9 +22,9 @@ namespace OpenTherm
                 // Publish with retain flag so configs survive HA restarts
                 if (OpenTherm::Common::mqtt_publish_wrapper(topic, config, true))
                 {
-                    // Success - give buffers EXTRA time to clear before next discovery publish
-                    // Discovery messages are larger and come in rapid succession
-                    OpenTherm::Common::aggressive_network_poll(200); // 200ms between discovery messages
+                    // Success - with Core 1 handling network, much shorter delay needed
+                    // Discovery messages are large but Core 1 processes ACKs immediately
+                    OpenTherm::Common::aggressive_network_poll(50); // 50ms with dual-core
                     return true;
                 }
 
@@ -130,8 +130,8 @@ namespace OpenTherm
         bool publishDiscoveryConfigs(const OpenTherm::HomeAssistant::Config &cfg)
         {
             // Wait for MQTT client to be ready for large discovery messages
-            printf("Waiting for MQTT client to be ready for discovery (5 seconds, polling network)...\n");
-            OpenTherm::Common::aggressive_network_poll(5000); // 5 second startup delay
+            printf("Waiting for MQTT client to be ready for discovery (2 seconds)...\n");
+            OpenTherm::Common::aggressive_network_poll(2000); // Reduced from 5s with dual-core
 
             printf("Publishing Home Assistant MQTT discovery configs...\n");
 

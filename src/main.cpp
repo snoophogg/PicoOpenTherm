@@ -1,6 +1,7 @@
 #include <cstdio>
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
+#include "pico/multicore.h"
 #include "hardware/watchdog.h"
 #include "config.hpp"
 #include "mqtt_common.hpp"
@@ -30,6 +31,26 @@ static uint8_t opentherm_tx_pin;
 static uint8_t opentherm_rx_pin;
 
 static OpenTherm::HomeAssistant::HAInterface *ha_interface = nullptr;
+
+// Core 1: Dedicated network processor
+// Runs continuously polling the WiFi/TCP stack to process packets and free buffers
+// This prevents TCP buffer exhaustion and improves MQTT throughput significantly
+volatile bool core1_should_run = true;
+
+void core1_network_processor()
+{
+    printf("Core 1: Network processor started\n");
+
+    // Tight loop continuously polling network stack
+    // This ensures TCP ACKs are processed immediately and buffers are freed ASAP
+    while (core1_should_run)
+    {
+        cyw43_arch_poll();
+        tight_loop_contents(); // Minimal overhead hint to compiler
+    }
+
+    printf("Core 1: Network processor stopped\n");
+}
 
 // Callback for reconnection - republish discovery
 static void on_reconnect()
@@ -85,6 +106,13 @@ int main()
     printf("Enabling WiFi station mode...\n");
     cyw43_arch_enable_sta_mode();
     sleep_ms(500); // Increased delay to allow CYW43 chip to fully stabilize
+
+    // Launch Core 1 as dedicated network processor
+    // Core 1 will continuously poll the WiFi/TCP stack in parallel with application logic
+    // This dramatically improves TCP throughput and prevents buffer exhaustion
+    printf("Launching Core 1 network processor...\n");
+    multicore_launch_core1(core1_network_processor);
+    sleep_ms(100); // Give Core 1 time to start
 
     // Initialize LED state machine after WiFi is ready
     printf("Initializing LED state machine...\n");
