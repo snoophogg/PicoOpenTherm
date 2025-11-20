@@ -7,7 +7,6 @@
 #include "mqtt_publish.hpp"
 #include <cstdio>
 #include <cstring>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 
@@ -69,57 +68,78 @@ namespace OpenTherm
         {
             using namespace OpenTherm::MQTTDiscovery;
 
-            std::ostringstream payload;
-            payload << "{";
-            payload << "\"" << JSON_NAME << "\":\"" << name << "\",";
-            payload << "\"" << JSON_DEFAULT_ENTITY_ID << "\":\"" << component << "." << cfg.device_id << "_" << object_id << "\",";
-            payload << "\"" << JSON_UNIQUE_ID << "\":\"" << cfg.device_id << "_" << object_id << "\",";
-            payload << "\"" << JSON_STATE_TOPIC << "\":\"" << state_topic << "\",";
+            // Static buffer to avoid heap allocations - discovery messages are ~300-400 bytes
+            static char payload[512];
+            int len = 0;
+
+            // Start JSON object
+            len += snprintf(payload + len, sizeof(payload) - len, "{");
+            len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":\"%s\",", JSON_NAME, name);
+            len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":\"%s.%s_%s\",",
+                           JSON_DEFAULT_ENTITY_ID, component, cfg.device_id, object_id);
+            len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":\"%s_%s\",",
+                           JSON_UNIQUE_ID, cfg.device_id, object_id);
+            len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":\"%s\",", JSON_STATE_TOPIC, state_topic);
 
             if (command_topic)
             {
-                payload << "\"" << JSON_COMMAND_TOPIC << "\":\"" << command_topic << "\",";
+                len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":\"%s\",",
+                               JSON_COMMAND_TOPIC, command_topic);
             }
 
             if (device_class)
             {
-                payload << "\"" << JSON_DEVICE_CLASS << "\":\"" << device_class << "\",";
+                len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":\"%s\",",
+                               JSON_DEVICE_CLASS, device_class);
             }
 
             if (unit)
             {
-                payload << "\"" << JSON_UNIT_OF_MEASUREMENT << "\":\"" << unit << "\",";
+                len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":\"%s\",",
+                               JSON_UNIT_OF_MEASUREMENT, unit);
             }
 
             if (icon)
             {
-                payload << "\"" << JSON_ICON << "\":\"" << icon << "\",";
+                len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":\"%s\",", JSON_ICON, icon);
             }
 
             if (value_template)
             {
-                payload << "\"" << JSON_VALUE_TEMPLATE << "\":\"" << value_template << "\",";
+                len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":\"%s\",",
+                               JSON_VALUE_TEMPLATE, value_template);
             }
 
             if (strcmp(component, COMPONENT_NUMBER) == 0)
             {
-                payload << "\"" << JSON_MIN << "\":" << min_value << ",";
-                payload << "\"" << JSON_MAX << "\":" << max_value << ",";
-                payload << "\"" << JSON_STEP << "\":" << step << ",";
-                payload << "\"" << JSON_MODE << "\":\"" << MODE_BOX << "\",";
+                len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":%.1f,", JSON_MIN, min_value);
+                len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":%.1f,", JSON_MAX, max_value);
+                len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":%.1f,", JSON_STEP, step);
+                len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":\"%s\",", JSON_MODE, MODE_BOX);
             }
 
-            payload << "\"" << JSON_DEVICE << "\":{";
-            payload << "\"" << JSON_IDENTIFIERS << "\":[\"" << cfg.device_id << "\"],";
-            payload << "\"" << JSON_NAME << "\":\"" << cfg.device_name << "\",";
-            payload << "\"" << JSON_MODEL << "\":\"" << DEVICE_MODEL << "\",";
-            payload << "\"" << JSON_MANUFACTURER << "\":\"" << DEVICE_MANUFACTURER << "\"";
-            payload << "}";
+            // Device information
+            len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":{", JSON_DEVICE);
+            len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":[\"%s\"],",
+                           JSON_IDENTIFIERS, cfg.device_id);
+            len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":\"%s\",", JSON_NAME, cfg.device_name);
+            len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":\"%s\",", JSON_MODEL, DEVICE_MODEL);
+            len += snprintf(payload + len, sizeof(payload) - len, "\"%s\":\"%s\"",
+                           JSON_MANUFACTURER, DEVICE_MANUFACTURER);
+            len += snprintf(payload + len, sizeof(payload) - len, "}");
 
-            payload << "}";
+            // Close JSON object
+            len += snprintf(payload + len, sizeof(payload) - len, "}");
+
+            // Safety check
+            if (len >= sizeof(payload))
+            {
+                printf("ERROR: Discovery payload too large (%d bytes) for %s/%s\n", len, component, object_id);
+                return false;
+            }
 
             std::string topic = buildDiscoveryTopic(cfg, component, object_id);
-            if (!publishWithRetry(topic.c_str(), payload.str().c_str()))
+            if (!publishWithRetry(topic.c_str(), payload))
             {
                 printf("WARNING: Failed to publish discovery config for %s/%s\n", component, object_id);
                 return false;
