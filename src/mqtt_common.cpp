@@ -49,12 +49,17 @@ namespace OpenTherm
         static std::string current_topic;
         static std::string current_payload;
 
+        // Maximum pending messages to prevent unbounded memory growth
+        constexpr size_t MAX_PENDING_MESSAGES = 10;
+
         void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len)
         {
             printf("Incoming publish at topic %s with total length %u\n", topic, (unsigned int)tot_len);
             // Store the topic for the incoming data callback
             current_topic = topic;
-            current_payload.clear();
+            // Force deallocation by replacing with empty string to prevent capacity leak
+            current_payload = std::string();
+            current_payload.reserve(tot_len); // Pre-allocate exact size needed
         }
 
         void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
@@ -64,8 +69,21 @@ namespace OpenTherm
             if (flags & MQTT_DATA_FLAG_LAST)
             {
                 printf("Received: %s = %s\n", current_topic.c_str(), current_payload.c_str());
+
+                // Check if pending messages queue is full (prevents unbounded growth)
+                if (g_pending_messages.size() >= MAX_PENDING_MESSAGES)
+                {
+                    // Drop oldest message (FIFO)
+                    auto oldest = g_pending_messages.begin();
+                    printf("WARNING: Pending message queue full (%zu msgs), dropping oldest: %s\n",
+                           g_pending_messages.size(), oldest->first.c_str());
+                    g_pending_messages.erase(oldest);
+                }
+
                 g_pending_messages[current_topic] = current_payload;
-                current_payload.clear();
+
+                // Force deallocation to prevent capacity leak from large messages
+                current_payload = std::string();
             }
         }
 
@@ -248,10 +266,21 @@ namespace OpenTherm
             {
                 printf("Cleaning up existing MQTT client...\n");
                 mqtt_disconnect(g_mqtt_client);
+
+                // Clear pending messages before cleanup to prevent stale messages
+                if (!g_pending_messages.empty())
+                {
+                    printf("Clearing %zu pending messages before reconnect\n", g_pending_messages.size());
+                    g_pending_messages.clear();
+                }
+
                 mqtt_client_free(g_mqtt_client);
                 g_mqtt_client = nullptr;
                 g_mqtt_connected = false;
-                sleep_ms(100); // Give lwIP time to clean up timers
+
+                // Increased delay for lwIP cleanup (was 100ms, now 500ms)
+                // Allows lwIP to properly clean up TCP buffers and timers
+                sleep_ms(500);
             }
 
             g_mqtt_client = mqtt_client_new();
