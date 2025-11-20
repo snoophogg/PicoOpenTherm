@@ -93,8 +93,39 @@ namespace OpenTherm
             u8_t qos = 0;
             u8_t retain_flag = retain ? 1 : 0;
 
-            err_t err = mqtt_publish(g_mqtt_client, topic, payload, strlen(payload),
-                                     qos, retain_flag, nullptr, nullptr);
+            // Retry logic for memory errors - TCP buffers may be temporarily full
+            const int max_retries = 3;
+            err_t err = ERR_OK;
+
+            for (int retry = 0; retry < max_retries; retry++)
+            {
+                err = mqtt_publish(g_mqtt_client, topic, payload, strlen(payload),
+                                   qos, retain_flag, nullptr, nullptr);
+
+                if (err == ERR_OK)
+                {
+                    break; // Success!
+                }
+
+                // If memory error, wait for TCP buffers to clear and retry
+                if (err == ERR_MEM || err == ERR_BUF)
+                {
+                    if (retry < max_retries - 1)
+                    {
+                        // Wait progressively longer: 50ms, 100ms
+                        uint32_t wait_ms = 50 * (retry + 1);
+                        printf("MQTT publish ERR_MEM, waiting %lums before retry %d/%d...\n",
+                               wait_ms, retry + 1, max_retries);
+                        aggressive_network_poll(wait_ms);
+                        continue;
+                    }
+                }
+                else
+                {
+                    // Non-memory error, don't retry
+                    break;
+                }
+            }
 
             if (err != ERR_OK)
             {
@@ -124,7 +155,8 @@ namespace OpenTherm
                 default:
                     break;
                 }
-                printf("MQTT publish failed: %s (%d) - topic: %s\n", err_str, err, topic);
+                printf("MQTT publish failed after %d attempts: %s (%d) - topic: %s\n",
+                       max_retries, err_str, err, topic);
 
                 // Track consecutive failures and update LED pattern
                 consecutive_publish_failures++;
@@ -134,8 +166,8 @@ namespace OpenTherm
                     OpenTherm::LED::set_pattern(OpenTherm::LED::BLINK_MQTT_ERROR);
                 }
 
-                // Add small delay on error to prevent flooding
-                sleep_ms(10);
+                // Add delay on error to prevent flooding
+                aggressive_network_poll(100);
                 return false;
             }
 
@@ -143,8 +175,8 @@ namespace OpenTherm
             consecutive_publish_failures = 0;
 
             // Delay between publishes to allow lwIP buffers to be freed
-            // With Core 1 dedicated to network processing, much shorter delay needed
-            aggressive_network_poll(10); // 10ms with Core 1 handling continuous polling
+            // Even with Core 1, need sufficient time for TCP ACKs to return
+            aggressive_network_poll(25); // 25ms - balanced between speed and reliability
             return true;
         }
 
@@ -152,6 +184,7 @@ namespace OpenTherm
         {
             if (!g_mqtt_connected || !g_mqtt_client)
             {
+                printf("MQTT subscribe failed: not connected\n");
                 return false;
             }
 
@@ -159,11 +192,29 @@ namespace OpenTherm
 
             if (err != ERR_OK)
             {
-                printf("MQTT subscribe failed: %d\n", err);
+                const char *err_str = "unknown";
+                switch (err)
+                {
+                case ERR_MEM:
+                    err_str = "out of memory (ERR_MEM)";
+                    break;
+                case ERR_BUF:
+                    err_str = "buffer error (ERR_BUF)";
+                    break;
+                case ERR_CONN:
+                    err_str = "not connected (ERR_CONN)";
+                    break;
+                default:
+                    break;
+                }
+                printf("MQTT subscribe failed: %s (%d) - topic: %s\n", err_str, err, topic);
                 return false;
             }
 
             printf("Subscribed to: %s\n", topic);
+
+            // Brief delay to allow subscription to be processed
+            aggressive_network_poll(10);
             return true;
         }
 

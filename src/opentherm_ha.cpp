@@ -39,22 +39,45 @@ namespace OpenTherm
                         sleep_ms(1000); // Halt execution
                     }
                 }
+
+                // Wait after discovery before subscribing to allow TCP buffers to clear
+                printf("Waiting for TCP buffers to clear before subscribing...\n");
+                OpenTherm::Common::aggressive_network_poll(500);
             }
 
-            // Subscribe to command topics
+            // Subscribe to command topics with delays between each subscription
+            // This prevents TCP buffer exhaustion during subscription burst
             // Format: <topic_base>/<device_id>/<command_topic_base>/<suffix>
             // Example: opentherm/opentherm_gw/cmd/ch_enable
             using namespace OpenTherm::MQTTTopics;
             std::string base_cmd = std::string(config_.topic_base) + "/" + std::string(config_.device_id) + "/" + std::string(config_.command_topic_base) + "/";
+
             mqtt_.subscribe((base_cmd + CH_ENABLE).c_str());
+            OpenTherm::Common::aggressive_network_poll(50);
+
             mqtt_.subscribe((base_cmd + DHW_ENABLE).c_str());
+            OpenTherm::Common::aggressive_network_poll(50);
+
             mqtt_.subscribe((base_cmd + CONTROL_SETPOINT).c_str());
+            OpenTherm::Common::aggressive_network_poll(50);
+
             mqtt_.subscribe((base_cmd + ROOM_SETPOINT).c_str());
+            OpenTherm::Common::aggressive_network_poll(50);
+
             mqtt_.subscribe((base_cmd + DHW_SETPOINT).c_str());
+            OpenTherm::Common::aggressive_network_poll(50);
+
             mqtt_.subscribe((base_cmd + MAX_CH_SETPOINT).c_str());
+            OpenTherm::Common::aggressive_network_poll(50);
+
             mqtt_.subscribe((base_cmd + SYNC_TIME).c_str());
+            OpenTherm::Common::aggressive_network_poll(50);
+
             mqtt_.subscribe((base_cmd + RESTART).c_str());
+            OpenTherm::Common::aggressive_network_poll(50);
+
             mqtt_.subscribe((base_cmd + UPDATE_INTERVAL).c_str());
+            OpenTherm::Common::aggressive_network_poll(50);
         }
 
         void HAInterface::publishDiscoveryConfigs()
@@ -66,29 +89,25 @@ namespace OpenTherm
         void HAInterface::publishSensor(const char *topic_suffix, float value)
         {
             Discovery::publishSensor(config_, topic_suffix, value);
-            // With Core 1 handling network polling, only need minimal delay
-            OpenTherm::Common::aggressive_network_poll(10);
+            // mqtt_publish_wrapper handles delays internally (25ms + retry logic)
         }
 
         void HAInterface::publishSensor(const char *topic_suffix, int value)
         {
             Discovery::publishSensor(config_, topic_suffix, value);
-            // With Core 1 handling network polling, only need minimal delay
-            OpenTherm::Common::aggressive_network_poll(10);
+            // mqtt_publish_wrapper handles delays internally (25ms + retry logic)
         }
 
         void HAInterface::publishSensor(const char *topic_suffix, const char *value)
         {
             Discovery::publishSensor(config_, topic_suffix, value);
-            // With Core 1 handling network polling, only need minimal delay
-            OpenTherm::Common::aggressive_network_poll(10);
+            // mqtt_publish_wrapper handles delays internally (25ms + retry logic)
         }
 
         void HAInterface::publishBinarySensor(const char *topic_suffix, bool value)
         {
             Discovery::publishBinarySensor(config_, topic_suffix, value);
-            // With Core 1 handling network polling, only need minimal delay
-            OpenTherm::Common::aggressive_network_poll(10);
+            // mqtt_publish_wrapper handles delays internally (25ms + retry logic)
         }
 
         void HAInterface::publishStatus()

@@ -22,9 +22,9 @@ namespace OpenTherm
                 // Publish with retain flag so configs survive HA restarts
                 if (OpenTherm::Common::mqtt_publish_wrapper(topic, config, true))
                 {
-                    // Success - with Core 1 handling network, much shorter delay needed
-                    // Discovery messages are large but Core 1 processes ACKs immediately
-                    OpenTherm::Common::aggressive_network_poll(50); // 50ms with dual-core
+                    // Success - discovery messages are large (200-400 bytes), need extra time
+                    // Wait for TCP ACK before sending next large message
+                    OpenTherm::Common::aggressive_network_poll(75); // 75ms for large discovery messages
                     return true;
                 }
 
