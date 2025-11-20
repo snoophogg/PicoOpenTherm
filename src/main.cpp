@@ -105,14 +105,17 @@ int main()
     // Enable station mode and give chip extra time to stabilize
     printf("Enabling WiFi station mode...\n");
     cyw43_arch_enable_sta_mode();
-    sleep_ms(500); // Increased delay to allow CYW43 chip to fully stabilize
 
     // Launch Core 1 as dedicated network processor
     // Core 1 will continuously poll the WiFi/TCP stack in parallel with application logic
     // This dramatically improves TCP throughput and prevents buffer exhaustion
     printf("Launching Core 1 network processor...\n");
     multicore_launch_core1(core1_network_processor);
-    sleep_ms(100); // Give Core 1 time to start
+
+    // CRITICAL: CYW43 chip needs time to fully initialize before first WiFi connection
+    // Without this delay, first connection attempt will fail with ioctl timeouts
+    printf("Waiting for CYW43 chip to stabilize...\n");
+    sleep_ms(2000); // 2 seconds allows chip firmware to fully initialize
 
     // Initialize LED state machine after WiFi is ready
     printf("Initializing LED state machine...\n");
