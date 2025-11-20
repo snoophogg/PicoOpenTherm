@@ -34,7 +34,33 @@ Complete documentation for PicoOpenTherm - OpenTherm v2.2 protocol implementatio
   - Protocol validation
   - Integration testing
 
+### Architecture & Performance
+- **[Dual-Core Architecture](DUAL_CORE_ARCHITECTURE.md)** - RP2040 dual-core implementation
+  - Core 1 dedicated network processor
+  - 5x faster MQTT throughput
+  - Eliminates TCP buffer exhaustion
+  - True parallel processing
+
+- **[MQTT Reliability Improvements](MQTT_RELIABILITY_IMPROVEMENTS.md)** - Network optimization
+  - Automatic retry with backoff
+  - Optimized delays for message types
+  - Subscription throttling
+  - Performance metrics and troubleshooting
+
+- **[Build Guide](BUILD_GUIDE.md)** - Comprehensive build documentation
+  - Build script usage and options
+  - Hardware vs Simulator firmware
+  - Flashing instructions
+  - Development workflow
+  - Performance optimization
+
 ### Advanced Features
+- **[Entity Reference](ENTITIES_REFERENCE.md)** - Complete Home Assistant entity list
+  - All 49 entities documented
+  - Sensor types and units
+  - Control capabilities
+  - Card examples
+
 - **[Key-Value Store Utility](KVSTORE-UTIL.md)** - Flash configuration management
   - Read/write persistent configuration
   - Factory reset procedures
@@ -64,9 +90,15 @@ Complete documentation for PicoOpenTherm - OpenTherm v2.2 protocol implementatio
 
 ### For Developers
 
-**Development:**
-- [Building from Source](../README.md#quick-start)
-- [Protocol Implementation](../README.md#opentherm-overview)
+**Building & Deployment:**
+- [Build Guide](BUILD_GUIDE.md) - Complete build documentation
+- [Building from Source](../README.md#quick-start) - Quick start instructions
+- [Dual-Core Architecture](DUAL_CORE_ARCHITECTURE.md) - Implementation details
+
+**Protocol & Performance:**
+- [Protocol Implementation](../README.md#opentherm-overview) - OpenTherm v2.2 details
+- [MQTT Reliability](MQTT_RELIABILITY_IMPROVEMENTS.md) - Network optimization
+- [PIO Analysis](PIO_ANALYSIS.md) - Programmable I/O implementation
 - [Testing with Simulator](SIMULATOR.md)
 - [Host Development](HOST_SIMULATOR.md)
 

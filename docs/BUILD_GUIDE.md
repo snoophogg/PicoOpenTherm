@@ -295,5 +295,8 @@ target_link_options(picoopentherm PRIVATE -Os)
 
 - [DUAL_CORE_ARCHITECTURE.md](DUAL_CORE_ARCHITECTURE.md) - Dual-core implementation details
 - [MQTT_RELIABILITY_IMPROVEMENTS.md](MQTT_RELIABILITY_IMPROVEMENTS.md) - Network optimizations
-- [README.md](README.md) - Project overview and setup
+- [ENTITIES_REFERENCE.md](ENTITIES_REFERENCE.md) - Complete Home Assistant entity reference
+- [HOME_ASSISTANT.md](HOME_ASSISTANT.md) - Home Assistant integration guide
+- [SIMULATOR.md](SIMULATOR.md) - Simulator firmware documentation
+- [README.md](../README.md) - Project overview and setup
 - [Pico SDK Documentation](https://raspberrypi.github.io/pico-sdk-doxygen/)

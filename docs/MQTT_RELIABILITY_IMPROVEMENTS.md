@@ -25,7 +25,7 @@ The RP2040's lwIP TCP stack has limited packet buffers (pbufs). When publishing 
 - Buffers freed in real-time
 - 5x faster MQTT throughput
 
-**Files**: [main.cpp](src/main.cpp), [CMakeLists.txt](CMakeLists.txt)
+**Files**: [main.cpp](../src/main.cpp), [CMakeLists.txt](../CMakeLists.txt)
 
 ### 2. Automatic Retry with Backoff
 
@@ -36,7 +36,7 @@ When `mqtt_publish()` returns `ERR_MEM` or `ERR_BUF`, automatically retry up to 
 
 This gives Core 1 time to clear buffers without failing the publish.
 
-**Files**: [mqtt_common.cpp](src/mqtt_common.cpp#L96-L128)
+**Files**: [mqtt_common.cpp](../src/mqtt_common.cpp#L96-L128)
 
 ```cpp
 // Retry logic for memory errors
@@ -66,7 +66,7 @@ Tuned delays for different message types:
 | Between subscriptions | 50ms | Prevent subscription burst |
 | Error recovery | 100ms | Allow network to stabilize |
 
-**Files**: [mqtt_common.cpp](src/mqtt_common.cpp#L179), [mqtt_discovery.cpp](src/mqtt_discovery.cpp#L27), [opentherm_ha.cpp](src/opentherm_ha.cpp#L45)
+**Files**: [mqtt_common.cpp](../src/mqtt_common.cpp#L179), [mqtt_discovery.cpp](../src/mqtt_discovery.cpp#L27), [opentherm_ha.cpp](../src/opentherm_ha.cpp#L45)
 
 ### 4. Subscription Burst Protection
 
@@ -78,7 +78,7 @@ Added delays between MQTT subscriptions to prevent buffer exhaustion:
 **Before**: 9 subscriptions fired instantly → ERR_MEM
 **After**: Spaced over ~950ms → all succeed
 
-**Files**: [opentherm_ha.cpp](src/opentherm_ha.cpp#L43-L76), [mqtt_common.cpp](src/mqtt_common.cpp#L184-L186)
+**Files**: [opentherm_ha.cpp](../src/opentherm_ha.cpp#L43-L76), [mqtt_common.cpp](../src/mqtt_common.cpp#L184-L186)
 
 ### 5. Enhanced Error Reporting
 
@@ -88,7 +88,7 @@ Better diagnostics for debugging:
 - Topic names in error messages
 - Connection state tracking
 
-**Files**: [mqtt_common.cpp](src/mqtt_common.cpp)
+**Files**: [mqtt_common.cpp](../src/mqtt_common.cpp)
 
 ## Performance Metrics
 
@@ -161,14 +161,14 @@ When flashing new firmware, verify:
 2. MQTT broker slow → check broker logs
 3. WiFi signal weak → check RSSI sensor
 
-**Solution**: Increase `aggressive_network_poll()` delays in [mqtt_common.cpp](src/mqtt_common.cpp#L179) from 25ms to 50ms.
+**Solution**: Increase `aggressive_network_poll()` delays in [mqtt_common.cpp](../src/mqtt_common.cpp#L179) from 25ms to 50ms.
 
 ### Discovery taking too long
 
 **Possible causes**:
 1. Delays too conservative for your network
 
-**Solution**: Reduce discovery delay in [mqtt_discovery.cpp](src/mqtt_discovery.cpp#L27) from 75ms to 50ms.
+**Solution**: Reduce discovery delay in [mqtt_discovery.cpp](../src/mqtt_discovery.cpp#L27) from 75ms to 50ms.
 
 ### Connection drops after updates
 
