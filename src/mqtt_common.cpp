@@ -12,6 +12,8 @@ namespace OpenTherm
         std::map<std::string, std::string> g_pending_messages;
 
         // Track consecutive publish failures for LED indication
+        // Note: Static lifetime is intentional - failure counter persists across
+        // reconnects to detect chronic issues. Reset on successful connection.
         static int consecutive_publish_failures = 0;
         static constexpr int PUBLISH_FAILURE_THRESHOLD = 5;
 
@@ -46,6 +48,7 @@ namespace OpenTherm
         }
 
         // Static variables to track incoming MQTT message state
+        // Note: These are reset with empty string assignment to prevent capacity leak
         static std::string current_topic;
         static std::string current_payload;
 
@@ -84,6 +87,7 @@ namespace OpenTherm
 
                 // Force deallocation to prevent capacity leak from large messages
                 current_payload = std::string();
+                current_topic = std::string();
             }
         }
 

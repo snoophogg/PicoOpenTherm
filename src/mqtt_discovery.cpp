@@ -42,20 +42,35 @@ namespace OpenTherm
         std::string buildStateTopic(const OpenTherm::HomeAssistant::Config &cfg, const char *suffix)
         {
             // opentherm/opentherm_gw/state/boiler_temp
-            return std::string(cfg.topic_base) + "/" + cfg.device_id + "/" + cfg.state_topic_base + "/" + suffix;
+            // Pre-allocate to reduce heap allocations during concatenation
+            std::string topic;
+            topic.reserve(strlen(cfg.topic_base) + strlen(cfg.device_id) +
+                         strlen(cfg.state_topic_base) + strlen(suffix) + 3);
+            topic = std::string(cfg.topic_base) + "/" + cfg.device_id + "/" + cfg.state_topic_base + "/" + suffix;
+            return topic;
         }
 
         std::string buildCommandTopic(const OpenTherm::HomeAssistant::Config &cfg, const char *suffix)
         {
             // opentherm/opentherm_gw/cmd/ch_enable
-            return std::string(cfg.topic_base) + "/" + cfg.device_id + "/" + cfg.command_topic_base + "/" + suffix;
+            // Pre-allocate to reduce heap allocations during concatenation
+            std::string topic;
+            topic.reserve(strlen(cfg.topic_base) + strlen(cfg.device_id) +
+                         strlen(cfg.command_topic_base) + strlen(suffix) + 3);
+            topic = std::string(cfg.topic_base) + "/" + cfg.device_id + "/" + cfg.command_topic_base + "/" + suffix;
+            return topic;
         }
 
         std::string buildDiscoveryTopic(const OpenTherm::HomeAssistant::Config &cfg, const char *component, const char *object_id)
         {
             // Home Assistant MQTT discovery format: <discovery_prefix>/<component>/[<node_id>/]<object_id>/config
             // Example: homeassistant/sensor/opentherm_gw/boiler_temp/config
-            return std::string(cfg.mqtt_prefix) + "/" + component + "/" + cfg.device_id + "/" + object_id + OpenTherm::MQTTDiscovery::CONFIG_SUFFIX;
+            // Pre-allocate to reduce heap allocations during concatenation
+            std::string topic;
+            topic.reserve(strlen(cfg.mqtt_prefix) + strlen(component) + strlen(cfg.device_id) +
+                         strlen(object_id) + strlen(OpenTherm::MQTTDiscovery::CONFIG_SUFFIX) + 4);
+            topic = std::string(cfg.mqtt_prefix) + "/" + component + "/" + cfg.device_id + "/" + object_id + OpenTherm::MQTTDiscovery::CONFIG_SUFFIX;
+            return topic;
         }
 
         bool publishDiscoveryConfig(const OpenTherm::HomeAssistant::Config &cfg,
