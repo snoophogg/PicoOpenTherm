@@ -17,6 +17,11 @@ namespace OpenTherm
         static int consecutive_publish_failures = 0;
         static constexpr int PUBLISH_FAILURE_THRESHOLD = 5;
 
+        // Track publish statistics for long-term monitoring
+        uint32_t g_total_publish_attempts = 0;
+        uint32_t g_total_publish_failures = 0;
+        uint32_t g_mqtt_reconnect_count = 0;
+
         // Network polling helper to prevent TCP buffer exhaustion
         // Note: With Core 1 dedicated to network polling, this is now much lighter
         // Core 1 continuously polls cyw43_arch_poll(), so we only need brief yields
@@ -115,6 +120,9 @@ namespace OpenTherm
             u8_t qos = 0;
             u8_t retain_flag = retain ? 1 : 0;
 
+            // Track publish attempt
+            g_total_publish_attempts++;
+
             // Retry logic for memory errors - TCP buffers may be temporarily full
             const int max_retries = 3;
             err_t err = ERR_OK;
@@ -153,6 +161,9 @@ namespace OpenTherm
 
             if (err != ERR_OK)
             {
+                // Track failure
+                g_total_publish_failures++;
+
                 const char *err_str = "unknown";
                 switch (err)
                 {
@@ -270,6 +281,7 @@ namespace OpenTherm
             if (g_mqtt_client)
             {
                 printf("Cleaning up existing MQTT client...\n");
+                g_mqtt_reconnect_count++; // Track reconnection
                 mqtt_disconnect(g_mqtt_client);
 
                 // Clear pending messages before cleanup to prevent stale messages

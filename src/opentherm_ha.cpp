@@ -424,6 +424,11 @@ namespace OpenTherm
             int free_heap_bytes = mi.fordblks;
 
             publishSensor(MQTTTopics::FREE_HEAP, free_heap_bytes);
+
+            // MQTT statistics for long-term monitoring
+            publishSensor(MQTTTopics::MQTT_PUBLISH_ATTEMPTS, (int)OpenTherm::Common::g_total_publish_attempts);
+            publishSensor(MQTTTopics::MQTT_PUBLISH_FAILURES, (int)OpenTherm::Common::g_total_publish_failures);
+            publishSensor(MQTTTopics::MQTT_RECONNECT_COUNT, (int)OpenTherm::Common::g_mqtt_reconnect_count);
         }
 
         // Parse ISO 8601 datetime string (e.g., "2025-01-17T14:30:00Z" or "2025-01-17T14:30:00+00:00")

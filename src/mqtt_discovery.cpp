@@ -330,6 +330,14 @@ namespace OpenTherm
             publishDiscoveryConfig(cfg, COMPONENT_SENSOR, FREE_HEAP, NAME_FREE_HEAP,
                                    buildStateTopic(cfg, FREE_HEAP).c_str(), DEVICE_CLASS_DATA_SIZE, UNIT_BYTES, ICON_MEMORY);
 
+            // MQTT statistics for long-term monitoring
+            publishDiscoveryConfig(cfg, COMPONENT_SENSOR, MQTT_PUBLISH_ATTEMPTS, NAME_MQTT_PUBLISH_ATTEMPTS,
+                                   buildStateTopic(cfg, MQTT_PUBLISH_ATTEMPTS).c_str(), nullptr, nullptr, ICON_COUNTER);
+            publishDiscoveryConfig(cfg, COMPONENT_SENSOR, MQTT_PUBLISH_FAILURES, NAME_MQTT_PUBLISH_FAILURES,
+                                   buildStateTopic(cfg, MQTT_PUBLISH_FAILURES).c_str(), nullptr, nullptr, ICON_ALERT_CIRCLE);
+            publishDiscoveryConfig(cfg, COMPONENT_SENSOR, MQTT_RECONNECT_COUNT, NAME_MQTT_RECONNECT_COUNT,
+                                   buildStateTopic(cfg, MQTT_RECONNECT_COUNT).c_str(), nullptr, nullptr, ICON_WIFI);
+
             printf("Discovery configs published!\n");
             return true;
         }

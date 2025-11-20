@@ -22,6 +22,11 @@ namespace OpenTherm
         extern bool g_mqtt_connected;
         extern std::map<std::string, std::string> g_pending_messages;
 
+        // MQTT statistics for long-term monitoring
+        extern uint32_t g_total_publish_attempts;
+        extern uint32_t g_total_publish_failures;
+        extern uint32_t g_mqtt_reconnect_count;
+
         // MQTT callback functions
         void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
         void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len);

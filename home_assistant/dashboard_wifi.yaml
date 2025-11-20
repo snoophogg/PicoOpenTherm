@@ -63,6 +63,20 @@ views:
                 name: Free Memory
                 icon: mdi:memory
 
+          # MQTT Statistics
+          - type: entities
+            title: MQTT Reliability
+            entities:
+              - entity: sensor.opentherm_gw_mqtt_publish_attempts
+                name: Total Publish Attempts
+                icon: mdi:counter
+              - entity: sensor.opentherm_gw_mqtt_publish_failures
+                name: Total Publish Failures
+                icon: mdi:alert-circle
+              - entity: sensor.opentherm_gw_mqtt_reconnect_count
+                name: MQTT Reconnections
+                icon: mdi:wifi
+
       # WiFi Signal History Graph
       - type: history-graph
         title: WiFi Signal Strength (24h)
@@ -150,6 +164,52 @@ views:
         days_to_show: 30
         period: day
 
+      # MQTT Reliability Trends
+      - type: history-graph
+        title: MQTT Publish Success Rate - 7 Days
+        hours_to_show: 168
+        refresh_interval: 300
+        entities:
+          - entity: sensor.opentherm_gw_mqtt_publish_attempts
+            name: Total Attempts
+          - entity: sensor.opentherm_gw_mqtt_publish_failures
+            name: Failures
+
+      - type: history-graph
+        title: MQTT Reconnections - 7 Days
+        hours_to_show: 168
+        refresh_interval: 300
+        entities:
+          - entity: sensor.opentherm_gw_mqtt_reconnect_count
+            name: Reconnections
+
+      # MQTT Statistics using ApexCharts (optional)
+      - type: custom:apexcharts-card
+        header:
+          show: true
+          title: MQTT Reliability - 7 Days
+          show_states: true
+        graph_span: 7d
+        span:
+          end: day
+        series:
+          - entity: sensor.opentherm_gw_mqtt_publish_attempts
+            name: Publish Attempts
+            stroke_width: 2
+            type: line
+            color: '#1f77b4'
+            group_by:
+              func: max
+              duration: 1h
+          - entity: sensor.opentherm_gw_mqtt_publish_failures
+            name: Failures
+            stroke_width: 2
+            type: line
+            color: '#d62728'
+            group_by:
+              func: max
+              duration: 1h
+
   - title: Diagnostics
     path: wifi_diagnostics
     icon: mdi:network-outline
@@ -186,6 +246,16 @@ views:
               - entity: sensor.opentherm_gw_free_heap
                 name: Free Heap Memory
                 icon: mdi:memory
+              - type: divider
+              - entity: sensor.opentherm_gw_mqtt_publish_attempts
+                name: MQTT Publish Attempts
+                icon: mdi:counter
+              - entity: sensor.opentherm_gw_mqtt_publish_failures
+                name: MQTT Publish Failures
+                icon: mdi:alert-circle
+              - entity: sensor.opentherm_gw_mqtt_reconnect_count
+                name: MQTT Reconnections
+                icon: mdi:wifi
 
       # Connection Quality Analysis
       - type: custom:bar-card

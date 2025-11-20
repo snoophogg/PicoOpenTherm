@@ -84,6 +84,11 @@ namespace OpenTherm
         constexpr const char *UPTIME = "uptime";
         constexpr const char *FREE_HEAP = "free_heap";
 
+        // MQTT statistics
+        constexpr const char *MQTT_PUBLISH_ATTEMPTS = "mqtt_publish_attempts";
+        constexpr const char *MQTT_PUBLISH_FAILURES = "mqtt_publish_failures";
+        constexpr const char *MQTT_RECONNECT_COUNT = "mqtt_reconnect_count";
+
         // Configuration / Settings
         constexpr const char *UPDATE_INTERVAL = "update_interval";
     }
@@ -233,6 +238,9 @@ namespace OpenTherm
         constexpr const char *NAME_WIFI_SSID = "WiFi SSID";
         constexpr const char *NAME_UPTIME = "Uptime";
         constexpr const char *NAME_FREE_HEAP = "Free Heap Memory";
+        constexpr const char *NAME_MQTT_PUBLISH_ATTEMPTS = "MQTT Publish Attempts";
+        constexpr const char *NAME_MQTT_PUBLISH_FAILURES = "MQTT Publish Failures";
+        constexpr const char *NAME_MQTT_RECONNECT_COUNT = "MQTT Reconnections";
 
         // Device information
         constexpr const char *DEVICE_MODEL = "OpenTherm Gateway";

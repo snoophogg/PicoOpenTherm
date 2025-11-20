@@ -108,6 +108,18 @@ cards:
         name: OpenTherm Protocol Version
         icon: mdi:information
       - type: divider
+      - type: section
+        label: MQTT Reliability
+      - entity: sensor.opentherm_gw_mqtt_publish_attempts
+        name: Total Publish Attempts
+        icon: mdi:counter
+      - entity: sensor.opentherm_gw_mqtt_publish_failures
+        name: Total Publish Failures
+        icon: mdi:alert-circle
+      - entity: sensor.opentherm_gw_mqtt_reconnect_count
+        name: MQTT Reconnections
+        icon: mdi:wifi
+      - type: divider
       - entity: button.opentherm_gw_restart
         name: Restart Gateway
         icon: mdi:restart

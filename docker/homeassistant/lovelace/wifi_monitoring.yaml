@@ -53,6 +53,20 @@ cards:
         name: Free Heap Memory
         icon: mdi:memory
 
+  # MQTT Statistics
+  - type: entities
+    title: MQTT Reliability
+    entities:
+      - entity: sensor.opentherm_gw_mqtt_publish_attempts
+        name: Total Publish Attempts
+        icon: mdi:counter
+      - entity: sensor.opentherm_gw_mqtt_publish_failures
+        name: Total Publish Failures
+        icon: mdi:alert-circle
+      - entity: sensor.opentherm_gw_mqtt_reconnect_count
+        name: MQTT Reconnections
+        icon: mdi:wifi
+
   # Signal Strength History
   - type: history-graph
     title: WiFi Signal Strength (24 hours)
@@ -70,6 +84,26 @@ cards:
     entities:
       - entity: sensor.opentherm_gw_wifi_rssi
         name: RSSI (dBm)
+
+  # MQTT Reliability History
+  - type: history-graph
+    title: MQTT Publish Success Rate (24 hours)
+    hours_to_show: 24
+    refresh_interval: 60
+    entities:
+      - entity: sensor.opentherm_gw_mqtt_publish_attempts
+        name: Total Attempts
+      - entity: sensor.opentherm_gw_mqtt_publish_failures
+        name: Failures
+
+  # MQTT Reconnections History
+  - type: history-graph
+    title: MQTT Reconnections (7 days)
+    hours_to_show: 168
+    refresh_interval: 300
+    entities:
+      - entity: sensor.opentherm_gw_mqtt_reconnect_count
+        name: Reconnections
 
   # Statistics
   - type: statistics-graph
