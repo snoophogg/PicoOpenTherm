@@ -288,7 +288,66 @@ namespace OpenTherm
         // Update simulator state
         void SimulatedInterface::update(float time_seconds)
         {
+            // Track elapsed real time for date/time increment
+            static float last_time = 0.0f;
+            float elapsed = time_seconds - last_time;
+            last_time = time_seconds;
+
             state_.time = time_seconds;
+
+            // Increment date/time based on elapsed real time
+            // Note: time_seconds is typically updated every second
+            if (elapsed > 0.0f && elapsed < 10.0f) // Sanity check
+            {
+                static float accumulated_seconds = 0.0f;
+                accumulated_seconds += elapsed;
+
+                // Increment minutes every 60 seconds
+                while (accumulated_seconds >= 60.0f)
+                {
+                    accumulated_seconds -= 60.0f;
+                    state_.minutes++;
+
+                    if (state_.minutes >= 60)
+                    {
+                        state_.minutes = 0;
+                        state_.hours++;
+
+                        if (state_.hours >= 24)
+                        {
+                            state_.hours = 0;
+                            state_.day_of_week++;
+                            if (state_.day_of_week > 7)
+                            {
+                                state_.day_of_week = 1; // Monday
+                            }
+                            state_.day++;
+
+                            // Days per month (simplified - doesn't handle leap years perfectly)
+                            uint8_t days_in_month[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+                            uint8_t max_days = (state_.month >= 1 && state_.month <= 12) ? days_in_month[state_.month] : 31;
+
+                            // Simple leap year check for February
+                            if (state_.month == 2 && (state_.year % 4 == 0))
+                            {
+                                max_days = 29;
+                            }
+
+                            if (state_.day > max_days)
+                            {
+                                state_.day = 1;
+                                state_.month++;
+
+                                if (state_.month > 12)
+                                {
+                                    state_.month = 1;
+                                    state_.year++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             // Increment statistics slowly
             if (state_.flame_on)
