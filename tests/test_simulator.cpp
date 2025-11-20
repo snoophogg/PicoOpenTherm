@@ -53,7 +53,7 @@ TEST(TemperatureReadingTests, BoilerTemperatureInRange)
         float temp = sim.readBoilerTemperature();
         EXPECT_GE(temp, 40.0f);
         EXPECT_LE(temp, 120.0f); // Reasonable boiler temperature
-        sim.update();
+        sim.update(i * 0.1f);
     }
 }
 
@@ -66,7 +66,7 @@ TEST(TemperatureReadingTests, RoomTemperatureInRange)
         float temp = sim.readRoomTemperature();
         EXPECT_GE(temp, 15.0f);
         EXPECT_LE(temp, 30.0f);
-        sim.update();
+        sim.update(i * 0.1f);
     }
 }
 
@@ -79,7 +79,7 @@ TEST(TemperatureReadingTests, DHWTemperatureInRange)
         float temp = sim.readDHWTemperature();
         EXPECT_GE(temp, 30.0f);
         EXPECT_LE(temp, 80.0f);
-        sim.update();
+        sim.update(i * 0.1f);
     }
 }
 
@@ -92,7 +92,7 @@ TEST(TemperatureReadingTests, OutsideTemperatureInRange)
         float temp = sim.readOutsideTemperature();
         EXPECT_GE(temp, -20.0f);
         EXPECT_LE(temp, 40.0f);
-        sim.update();
+        sim.update(i * 0.1f);
     }
 }
 
@@ -107,7 +107,7 @@ TEST(TemperatureReadingTests, ReturnWaterCoolerThanBoiler)
         
         // Return water should be cooler than boiler water
         EXPECT_LE(return_temp, boiler_temp);
-        sim.update();
+        sim.update(i * 0.1f);
     }
 }
 
@@ -120,7 +120,7 @@ TEST(TemperatureReadingTests, CHWaterPressureInRange)
         float pressure = sim.readCHWaterPressure();
         EXPECT_GE(pressure, 0.5f);
         EXPECT_LE(pressure, 3.0f); // Typical CH system pressure (bar)
-        sim.update();
+        sim.update(i * 0.1f);
     }
 }
 
@@ -137,7 +137,7 @@ TEST(ModulationTests, ZeroWhenCHDisabled)
     {
         float modulation = sim.readModulationLevel();
         EXPECT_NEAR(modulation, 0.0f, 0.1f);
-        sim.update();
+        sim.update(i * 0.1f);
     }
 }
 
@@ -151,7 +151,7 @@ TEST(ModulationTests, InRangeWhenCHEnabled)
         float modulation = sim.readModulationLevel();
         EXPECT_GE(modulation, 0.0f);
         EXPECT_LE(modulation, 100.0f);
-        sim.update();
+        sim.update(i * 0.1f);
     }
 }
 
@@ -177,7 +177,7 @@ TEST(FlameTests, OffWhenCHDisabled)
     {
         bool flame = sim.readFlameStatus();
         EXPECT_FALSE(flame);
-        sim.update();
+        sim.update(i * 0.1f);
     }
 }
 
@@ -196,7 +196,7 @@ TEST(FlameTests, CHActiveRequiresCHEnabledAndFlame)
         {
             EXPECT_TRUE(flame);
         }
-        sim.update();
+        sim.update(i * 0.1f);
     }
 }
 
@@ -234,7 +234,7 @@ TEST(SetpointTests, RoomTemperatureApproachesSetpoint)
     // Run simulation for some time
     for (int i = 0; i < 500; i++)
     {
-        sim.update();
+        sim.update(i * 0.1f);
     }
     
     float final_temp = sim.readRoomTemperature();
@@ -278,14 +278,14 @@ TEST(EnableDisableTests, DHWTemperatureLowerWhenDisabled)
     // Let it stabilize
     for (int i = 0; i < 100; i++)
     {
-        sim.update();
+        sim.update(i * 0.1f);
     }
     float temp_enabled = sim.readDHWTemperature();
     
     sim.writeDHWEnabled(false);
     for (int i = 0; i < 100; i++)
     {
-        sim.update();
+        sim.update(i * 0.1f);
     }
     float temp_disabled = sim.readDHWTemperature();
     
@@ -336,7 +336,7 @@ TEST(UpdateTests, AdvancesSimulation)
     // Update multiple times
     for (int i = 0; i < 50; i++)
     {
-        sim.update();
+        sim.update(i * 0.1f);
     }
     
     float temp2 = sim.readBoilerTemperature();
@@ -368,6 +368,6 @@ TEST(UpdateTests, DHWActiveWhenBelowSetpoint)
             EXPECT_TRUE(dhw_active);
         }
         
-        sim.update();
+        sim.update(i * 0.1f);
     }
 }
