@@ -15,6 +15,21 @@ namespace OpenTherm
         static int consecutive_publish_failures = 0;
         static constexpr int PUBLISH_FAILURE_THRESHOLD = 5;
 
+        // Network polling helper to prevent TCP buffer exhaustion
+        // Aggressively polls the network stack to process ACKs and free buffers
+        void aggressive_network_poll(int duration_ms)
+        {
+            // Poll twice per iteration for maximum responsiveness
+            // Each iteration: 2 polls + 5ms sleep = ~5ms per iteration
+            int iterations = duration_ms / 5;
+            for (int i = 0; i < iterations; i++)
+            {
+                cyw43_arch_poll(); // Process network packets
+                cyw43_arch_poll(); // Double poll for faster ACK processing
+                sleep_ms(5);
+            }
+        }
+
         // MQTT callbacks
         void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status)
         {
@@ -130,15 +145,7 @@ namespace OpenTherm
 
             // Delay between publishes to allow lwIP buffers to be freed
             // Critical for preventing ERR_MEM and TCP panic when publishing multiple messages
-            // Needs to be long enough for TCP ACK and PBUF cleanup
-            // Poll network aggressively to process ACKs and free buffers ASAP
-            // Increased to 300ms with aggressive polling to prevent "no pbufs" panic
-            for (int i = 0; i < 60; i++)
-            {
-                cyw43_arch_poll(); // Poll twice per iteration
-                cyw43_arch_poll();
-                sleep_ms(5);
-            }
+            aggressive_network_poll(50); // 50ms between publishes with aggressive polling
             return true;
         }
 

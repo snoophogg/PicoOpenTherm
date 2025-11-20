@@ -28,6 +28,9 @@ namespace OpenTherm
         void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags);
         void mqtt_sub_request_cb(void *arg, err_t result);
 
+        // Network polling helper to prevent TCP buffer exhaustion
+        void aggressive_network_poll(int duration_ms = 50);
+
         // MQTT wrapper functions
         bool mqtt_publish_wrapper(const char *topic, const char *payload, bool retain);
         bool mqtt_subscribe_wrapper(const char *topic);

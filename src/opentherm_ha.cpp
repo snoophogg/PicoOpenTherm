@@ -3,6 +3,7 @@
 #include "config.hpp"
 #include "mqtt_discovery.hpp"
 #include "mqtt_topics.hpp"
+#include "mqtt_common.hpp"
 #include "pico/cyw43_arch.h"
 #include <cstdio>
 #include <cstring>
@@ -65,21 +66,29 @@ namespace OpenTherm
         void HAInterface::publishSensor(const char *topic_suffix, float value)
         {
             Discovery::publishSensor(config_, topic_suffix, value);
+            // Poll after each publish to prevent TCP buffer exhaustion
+            OpenTherm::Common::aggressive_network_poll(50);
         }
 
         void HAInterface::publishSensor(const char *topic_suffix, int value)
         {
             Discovery::publishSensor(config_, topic_suffix, value);
+            // Poll after each publish to prevent TCP buffer exhaustion
+            OpenTherm::Common::aggressive_network_poll(50);
         }
 
         void HAInterface::publishSensor(const char *topic_suffix, const char *value)
         {
             Discovery::publishSensor(config_, topic_suffix, value);
+            // Poll after each publish to prevent TCP buffer exhaustion
+            OpenTherm::Common::aggressive_network_poll(50);
         }
 
         void HAInterface::publishBinarySensor(const char *topic_suffix, bool value)
         {
             Discovery::publishBinarySensor(config_, topic_suffix, value);
+            // Poll after each publish to prevent TCP buffer exhaustion
+            OpenTherm::Common::aggressive_network_poll(50);
         }
 
         void HAInterface::publishStatus()
@@ -616,39 +625,18 @@ namespace OpenTherm
             {
                 last_update_ = now;
 
-                // Update all sensors with delays between groups to prevent lwIP TCP panic
-                // Each group publishes multiple messages - need time for TCP ACKs
-                // Increased to 200ms with active network polling to prevent buffer exhaustion
+                // Update all sensors - polling is now done after each individual publish
+                // to prevent lwIP TCP buffer exhaustion more effectively
                 publishStatus();
-                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
-
                 publishTemperatures();
-                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
-
                 publishPressureFlow();
-                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
-
                 publishModulation();
-                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
-
                 publishCounters();
-                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
-
                 publishConfiguration();
-                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
-
                 publishFaults();
-                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
-
                 publishTimeDate();
-                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
-
                 publishTemperatureBounds();
-                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
-
                 publishWiFiStats();
-                for (int i = 0; i < 20; i++) { cyw43_arch_poll(); sleep_ms(10); }
-
                 publishDeviceConfiguration();
             }
         }

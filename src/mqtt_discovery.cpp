@@ -24,29 +24,14 @@ namespace OpenTherm
                 {
                     // Success - give buffers EXTRA time to clear before next discovery publish
                     // Discovery messages are larger and come in rapid succession
-                    // Poll network very aggressively to process ACKs and free TCP buffers
-                    // Increased to 1200ms with double polling to prevent "no pbufs" TCP panic
-                    for (int i = 0; i < 120; i++)
-                    {
-                        cyw43_arch_poll();
-                        cyw43_arch_poll(); // Double poll for faster ACK processing
-                        sleep_ms(10);
-                    }
+                    OpenTherm::Common::aggressive_network_poll(200); // 200ms between discovery messages
                     return true;
                 }
 
                 // Exponential backoff with active network polling
-                // This allows lwIP to process ACKs and free buffers
                 uint32_t delay_ms = 500 * (1 << attempt);
                 printf("  Retry %d/%d in %lu ms (polling network)...\n", attempt + 1, max_retries, delay_ms);
-
-                // Poll network actively during delay to process packets and free buffers
-                uint32_t iterations = delay_ms / 10;
-                for (uint32_t i = 0; i < iterations; i++)
-                {
-                    cyw43_arch_poll();
-                    sleep_ms(10);
-                }
+                OpenTherm::Common::aggressive_network_poll(delay_ms);
             }
 
             printf("  ERROR: Failed to publish after %d attempts\n", max_retries);
@@ -146,11 +131,7 @@ namespace OpenTherm
         {
             // Wait for MQTT client to be ready for large discovery messages
             printf("Waiting for MQTT client to be ready for discovery (5 seconds, polling network)...\n");
-            for (int i = 0; i < 500; i++)
-            {
-                cyw43_arch_poll();
-                sleep_ms(10);
-            }
+            OpenTherm::Common::aggressive_network_poll(5000); // 5 second startup delay
 
             printf("Publishing Home Assistant MQTT discovery configs...\n");
 

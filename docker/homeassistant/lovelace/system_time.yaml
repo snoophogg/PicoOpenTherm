@@ -4,7 +4,7 @@
 
 title: System & Time
 path: system_time
-icon: mdi:cog-clock
+icon: mdi:cog
 badges:
   - entity: sensor.opentherm_gw_uptime
   - entity: sensor.opentherm_gw_time_of_day
