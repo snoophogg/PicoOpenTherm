@@ -671,7 +671,11 @@ namespace OpenTherm
         {
             // Build command topic base: <topic_base>/<device_id>/<command_topic_base>/
             // Example: opentherm/opentherm_gw/cmd/
-            std::string cmd_base = std::string(config_.topic_base) + "/" + std::string(config_.device_id) + "/" + std::string(config_.command_topic_base) + "/";
+            // Pre-allocate to prevent capacity growth and reduce heap allocations
+            std::string cmd_base;
+            cmd_base.reserve(strlen(config_.topic_base) + strlen(config_.device_id) +
+                           strlen(config_.command_topic_base) + 3);
+            cmd_base = std::string(config_.topic_base) + "/" + std::string(config_.device_id) + "/" + std::string(config_.command_topic_base) + "/";
 
             // CH Enable switch
             if (strcmp(topic, (cmd_base + MQTTTopics::CH_ENABLE).c_str()) == 0)

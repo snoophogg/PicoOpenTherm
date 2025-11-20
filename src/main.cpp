@@ -241,7 +241,8 @@ int main()
             {
                 ha.handleMessage(msg.first.c_str(), msg.second.c_str());
             }
-            OpenTherm::Common::g_pending_messages.clear();
+            // Force full deallocation of map to prevent capacity retention
+            std::map<std::string, std::string>().swap(OpenTherm::Common::g_pending_messages);
         }
 
         // Small delay
