@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cstring>
 #include <sstream>
+#include <malloc.h>
 #include "pico/stdlib.h"
 #include "hardware/watchdog.h"
 #include "led_blink.hpp"
@@ -411,11 +412,18 @@ namespace OpenTherm
             uint32_t uptime_seconds = (uint32_t)(uptime_us / 1000000ULL);
             publishSensor(MQTTTopics::UPTIME, (int)uptime_seconds);
 
-            // Free heap memory - using total_heap from Pico SDK
-            // Note: This requires mallinfo() or custom heap tracking
-            // For now, we'll publish a placeholder value of 0
-            // TODO: Implement proper heap tracking using malloc_stats or custom allocator
-            publishSensor(MQTTTopics::FREE_HEAP, 0);
+            // Free heap memory using mallinfo()
+            // mallinfo() provides detailed heap statistics from the C allocator
+            struct mallinfo mi = mallinfo();
+
+            // Calculate free heap:
+            // Total heap size on Pico W is approximately 264KB
+            // mi.fordblks = bytes in free blocks
+            // mi.uordblks = bytes in used (allocated) blocks
+            // Free heap = total - used = fordblks (simpler and more accurate)
+            int free_heap_bytes = mi.fordblks;
+
+            publishSensor(MQTTTopics::FREE_HEAP, free_heap_bytes);
         }
 
         // Parse ISO 8601 datetime string (e.g., "2025-01-17T14:30:00Z" or "2025-01-17T14:30:00+00:00")
