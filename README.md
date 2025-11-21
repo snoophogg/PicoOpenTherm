@@ -1,5 +1,10 @@
 # PicoOpenTherm
 
+[![Build](https://github.com/snoophogg/PicoOpenTherm/actions/workflows/build.yml/badge.svg)](https://github.com/snoophogg/PicoOpenTherm/actions/workflows/build.yml)
+[![Tests](https://github.com/snoophogg/PicoOpenTherm/actions/workflows/test.yml/badge.svg)](https://github.com/snoophogg/PicoOpenTherm/actions/workflows/test.yml)
+[![Docker Test](https://github.com/snoophogg/PicoOpenTherm/actions/workflows/docker-test.yml/badge.svg)](https://github.com/snoophogg/PicoOpenTherm/actions/workflows/docker-test.yml)
+[![Release](https://github.com/snoophogg/PicoOpenTherm/actions/workflows/release.yml/badge.svg)](https://github.com/snoophogg/PicoOpenTherm/actions/workflows/release.yml)
+
 A complete OpenTherm v2.2 protocol implementation for Raspberry Pi Pico W with Home Assistant MQTT integration. Uses PIO (Programmable I/O) state machines for hardware-accelerated Manchester encoding/decoding.
 
 ## Documentation
