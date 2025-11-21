@@ -25,7 +25,7 @@ COPY tools/docker-test/run_test.sh /app/run_test.sh
 # Build host simulator (compile both cpp files)
 RUN g++ -std=c++17 host_simulator.cpp simulated_opentherm.cpp -o host_simulator -lmosquitto -lpthread
 
-RUN python3 -m pip install --no-cache-dir -r /app/requirements.txt
+RUN python3 -m pip install --no-cache-dir --break-system-packages -r /app/requirements.txt
 
 RUN chmod +x /app/run_test.sh
 
