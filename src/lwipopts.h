@@ -23,7 +23,8 @@
 #define MEMP_NUM_TCP_SEG 200  // Increased from 160 to handle more TCP segments
 #define MEMP_NUM_ARP_QUEUE 10
 #define MEMP_NUM_SYS_TIMEOUT (LWIP_NUM_SYS_TIMEOUT_INTERNAL + 16)
-#define PBUF_POOL_SIZE 96  // Increased from 64 to reduce PBUF exhaustion
+#define PBUF_POOL_SIZE 128  // Increased from 96 - more buffers for MQTT burst traffic
+#define PBUF_POOL_BUFSIZE 512  // Right-sized for MQTT (discovery ~400 bytes, state <100 bytes)
 #define LWIP_ARP 1
 #define LWIP_ETHERNET 1
 #define LWIP_ICMP 1
