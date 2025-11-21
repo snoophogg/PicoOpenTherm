@@ -696,8 +696,8 @@ namespace OpenTherm
             {
                 last_update_ = now;
 
-                // Update all sensors - polling is now done after each individual publish
-                // to prevent lwIP TCP buffer exhaustion more effectively
+                // Update all sensors
+                // Pacing is handled by 100ms delay after each MQTT publish in mqtt_publish_wrapper()
                 publishStatus();
                 publishTemperatures();
                 publishPressureFlow();

@@ -265,8 +265,9 @@ namespace OpenTherm
 
             // Delay to allow TCP ACKs to return and free PBUFs
             // Even with TCP buffer space available, PBUFs must be freed by ACKs.
-            // 50ms provides time for ACKs without excessive throttling (was 150ms, tried 20ms).
-            aggressive_network_poll(50); // 50ms - balance between throughput and PBUF availability
+            // Increased to 100ms to prevent TCP buffer exhaustion during burst publishing.
+            // This is critical when multiple publish functions are called in sequence.
+            aggressive_network_poll(100); // 100ms - prevents buffer saturation during bursts
             return true;
         }
 
