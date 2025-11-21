@@ -129,14 +129,16 @@ namespace OpenTherm
             // This prevents the pcb->snd_queuelen assertion failure by ensuring
             // we don't overwhelm the TCP stack with too much pending data
             size_t payload_len = strlen(payload);
-            size_t estimated_size = payload_len + strlen(topic) + 20; // payload + topic + MQTT overhead
+            // Add 50% safety margin to ensure we have plenty of buffer space
+            // This conservative approach prevents edge cases where exact size isn't enough
+            size_t estimated_size = (payload_len + strlen(topic) + 20) * 3 / 2;
 
             // Wait for sufficient TCP buffer space to be available
             // The MQTT library uses altcp (abstraction layer) which wraps TCP
             if (g_mqtt_client && g_mqtt_client->conn)
             {
                 uint32_t wait_start = to_ms_since_boot(get_absolute_time());
-                const uint32_t max_wait_ms = 2000; // Wait up to 2 seconds for buffer space
+                const uint32_t max_wait_ms = 5000; // Wait up to 5 seconds for buffer space (increased from 2s)
 
                 // Get available send buffer space from altcp connection
                 u16_t snd_buf = altcp_sndbuf(g_mqtt_client->conn);
