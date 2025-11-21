@@ -311,6 +311,16 @@ namespace OpenTherm
                                    buildStateTopic(cfg, REPUBLISH_DISCOVERY).c_str(), nullptr, nullptr, "mdi:refresh",
                                    buildCommandTopic(cfg, REPUBLISH_DISCOVERY).c_str());
 
+            // Republish state button - pressing this will re-publish cached values without reading from boiler
+            publishDiscoveryConfig(cfg, COMPONENT_BUTTON, REPUBLISH_STATE, NAME_REPUBLISH_STATE,
+                                   buildStateTopic(cfg, REPUBLISH_STATE).c_str(), nullptr, nullptr, "mdi:upload",
+                                   buildCommandTopic(cfg, REPUBLISH_STATE).c_str());
+
+            // Force republish state button - pressing this will read from boiler and re-publish all values
+            publishDiscoveryConfig(cfg, COMPONENT_BUTTON, FORCE_REPUBLISH_STATE, NAME_FORCE_REPUBLISH_STATE,
+                                   buildStateTopic(cfg, FORCE_REPUBLISH_STATE).c_str(), nullptr, nullptr, "mdi:upload-multiple",
+                                   buildCommandTopic(cfg, FORCE_REPUBLISH_STATE).c_str());
+
             // Temperature bounds (read-only from boiler)
             publishDiscoveryConfig(cfg, COMPONENT_SENSOR, DHW_SETPOINT_MIN, NAME_DHW_SETPOINT_MIN,
                                    buildStateTopic(cfg, DHW_SETPOINT_MIN).c_str(), DEVICE_CLASS_TEMPERATURE, UNIT_CELSIUS, ICON_THERMOMETER_LOW);

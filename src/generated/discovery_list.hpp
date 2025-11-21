@@ -61,6 +61,8 @@ static const std::vector<std::string> BUTTON = {
     std::string("sync_time"),
     std::string("restart"),
     std::string("republish_discovery"),
+    std::string("republish_state"),
+    std::string("force_republish_state"),
 };
 
 } } // namespace OpenTherm::DiscoveryList

@@ -120,6 +120,30 @@ cards:
         name: MQTT Reconnections
         icon: mdi:wifi
       - type: divider
+      - entity: button.opentherm_gw_republish_discovery
+        name: Republish Discovery
+        icon: mdi:refresh
+        tap_action:
+          action: call-service
+          service: button.press
+          target:
+            entity_id: button.opentherm_gw_republish_discovery
+      - entity: button.opentherm_gw_republish_state
+        name: Republish State (Cached)
+        icon: mdi:upload
+        tap_action:
+          action: call-service
+          service: button.press
+          target:
+            entity_id: button.opentherm_gw_republish_state
+      - entity: button.opentherm_gw_force_republish_state
+        name: Force Republish State
+        icon: mdi:upload-multiple
+        tap_action:
+          action: call-service
+          service: button.press
+          target:
+            entity_id: button.opentherm_gw_force_republish_state
       - entity: button.opentherm_gw_restart
         name: Restart Gateway
         icon: mdi:restart

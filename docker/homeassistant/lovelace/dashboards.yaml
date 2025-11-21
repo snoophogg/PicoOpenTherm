@@ -13,11 +13,11 @@ views:
           - type: entities
             title: Gateway Status
             entities:
-              - entity: sensor.opentherm_gw_status
+              - entity: sensor.opentherm_gw_wifi_link_status
                 name: Connection Status
               - entity: sensor.opentherm_gw_uptime
                 name: Uptime
-              - entity: sensor.opentherm_gw_wifi_signal
+              - entity: sensor.opentherm_gw_wifi_rssi
                 name: WiFi Signal
               - entity: sensor.opentherm_gw_ip_address
                 name: IP Address
@@ -131,6 +131,30 @@ views:
             footer:
               type: buttons
               entities:
+                - entity: button.opentherm_gw_republish_discovery
+                  name: Republish Discovery
+                  icon: mdi:refresh
+                  tap_action:
+                    action: call-service
+                    service: button.press
+                    target:
+                      entity_id: button.opentherm_gw_republish_discovery
+                - entity: button.opentherm_gw_republish_state
+                  name: Republish State (Cached)
+                  icon: mdi:upload
+                  tap_action:
+                    action: call-service
+                    service: button.press
+                    target:
+                      entity_id: button.opentherm_gw_republish_state
+                - entity: button.opentherm_gw_force_republish_state
+                  name: Force Republish State
+                  icon: mdi:upload-multiple
+                  tap_action:
+                    action: call-service
+                    service: button.press
+                    target:
+                      entity_id: button.opentherm_gw_force_republish_state
                 - entity: button.opentherm_gw_restart
                   name: Restart Gateway
                   icon: mdi:restart

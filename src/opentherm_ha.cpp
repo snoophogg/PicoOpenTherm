@@ -80,6 +80,12 @@ namespace OpenTherm
             mqtt_.subscribe((base_cmd + REPUBLISH_DISCOVERY).c_str());
             OpenTherm::Common::aggressive_network_poll(50);
 
+            mqtt_.subscribe((base_cmd + REPUBLISH_STATE).c_str());
+            OpenTherm::Common::aggressive_network_poll(50);
+
+            mqtt_.subscribe((base_cmd + FORCE_REPUBLISH_STATE).c_str());
+            OpenTherm::Common::aggressive_network_poll(50);
+
             mqtt_.subscribe((base_cmd + UPDATE_INTERVAL).c_str());
             OpenTherm::Common::aggressive_network_poll(50);
 
@@ -834,6 +840,45 @@ namespace OpenTherm
                 {
                     printf("Warning: Some discovery configs may have failed to publish\n");
                 }
+            }
+            // Republish state command - republish cached values without reading from boiler
+            else if (strcmp(cmd, MQTTTopics::REPUBLISH_STATE) == 0)
+            {
+                printf("Republish state requested via MQTT command\n");
+                printf("Republishing all cached values (without reading from boiler)...\n");
+                // Wait a bit to ensure MQTT publishes the button press acknowledgment
+                OpenTherm::Common::aggressive_network_poll(500);
+
+                // Republish all cached values directly to MQTT
+                OpenTherm::Publish::republishAllCached();
+
+                printf("Cached state values republished!\n");
+            }
+            // Force republish state command - clear cache, read from boiler, and publish everything
+            else if (strcmp(cmd, MQTTTopics::FORCE_REPUBLISH_STATE) == 0)
+            {
+                printf("Force republish state requested via MQTT command\n");
+                printf("Force-publishing all current state values (reading from boiler)...\n");
+                // Wait a bit to ensure MQTT publishes the button press acknowledgment
+                OpenTherm::Common::aggressive_network_poll(500);
+
+                // Clear all publish caches to force republish
+                OpenTherm::Publish::clearAllCaches();
+
+                // Re-read and publish all state values
+                publishStatus();
+                publishTemperatures();
+                publishPressureFlow();
+                publishModulation();
+                publishCounters();
+                publishConfiguration();
+                publishFaults();
+                publishTimeDate();
+                publishTemperatureBounds();
+                publishWiFiStats();
+                publishDeviceConfiguration();
+
+                printf("All state values force-republished!\n");
             }
             // Update interval command
             else if (strcmp(cmd, MQTTTopics::UPDATE_INTERVAL) == 0)

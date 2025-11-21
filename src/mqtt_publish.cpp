@@ -92,5 +92,29 @@ namespace OpenTherm
             }
             return false;
         }
+
+        void clearAllCaches()
+        {
+            printf("Manually clearing all publish caches (%zu entries)\n", g_last_published.size());
+            g_last_published.clear();
+            last_cache_clear = to_ms_since_boot(get_absolute_time());
+        }
+
+        void republishAllCached()
+        {
+            printf("Republishing all cached values (%zu entries) without reading from boiler...\n", g_last_published.size());
+
+            // Iterate through all cached values and republish them
+            for (const auto &entry : g_last_published)
+            {
+                const std::string &topic = entry.first;
+                const std::string &payload = entry.second;
+
+                // Republish without updating cache (since it's already the same value)
+                OpenTherm::Common::mqtt_publish_wrapper(topic.c_str(), payload.c_str(), false);
+            }
+
+            printf("Republished %zu cached values\n", g_last_published.size());
+        }
     }
 }

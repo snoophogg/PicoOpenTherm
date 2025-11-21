@@ -11,6 +11,8 @@ namespace OpenTherm
         bool publishIntIfChanged(const std::string &topic, int value, bool retain = false);
         bool publishStringIfChanged(const std::string &topic, const std::string &value, bool retain = false);
         bool publishBinaryIfChanged(const std::string &topic, bool value, bool retain = false);
+        void clearAllCaches(); // Clear cache to force republish of all values on next update
+        void republishAllCached(); // Republish all currently cached values without reading from boiler
     }
 }
 

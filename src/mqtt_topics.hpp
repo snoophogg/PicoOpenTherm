@@ -70,6 +70,8 @@ namespace OpenTherm
         constexpr const char *SYNC_TIME = "sync_time"; // Command topic for time sync
         constexpr const char *RESTART = "restart"; // Command topic for restart
         constexpr const char *REPUBLISH_DISCOVERY = "republish_discovery"; // Command topic to re-publish discovery configs
+        constexpr const char *REPUBLISH_STATE = "republish_state"; // Command topic to re-publish all state values (respecting cache)
+        constexpr const char *FORCE_REPUBLISH_STATE = "force_republish_state"; // Command topic to force re-publish all state values (ignoring cache)
 
         // Temperature bounds
         constexpr const char *DHW_SETPOINT_MIN = "dhw_setpoint_min";
@@ -230,6 +232,8 @@ namespace OpenTherm
         constexpr const char *NAME_SYNC_TIME = "Sync Time to Boiler";
         constexpr const char *NAME_RESTART = "Restart Gateway";
         constexpr const char *NAME_REPUBLISH_DISCOVERY = "Republish Discovery";
+        constexpr const char *NAME_REPUBLISH_STATE = "Republish State";
+        constexpr const char *NAME_FORCE_REPUBLISH_STATE = "Force Republish State";
         constexpr const char *NAME_DHW_SETPOINT_MIN = "DHW Setpoint Min";
         constexpr const char *NAME_DHW_SETPOINT_MAX = "DHW Setpoint Max";
         constexpr const char *NAME_CH_SETPOINT_MIN = "CH Setpoint Min";
