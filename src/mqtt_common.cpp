@@ -141,6 +141,12 @@ namespace OpenTherm
                 // Get available send buffer space from altcp connection
                 u16_t snd_buf = altcp_sndbuf(g_mqtt_client->conn);
 
+                // Log when buffer is getting tight (less than 25% of typical send buffer)
+                if (snd_buf < 7300) // 25% of typical 29,200 byte buffer (20*TCP_MSS)
+                {
+                    printf("TCP buffer low: %u bytes available (need %zu)\n", snd_buf, estimated_size);
+                }
+
                 while (snd_buf < estimated_size)
                 {
                     uint32_t elapsed = to_ms_since_boot(get_absolute_time()) - wait_start;
