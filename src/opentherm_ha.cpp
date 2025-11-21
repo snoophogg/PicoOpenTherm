@@ -4,6 +4,7 @@
 #include "mqtt_discovery.hpp"
 #include "mqtt_topics.hpp"
 #include "mqtt_common.hpp"
+#include "mqtt_publish.hpp"
 #include "pico/cyw43_arch.h"
 #include <cstdio>
 #include <cstring>
