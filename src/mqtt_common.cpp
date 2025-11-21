@@ -181,16 +181,29 @@ namespace OpenTherm
                 // If memory error, wait for TCP buffers to clear and retry
                 if (err == ERR_MEM || err == ERR_BUF)
                 {
+                    // Get current buffer stats for diagnosis
+                    u16_t current_snd_buf = 0;
+                    if (g_mqtt_client && g_mqtt_client->conn)
+                    {
+                        current_snd_buf = altcp_sndbuf(g_mqtt_client->conn);
+                    }
+
                     if (retry < max_retries - 1)
                     {
                         // Wait progressively longer: 200ms, 400ms, 600ms
                         // Longer waits allow more time for TCP ACKs to free buffers
                         // Increased from 100/200/300ms due to TCP buffer exhaustion at 90s
                         uint32_t wait_ms = 200 * (retry + 1);
-                        printf("MQTT publish ERR_MEM, waiting %lums before retry %d/%d...\n",
-                               wait_ms, retry + 1, max_retries);
+                        printf("MQTT publish ERR_MEM (TCP snd_buf=%u, need=%zu), waiting %lums before retry %d/%d...\n",
+                               current_snd_buf, estimated_size, wait_ms, retry + 1, max_retries);
                         aggressive_network_poll(wait_ms);
                         continue;
+                    }
+                    else
+                    {
+                        // Final retry failed - log detailed info
+                        printf("MQTT publish ERR_MEM FAILED after %d retries (TCP snd_buf=%u, need=%zu, topic=%s, payload_len=%zu)\n",
+                               max_retries, current_snd_buf, estimated_size, topic, payload_len);
                     }
                 }
                 else

@@ -19,11 +19,11 @@
 #define MEM_LIBC_MALLOC 0
 #endif
 #define MEM_ALIGNMENT 4
-#define MEM_SIZE 12000
-#define MEMP_NUM_TCP_SEG 160
+#define MEM_SIZE 16000  // Increased from 12000 to reduce general heap exhaustion
+#define MEMP_NUM_TCP_SEG 200  // Increased from 160 to handle more TCP segments
 #define MEMP_NUM_ARP_QUEUE 10
 #define MEMP_NUM_SYS_TIMEOUT (LWIP_NUM_SYS_TIMEOUT_INTERNAL + 16)
-#define PBUF_POOL_SIZE 64
+#define PBUF_POOL_SIZE 96  // Increased from 64 to reduce PBUF exhaustion
 #define LWIP_ARP 1
 #define LWIP_ETHERNET 1
 #define LWIP_ICMP 1
