@@ -212,9 +212,9 @@ namespace OpenTherm
             // Delay between publishes to allow lwIP buffers to be freed
             // CRITICAL: Even with Core 1 processing network continuously, TCP ACKs
             // take time to return over network. With ~72 publishes per cycle (every 10s),
-            // insufficient delay causes TCP buffer exhaustion within 90 seconds.
-            // 100ms allows reliable ACK processing and prevents buffer accumulation.
-            aggressive_network_poll(100); // 100ms - prevents TCP buffer exhaustion
+            // insufficient delay causes TCP buffer exhaustion and eventual crash.
+            // 150ms provides more headroom for ACK processing and prevents buffer accumulation.
+            aggressive_network_poll(150); // 150ms - prevents TCP buffer exhaustion
             return true;
         }
 
