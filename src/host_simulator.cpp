@@ -134,11 +134,13 @@ int main(int argc, char **argv)
     mosquitto_loop_start(mosq);
 
     // publish initial state retained and then periodic updates
-    auto last = std::chrono::steady_clock::now();
+    auto start = std::chrono::steady_clock::now();
+    auto last = start;
     while (true)
     {
-        sim_ot.update();
         auto now = std::chrono::steady_clock::now();
+        float elapsed_seconds = std::chrono::duration<float>(now - start).count();
+        sim_ot.update(elapsed_seconds);
         if (std::chrono::duration_cast<std::chrono::seconds>(now - last).count() >= 10)
         {
             // publish set of state topics
