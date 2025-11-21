@@ -77,6 +77,9 @@ namespace OpenTherm
             mqtt_.subscribe((base_cmd + RESTART).c_str());
             OpenTherm::Common::aggressive_network_poll(50);
 
+            mqtt_.subscribe((base_cmd + REPUBLISH_DISCOVERY).c_str());
+            OpenTherm::Common::aggressive_network_poll(50);
+
             mqtt_.subscribe((base_cmd + UPDATE_INTERVAL).c_str());
             OpenTherm::Common::aggressive_network_poll(50);
 
@@ -814,6 +817,23 @@ namespace OpenTherm
                 sleep_ms(2000); // Give time for the message to be logged and MQTT to ack
                 watchdog_reboot(0, 0, 0);
                 // watchdog_reboot will reset the system
+            }
+            // Republish discovery command
+            else if (strcmp(cmd, MQTTTopics::REPUBLISH_DISCOVERY) == 0)
+            {
+                printf("Republish discovery requested via MQTT command\n");
+                printf("Re-publishing all Home Assistant discovery configs...\n");
+                // Wait a bit to ensure MQTT publishes the button press acknowledgment
+                OpenTherm::Common::aggressive_network_poll(500);
+                // Re-publish all discovery configs
+                if (OpenTherm::Discovery::publishDiscoveryConfigs(config_))
+                {
+                    printf("Discovery configs republished successfully!\n");
+                }
+                else
+                {
+                    printf("Warning: Some discovery configs may have failed to publish\n");
+                }
             }
             // Update interval command
             else if (strcmp(cmd, MQTTTopics::UPDATE_INTERVAL) == 0)

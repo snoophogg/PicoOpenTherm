@@ -57,4 +57,10 @@ static const std::vector<std::string> TEXT = {
     std::string("device_id"),
 };
 
+static const std::vector<std::string> BUTTON = {
+    std::string("sync_time"),
+    std::string("restart"),
+    std::string("republish_discovery"),
+};
+
 } } // namespace OpenTherm::DiscoveryList

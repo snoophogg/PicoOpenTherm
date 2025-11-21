@@ -306,6 +306,11 @@ namespace OpenTherm
                                    buildStateTopic(cfg, RESTART).c_str(), nullptr, nullptr, ICON_RESTART,
                                    buildCommandTopic(cfg, RESTART).c_str());
 
+            // Republish discovery button - pressing this will re-publish all discovery configs
+            publishDiscoveryConfig(cfg, COMPONENT_BUTTON, REPUBLISH_DISCOVERY, NAME_REPUBLISH_DISCOVERY,
+                                   buildStateTopic(cfg, REPUBLISH_DISCOVERY).c_str(), nullptr, nullptr, "mdi:refresh",
+                                   buildCommandTopic(cfg, REPUBLISH_DISCOVERY).c_str());
+
             // Temperature bounds (read-only from boiler)
             publishDiscoveryConfig(cfg, COMPONENT_SENSOR, DHW_SETPOINT_MIN, NAME_DHW_SETPOINT_MIN,
                                    buildStateTopic(cfg, DHW_SETPOINT_MIN).c_str(), DEVICE_CLASS_TEMPERATURE, UNIT_CELSIUS, ICON_THERMOMETER_LOW);
