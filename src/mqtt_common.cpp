@@ -1,5 +1,7 @@
 #include "mqtt_common.hpp"
 #include "led_blink.hpp"
+#include "lwip/altcp.h"
+#include "lwip/apps/mqtt_priv.h"
 #include <cstdio>
 
 namespace OpenTherm
@@ -123,13 +125,44 @@ namespace OpenTherm
             // Track publish attempt
             g_total_publish_attempts++;
 
+            // Check TCP send buffer availability before publishing
+            // This prevents the pcb->snd_queuelen assertion failure by ensuring
+            // we don't overwhelm the TCP stack with too much pending data
+            size_t payload_len = strlen(payload);
+            size_t estimated_size = payload_len + strlen(topic) + 20; // payload + topic + MQTT overhead
+
+            // Wait for sufficient TCP buffer space to be available
+            // The MQTT library uses altcp (abstraction layer) which wraps TCP
+            if (g_mqtt_client && g_mqtt_client->conn)
+            {
+                uint32_t wait_start = to_ms_since_boot(get_absolute_time());
+                const uint32_t max_wait_ms = 2000; // Wait up to 2 seconds for buffer space
+
+                // Get available send buffer space from altcp connection
+                u16_t snd_buf = altcp_sndbuf(g_mqtt_client->conn);
+
+                while (snd_buf < estimated_size)
+                {
+                    uint32_t elapsed = to_ms_since_boot(get_absolute_time()) - wait_start;
+                    if (elapsed >= max_wait_ms)
+                    {
+                        printf("TCP send buffer timeout (%u < %zu bytes after %lums)\n",
+                               snd_buf, estimated_size, elapsed);
+                        break;
+                    }
+                    // Poll network to allow ACKs to return and free buffers
+                    aggressive_network_poll(50);
+                    snd_buf = altcp_sndbuf(g_mqtt_client->conn);
+                }
+            }
+
             // Retry logic for memory errors - TCP buffers may be temporarily full
             const int max_retries = 3;
             err_t err = ERR_OK;
 
             for (int retry = 0; retry < max_retries; retry++)
             {
-                err = mqtt_publish(g_mqtt_client, topic, payload, strlen(payload),
+                err = mqtt_publish(g_mqtt_client, topic, payload, payload_len,
                                    qos, retain_flag, nullptr, nullptr);
 
                 if (err == ERR_OK)
