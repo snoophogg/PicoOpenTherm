@@ -263,12 +263,10 @@ namespace OpenTherm
             // Successful publish - reset failure counter
             consecutive_publish_failures = 0;
 
-            // Delay between publishes to allow lwIP buffers to be freed
-            // CRITICAL: Even with Core 1 processing network continuously, TCP ACKs
-            // take time to return over network. With ~72 publishes per cycle (every 10s),
-            // insufficient delay causes TCP buffer exhaustion and eventual crash.
-            // 150ms provides more headroom for ACK processing and prevents buffer accumulation.
-            aggressive_network_poll(150); // 150ms - prevents TCP buffer exhaustion
+            // Delay to allow TCP ACKs to return and free PBUFs
+            // Even with TCP buffer space available, PBUFs must be freed by ACKs.
+            // 50ms provides time for ACKs without excessive throttling (was 150ms, tried 20ms).
+            aggressive_network_poll(50); // 50ms - balance between throughput and PBUF availability
             return true;
         }
 
