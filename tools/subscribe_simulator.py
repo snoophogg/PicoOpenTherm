@@ -168,10 +168,13 @@ def main():
                 client.loop_stop()
                 client.disconnect()
                 sys.exit(3)
+            else:
+                print(f"[{now()}] Test command verification PASSED")
 
-        # Keep running until interrupted
-        while True:
-            time.sleep(1)
+        # Keep running until interrupted (unless in verify mode - automated tests should exit)
+        if not args.verify:
+            while True:
+                time.sleep(1)
     except KeyboardInterrupt:
         print('\nInterrupted, exiting')
     finally:
