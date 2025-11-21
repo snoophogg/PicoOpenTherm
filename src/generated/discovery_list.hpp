@@ -41,6 +41,11 @@ static const std::vector<std::string> SENSOR = {
     std::string("fault_code"),
     std::string("diagnostic_code"),
     std::string("opentherm_version"),
+    std::string("ot_total_requests"),
+    std::string("ot_failed_requests"),
+    std::string("ot_success_rate"),
+    std::string("ot_last_error_entity"),
+    std::string("ot_time_since_error"),
 };
 
 static const std::vector<std::string> NUMBER = {

@@ -184,6 +184,26 @@ views:
                 name: CH Pump Hours
               - entity: sensor.opentherm_gw_dhw_pump_hours
                 name: DHW Pump Hours
+
+          # OpenTherm Reliability Metrics
+          - type: entities
+            title: OpenTherm Reliability
+            entities:
+              - entity: sensor.opentherm_gw_opentherm_success_rate
+                name: Success Rate
+                icon: mdi:percent
+              - entity: sensor.opentherm_gw_opentherm_total_requests
+                name: Total Requests
+                icon: mdi:counter
+              - entity: sensor.opentherm_gw_opentherm_failed_requests
+                name: Failed Requests
+                icon: mdi:alert-circle
+              - entity: sensor.opentherm_gw_opentherm_last_error_entity
+                name: Last Error Entity
+                icon: mdi:alert-circle
+              - entity: sensor.opentherm_gw_opentherm_time_since_error
+                name: Time Since Error
+                icon: mdi:clock-outline
   
   # System Time View
   - !include system_time.yaml

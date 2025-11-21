@@ -96,6 +96,9 @@ namespace OpenTherm
             uint32_t getUpdateInterval() const;
             void publishDeviceConfiguration();
 
+            // Metrics functions
+            void publishOpenThermMetrics();
+
         private:
             OpenTherm::BaseInterface &ot_;
             Config config_;
@@ -106,6 +109,16 @@ namespace OpenTherm
             opentherm_status_t last_status_;
             bool status_valid_;
 
+            // OpenTherm operation metrics
+            struct {
+                uint32_t total_requests;
+                uint32_t failed_requests;
+                uint32_t timeout_errors;
+                uint32_t invalid_response_errors;
+                uint32_t last_error_time_ms;
+                char last_error_entity[64];
+            } ot_metrics_;
+
             // Helper functions for MQTT discovery
             // Note: discovery helpers moved to OpenTherm::Discovery.
             // Local publish helpers (delegate to Discovery) remain as member functions
@@ -113,6 +126,9 @@ namespace OpenTherm
             void publishSensor(const char *topic_suffix, int value);
             void publishSensor(const char *topic_suffix, const char *value);
             void publishBinarySensor(const char *topic_suffix, bool value);
+
+            // Track OpenTherm operation results for metrics
+            void trackOTOperation(const char *entity_name, bool success);
         };
 
     } // namespace HomeAssistant

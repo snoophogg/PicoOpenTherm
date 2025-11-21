@@ -353,6 +353,18 @@ namespace OpenTherm
             publishDiscoveryConfig(cfg, COMPONENT_SENSOR, MQTT_RECONNECT_COUNT, NAME_MQTT_RECONNECT_COUNT,
                                    buildStateTopic(cfg, MQTT_RECONNECT_COUNT).c_str(), nullptr, nullptr, ICON_WIFI);
 
+            // OpenTherm operation metrics for diagnostics
+            publishDiscoveryConfig(cfg, COMPONENT_SENSOR, OT_TOTAL_REQUESTS, NAME_OT_TOTAL_REQUESTS,
+                                   buildStateTopic(cfg, OT_TOTAL_REQUESTS).c_str(), nullptr, nullptr, ICON_COUNTER);
+            publishDiscoveryConfig(cfg, COMPONENT_SENSOR, OT_FAILED_REQUESTS, NAME_OT_FAILED_REQUESTS,
+                                   buildStateTopic(cfg, OT_FAILED_REQUESTS).c_str(), nullptr, nullptr, ICON_ALERT_CIRCLE);
+            publishDiscoveryConfig(cfg, COMPONENT_SENSOR, OT_SUCCESS_RATE, NAME_OT_SUCCESS_RATE,
+                                   buildStateTopic(cfg, OT_SUCCESS_RATE).c_str(), nullptr, "%", ICON_PERCENT);
+            publishDiscoveryConfig(cfg, COMPONENT_SENSOR, OT_LAST_ERROR_ENTITY, NAME_OT_LAST_ERROR_ENTITY,
+                                   buildStateTopic(cfg, OT_LAST_ERROR_ENTITY).c_str(), nullptr, nullptr, ICON_ALERT_CIRCLE);
+            publishDiscoveryConfig(cfg, COMPONENT_SENSOR, OT_TIME_SINCE_ERROR, NAME_OT_TIME_SINCE_ERROR,
+                                   buildStateTopic(cfg, OT_TIME_SINCE_ERROR).c_str(), DEVICE_CLASS_DURATION, UNIT_SECONDS, ICON_CLOCK_OUTLINE);
+
             printf("Discovery configs published!\n");
             return true;
         }

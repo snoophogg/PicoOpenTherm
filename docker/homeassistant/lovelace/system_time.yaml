@@ -164,6 +164,59 @@ cards:
           ✅ Stable for {{ (uptime_hours / 24) | round(0) }} days
           {% endif %}
 
+  # OpenTherm Reliability Metrics
+  - type: horizontal-stack
+    cards:
+      # Success Rate Gauge
+      - type: gauge
+        entity: sensor.opentherm_gw_opentherm_success_rate
+        name: OpenTherm Success Rate
+        min: 0
+        max: 100
+        severity:
+          green: 99
+          yellow: 95
+          red: 0
+        needle: true
+
+      # Metrics Summary
+      - type: markdown
+        content: |
+          ## 📊 OpenTherm Stats
+
+          **Total Requests:** {{ states('sensor.opentherm_gw_opentherm_total_requests') }}
+          **Failed:** {{ states('sensor.opentherm_gw_opentherm_failed_requests') }}
+          **Success Rate:** {{ states('sensor.opentherm_gw_opentherm_success_rate') }}%
+
+          {% if states('sensor.opentherm_gw_opentherm_last_error_entity') not in ['unknown', 'unavailable', ''] %}
+          ⚠️ **Last Error:**
+          {{ states('sensor.opentherm_gw_opentherm_last_error_entity') }}
+          ({{ states('sensor.opentherm_gw_opentherm_time_since_error') }}s ago)
+          {% else %}
+          ✅ **No errors recorded**
+          {% endif %}
+
+  # OpenTherm Metrics Details
+  - type: entities
+    title: OpenTherm Operation Metrics
+    entities:
+      - entity: sensor.opentherm_gw_opentherm_success_rate
+        name: Success Rate
+        icon: mdi:percent
+      - entity: sensor.opentherm_gw_opentherm_total_requests
+        name: Total Requests
+        icon: mdi:counter
+      - entity: sensor.opentherm_gw_opentherm_failed_requests
+        name: Failed Requests
+        icon: mdi:alert-circle
+      - type: divider
+      - entity: sensor.opentherm_gw_opentherm_last_error_entity
+        name: Last Error Entity
+        icon: mdi:alert-circle
+      - entity: sensor.opentherm_gw_opentherm_time_since_error
+        name: Time Since Error
+        icon: mdi:clock-outline
+
   # System Information
   - type: entities
     title: System Information

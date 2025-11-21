@@ -23,6 +23,7 @@ namespace OpenTherm
             : ot_(ot_interface), config_(config), last_update_(0), status_valid_(false)
         {
             memset(&last_status_, 0, sizeof(last_status_));
+            memset(&ot_metrics_, 0, sizeof(ot_metrics_));
         }
 
         void HAInterface::begin(const MQTTCallbacks &callbacks)
@@ -135,7 +136,10 @@ namespace OpenTherm
         void HAInterface::publishStatus()
         {
             opentherm_status_t status;
-            if (ot_.readStatus(&status))
+            bool success = ot_.readStatus(&status);
+            trackOTOperation("status", success);
+
+            if (success)
             {
                 last_status_ = status;
                 status_valid_ = true;
@@ -159,40 +163,55 @@ namespace OpenTherm
         void HAInterface::publishTemperatures()
         {
             float temp;
+            bool success;
 
-            if (ot_.readBoilerTemperature(&temp))
+            success = ot_.readBoilerTemperature(&temp);
+            trackOTOperation("boiler_temp", success);
+            if (success)
             {
                 Discovery::publishSensor(config_, MQTTTopics::BOILER_TEMP, temp);
             }
 
-            if (ot_.readDHWTemperature(&temp))
+            success = ot_.readDHWTemperature(&temp);
+            trackOTOperation("dhw_temp", success);
+            if (success)
             {
                 Discovery::publishSensor(config_, MQTTTopics::DHW_TEMP, temp);
             }
 
-            if (ot_.readReturnWaterTemperature(&temp))
+            success = ot_.readReturnWaterTemperature(&temp);
+            trackOTOperation("return_temp", success);
+            if (success)
             {
                 Discovery::publishSensor(config_, MQTTTopics::RETURN_TEMP, temp);
             }
 
-            if (ot_.readOutsideTemperature(&temp))
+            success = ot_.readOutsideTemperature(&temp);
+            trackOTOperation("outside_temp", success);
+            if (success)
             {
                 Discovery::publishSensor(config_, MQTTTopics::OUTSIDE_TEMP, temp);
             }
 
-            if (ot_.readRoomTemperature(&temp))
+            success = ot_.readRoomTemperature(&temp);
+            trackOTOperation("room_temp", success);
+            if (success)
             {
                 Discovery::publishSensor(config_, MQTTTopics::ROOM_TEMP, temp);
             }
 
             int16_t exhaust_temp;
-            if (ot_.readExhaustTemperature(&exhaust_temp))
+            success = ot_.readExhaustTemperature(&exhaust_temp);
+            trackOTOperation("exhaust_temp", success);
+            if (success)
             {
                 Discovery::publishSensor(config_, MQTTTopics::EXHAUST_TEMP, (int)exhaust_temp);
             }
 
             // Read setpoints
-            if (ot_.readControlSetpoint(&temp))
+            success = ot_.readControlSetpoint(&temp);
+            trackOTOperation("control_setpoint", success);
+            if (success)
             {
                 Discovery::publishSensor(config_, MQTTTopics::CONTROL_SETPOINT, temp);
             }
@@ -690,6 +709,7 @@ namespace OpenTherm
                 publishTemperatureBounds();
                 publishWiFiStats();
                 publishDeviceConfiguration();
+                publishOpenThermMetrics();
             }
         }
 
@@ -1016,6 +1036,59 @@ namespace OpenTherm
         uint32_t HAInterface::getUpdateInterval() const
         {
             return config_.update_interval_ms;
+        }
+
+        // Track OpenTherm operation results for metrics
+        void HAInterface::trackOTOperation(const char *entity_name, bool success)
+        {
+            ot_metrics_.total_requests++;
+
+            if (!success)
+            {
+                ot_metrics_.failed_requests++;
+                ot_metrics_.last_error_time_ms = to_ms_since_boot(get_absolute_time());
+                snprintf(ot_metrics_.last_error_entity, sizeof(ot_metrics_.last_error_entity), "%s", entity_name);
+
+                printf("[OpenTherm] Operation failed: %s (total: %u, failed: %u, success rate: %.1f%%)\n",
+                       entity_name,
+                       ot_metrics_.total_requests,
+                       ot_metrics_.failed_requests,
+                       100.0f * (ot_metrics_.total_requests - ot_metrics_.failed_requests) / ot_metrics_.total_requests);
+            }
+        }
+
+        // Publish OpenTherm metrics to Home Assistant
+        void HAInterface::publishOpenThermMetrics()
+        {
+            using namespace MQTTTopics;
+
+            // Total requests
+            publishSensor(OT_TOTAL_REQUESTS, (int)ot_metrics_.total_requests);
+
+            // Failed requests
+            publishSensor(OT_FAILED_REQUESTS, (int)ot_metrics_.failed_requests);
+
+            // Calculate success rate
+            float success_rate = 0.0f;
+            if (ot_metrics_.total_requests > 0)
+            {
+                success_rate = 100.0f * (ot_metrics_.total_requests - ot_metrics_.failed_requests) / ot_metrics_.total_requests;
+            }
+            publishSensor(OT_SUCCESS_RATE, success_rate);
+
+            // Last error entity
+            if (ot_metrics_.last_error_entity[0] != '\0')
+            {
+                publishSensor(OT_LAST_ERROR_ENTITY, ot_metrics_.last_error_entity);
+            }
+
+            // Time since last error (in seconds)
+            if (ot_metrics_.last_error_time_ms > 0)
+            {
+                uint32_t now = to_ms_since_boot(get_absolute_time());
+                uint32_t time_since_error = (now - ot_metrics_.last_error_time_ms) / 1000;
+                publishSensor(OT_TIME_SINCE_ERROR, (int)time_since_error);
+            }
         }
 
     } // namespace HomeAssistant
