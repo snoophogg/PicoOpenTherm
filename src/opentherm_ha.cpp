@@ -79,6 +79,17 @@ namespace OpenTherm
 
             mqtt_.subscribe((base_cmd + UPDATE_INTERVAL).c_str());
             OpenTherm::Common::aggressive_network_poll(50);
+
+            // Wait for TCP buffers from discovery to fully clear before first state publish
+            // Discovery published ~72 messages, subscriptions added more packets
+            // Allow 3 seconds for all ACKs to return and buffers to clear
+            printf("Waiting for all TCP buffers to clear before first state publish (3s)...\n");
+            OpenTherm::Common::aggressive_network_poll(3000);
+
+            // Set last_update_ to current time so first update() won't trigger immediately
+            // This prevents another burst of publishes right after startup
+            last_update_ = to_ms_since_boot(get_absolute_time());
+            printf("Ready for normal operation\n");
         }
 
         void HAInterface::publishDiscoveryConfigs()
