@@ -106,6 +106,12 @@ int main()
     printf("Enabling WiFi station mode...\n");
     cyw43_arch_enable_sta_mode();
 
+    // Set aggressive WiFi power management for better responsiveness
+    // Clear lower bits (li_assoc) to reduce sleep intervals
+    // This helps prevent "F2 not ready" and CYW43 bus errors during high traffic
+    printf("Setting WiFi power management to aggressive performance mode...\n");
+    cyw43_wifi_pm(&cyw43_state, CYW43_PERFORMANCE_PM & ~0xf);
+
     // Launch Core 1 as dedicated network processor
     // Core 1 will continuously poll the WiFi/TCP stack in parallel with application logic
     // This dramatically improves TCP throughput and prevents buffer exhaustion
