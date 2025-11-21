@@ -67,6 +67,24 @@ cards:
 
       *Last sync: {{ relative_time(states.button.opentherm_gw_sync_time.last_changed) }} ago*
 
+  # Heating Controls
+  - type: entities
+    title: Heating Controls
+    entities:
+      - entity: switch.opentherm_gw_ch_enable
+        name: Central Heating Enable
+        icon: mdi:radiator
+      - entity: switch.opentherm_gw_dhw_enable
+        name: Hot Water Enable
+        icon: mdi:water-boiler
+      - type: divider
+      - entity: number.opentherm_gw_control_setpoint
+        name: Control Setpoint
+        icon: mdi:thermometer
+      - entity: number.opentherm_gw_room_setpoint
+        name: Room Setpoint
+        icon: mdi:home-thermometer
+
   # Temperature Bounds
   - type: entities
     title: Temperature Limits

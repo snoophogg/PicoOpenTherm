@@ -47,6 +47,29 @@ views:
                 name: Hot Water Temperature
                 icon: mdi:water-boiler
           
+          # Heating Controls
+          - type: entities
+            title: Heating Controls
+            entities:
+              - entity: switch.opentherm_gw_ch_enable
+                name: Central Heating Enable
+                icon: mdi:radiator
+              - entity: switch.opentherm_gw_dhw_enable
+                name: Hot Water Enable
+                icon: mdi:water-boiler
+              - entity: number.opentherm_gw_control_setpoint
+                name: Control Setpoint
+                icon: mdi:thermometer
+              - entity: number.opentherm_gw_room_setpoint
+                name: Room Setpoint
+                icon: mdi:home-thermometer
+              - entity: number.opentherm_gw_dhw_setpoint
+                name: DHW Setpoint
+                icon: mdi:water-thermometer
+              - entity: number.opentherm_gw_max_ch_setpoint
+                name: Max CH Setpoint
+                icon: mdi:thermometer-high
+
           # Boiler Status
           - type: entities
             title: Boiler Status
